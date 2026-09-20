@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arabic Reading Stars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Noto+Naskh+Arabic:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+    --sky-top: #74d2f7;
+    --sky-bot: #e3f7ff;
+    --hill-a: #66d48c;
+    --hill-b: #3fbf76;
+    --cloud: #ffffff;
+    --card: #fffaf0;
+    --card-ink: #2b2350;
+    --ink: #2b2350;
+    --line: #2b2350;
+    --coral: #ff6b6b;
+    --sun: #ffd23f;
+    --grape: #7b5cff;
+    --mint: #2fcf8b;
+    --paper: #ffffff;
+    --muted: #6a5f8f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --sky-top: #2a2a72;
+      --sky-bot: #7a6ad8;
+      --hill-a: #2f9e63;
+      --hill-b: #217a4b;
+      --cloud: #d9d4ff;
+    }
+  }
+  :root[data-theme="dark"] {
+    --sky-top: #2a2a72;
+    --sky-bot: #7a6ad8;
+    --hill-a: #2f9e63;
+    --hill-b: #217a4b;
+    --cloud: #d9d4ff;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  html, body { height: 100%; margin: 0; }
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    background: var(--sky-bot);
+    color: var(--ink);
+    font-family: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif;
+    overflow-y: auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ---------- scenery ---------- */
+  .scene { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+    background: linear-gradient(to bottom, var(--sky-top), var(--sky-bot) 70%); }
+  .sun { position: absolute; top: 5%; right: 6%; width: 86px; height: 86px; border-radius: 50%;
+    background: var(--sun); border: 4px solid var(--line);
+    box-shadow: 0 0 0 10px rgba(255,210,63,.35), 0 0 0 22px rgba(255,210,63,.18); }
+  .sun::before, .sun::after { content: ''; position: absolute; top: 34px; width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+  .sun::before { left: 22px; } .sun::after { right: 22px; }
+  .rainbow { position: absolute; top: 4%; left: -60px; width: 300px; opacity: .95; }
+  .cloud { position: absolute; background: var(--cloud); border: 4px solid var(--line); border-radius: 60px; height: 42px; width: 120px; }
+  .cloud::before, .cloud::after { content: ''; position: absolute; background: var(--cloud); border: 4px solid var(--line); border-radius: 50%; }
+  .cloud::before { width: 54px; height: 54px; top: -30px; left: 18px; border-bottom-color: transparent; }
+  .cloud::after { width: 42px; height: 42px; top: -20px; right: 16px; border-bottom-color: transparent; }
+  .c1 { top: 22%; left: 58%; transform: scale(.8); animation: drift 60s linear infinite alternate; }
+  .c2 { top: 46%; left: 4%; transform: scale(.65); animation: drift 75s linear infinite alternate-reverse; }
+  .c3 { top: 12%; left: 34%; transform: scale(.55); animation: drift 90s linear infinite alternate; }
+  @keyframes drift { from { translate: -20px 0; } to { translate: 30px 0; } }
+  .hills { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 30vh; min-height: 170px; }
+  .deco { position: absolute; font-size: 30px; line-height: 1; }
+  .d1 { bottom: 3%; left: 5%; } .d2 { bottom: 6%; left: 22%; font-size: 24px; }
+  .d3 { bottom: 4%; right: 8%; font-size: 36px; } .d4 { bottom: 9%; right: 26%; font-size: 26px; }
+  .d5 { bottom: 12%; left: 44%; font-size: 34px; } .d6 { top: 30%; right: 5%; font-size: 30px; }
+  .d7 { top: 58%; left: 6%; font-size: 30px; }
+
+  /* ---------- layout ---------- */
+  .app { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; min-height: 100%;
+    padding: 14px 14px 26px; display: flex; flex-direction: column; gap: 12px; justify-content: center; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border: 3px solid var(--line);
+    border-radius: 999px; font-weight: 700; font-size: 20px; box-shadow: 0 4px 0 var(--line); }
+  .level { background: var(--grape); color: #fff; }
+  .starsPill { background: var(--sun); color: var(--line); font-size: 24px; padding: 5px 18px; }
+  .starsPill.bump { animation: bump .6s ease; }
+  @keyframes bump { 30% { transform: scale(1.35) rotate(-4deg); } 60% { transform: scale(.95); } }
+  .gear { width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--line); background: var(--paper);
+    box-shadow: 0 4px 0 var(--line); font-size: 22px; cursor: pointer; padding: 0; }
+  .gear:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+
+  .pips { display: flex; flex-wrap: wrap; justify-content: center; gap: 7px; }
+  .pip { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--line); background: var(--paper);
+    display: grid; place-items: center; font-size: 12px; transition: background .25s, transform .25s; }
+  .pip.on { background: var(--sun); transform: scale(1.1); }
+
+  .card { background: var(--card); color: var(--card-ink); border: 4px solid var(--line); border-radius: 34px;
+    box-shadow: 0 9px 0 var(--line); padding: 16px 16px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px;
+    transition: background .3s; }
+  .card.listening { background: #e9fff4; }
+  .card.good { background: #fff3b8; }
+  .wordBox { width: 100%; min-height: 200px; background: var(--paper); border: 3px dashed var(--grape); border-radius: 26px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 6px; position: relative; }
+  #word { font-family: 'Noto Naskh Arabic', 'Amiri', 'Traditional Arabic', serif; font-weight: 700; direction: rtl;
+    font-size: min(calc(var(--fs, 130) * 1px), 24vw); line-height: 1.55; color: var(--card-ink); text-align: center; white-space: nowrap; }
+  #pic { font-size: 54px; line-height: 1; height: 62px; opacity: 0; transform: scale(.4); transition: opacity .3s, transform .4s cubic-bezier(.3,1.6,.5,1); }
+  #pic.show { opacity: 1; transform: scale(1); }
+
+  .controls { display: flex; align-items: center; justify-content: center; gap: 22px; }
+  .btn { border: 3px solid var(--line); background: var(--paper); color: var(--line); border-radius: 50%;
+    width: 64px; height: 64px; font-size: 28px; cursor: pointer; box-shadow: 0 6px 0 var(--line); padding: 0; font-family: inherit; }
+  .btn:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 1px 0 var(--line); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn.hear { background: #b9e6ff; }
+  .btn.skip { background: #ffe1a8; }
+  .btn.callout { animation: callout 1s ease infinite; }
+  @keyframes callout { 50% { transform: scale(1.18); } }
+  .mic { width: 128px; height: 128px; font-size: 56px; background: var(--coral); box-shadow: 0 9px 0 var(--line); position: relative; }
+  .mic:active:not(:disabled) { transform: translateY(8px); box-shadow: 0 1px 0 var(--line); }
+  .mic.on { background: var(--mint); }
+  .mic.on::before, .mic.on::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 4px solid var(--mint);
+    animation: ring 1.3s ease-out infinite; }
+  .mic.on::after { animation-delay: .65s; }
+  @keyframes ring { from { transform: scale(1); opacity: .9; } to { transform: scale(1.5); opacity: 0; } }
+
+  .talk { display: flex; align-items: center; gap: 10px; width: 100%; }
+  .owl { flex: none; width: 62px; height: 62px; border-radius: 50%; background: #d9ccff; border: 3px solid var(--line);
+    display: grid; place-items: center; font-size: 36px; }
+  .bubble { position: relative; flex: 1; background: var(--paper); border: 3px solid var(--line); border-radius: 22px;
+    padding: 10px 14px; min-height: 62px; display: flex; align-items: center; justify-content: center; text-align: center;
+    font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; font-size: 22px; direction: rtl; line-height: 1.6; }
+  .bubble::before { content: ''; position: absolute; left: -12px; top: 22px; width: 18px; height: 18px; background: var(--paper);
+    border-left: 3px solid var(--line); border-bottom: 3px solid var(--line); transform: rotate(45deg); }
+  .bubble.pop { animation: pop .4s ease; }
+  @keyframes pop { 40% { transform: scale(1.06); } }
+  .note { font-size: 14px; color: var(--muted); text-align: center; min-height: 18px; margin: 0; }
+  .parentOk { border: 3px solid var(--line); background: var(--mint); color: var(--line); font-family: inherit; font-weight: 700;
+    font-size: 16px; padding: 9px 18px; border-radius: 999px; box-shadow: 0 4px 0 var(--line); cursor: pointer; }
+  .parentOk:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+
+  /* ---------- overlays ---------- */
+  .overlay { position: fixed; inset: 0; z-index: 10; background: rgba(43,35,80,.62); display: flex; align-items: center;
+    justify-content: center; padding: 18px; overflow-y: auto; }
+  .sheet { background: var(--card); color: var(--card-ink); border: 4px solid var(--line); border-radius: 32px; box-shadow: 0 9px 0 var(--line);
+    padding: 22px 20px; width: 100%; max-width: 420px; text-align: center; }
+  .bigStar { font-size: 92px; line-height: 1; animation: spin 1.2s cubic-bezier(.3,1.5,.5,1); }
+  @keyframes spin { from { transform: scale(0) rotate(-200deg); } to { transform: scale(1) rotate(0); } }
+  .sheet h2 { margin: 6px 0 4px; font-size: 28px; }
+  .sheet p { margin: 4px 0; font-size: 18px; }
+  .ar { font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; direction: rtl; font-size: 26px; line-height: 1.6; }
+  .go { margin-top: 14px; border: 3px solid var(--line); background: var(--grape); color: #fff; font-family: inherit; font-weight: 700;
+    font-size: 22px; padding: 12px 26px; border-radius: 999px; box-shadow: 0 6px 0 var(--line); cursor: pointer; }
+  .go:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--line); }
+
+  .parent { text-align: left; }
+  .parent h2 { text-align: center; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0; font-size: 17px; }
+  .row label { flex: 1; }
+  .row input[type=text], .row select { font-family: inherit; font-size: 17px; padding: 6px 10px; border: 3px solid var(--line);
+    border-radius: 12px; background: var(--paper); color: var(--card-ink); width: 130px; }
+  .row input[type=checkbox] { width: 24px; height: 24px; accent-color: var(--grape); }
+  .small { border: 3px solid var(--line); background: var(--paper); color: var(--card-ink); font-family: inherit; font-weight: 700; font-size: 16px;
+    padding: 8px 14px; border-radius: 14px; box-shadow: 0 4px 0 var(--line); cursor: pointer; }
+  .small:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+  .small.armed { background: var(--coral); color: #fff; }
+  .hint { font-size: 13.5px; color: var(--muted); margin: 12px 0 0; line-height: 1.45; }
+  .divider { border: 0; border-top: 3px dotted var(--grape); margin: 14px 0; }
+
+  .confetti { position: fixed; top: -40px; z-index: 20; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(540deg); } }
+
+  :focus-visible { outline: 4px solid var(--grape); outline-offset: 3px; }
+  @media (max-width: 380px) { .mic { width: 112px; height: 112px; } .pip { width: 19px; height: 19px; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <svg class="rainbow" viewBox="0 0 300 160" fill="none" stroke-width="14" stroke-linecap="round">
+    <path d="M20 150 A130 130 0 0 1 280 150" stroke="#ff6b6b"/>
+    <path d="M40 150 A110 110 0 0 1 260 150" stroke="#ffb547"/>
+    <path d="M60 150 A90 90 0 0 1 240 150" stroke="#ffe36a"/>
+    <path d="M80 150 A70 70 0 0 1 220 150" stroke="#5fd08a"/>
+    <path d="M100 150 A50 50 0 0 1 200 150" stroke="#6bb8ff"/>
+  </svg>
+  <div class="sun"></div>
+  <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+  <span class="deco d6">🦋</span><span class="deco d7">🎈</span>
+  <svg class="hills" viewBox="0 0 400 160" preserveAspectRatio="none">
+    <path d="M0 70 Q90 10 190 60 T400 40 V160 H0 Z" fill="var(--hill-a)" stroke="#2b2350" stroke-width="3"/>
+    <path d="M0 110 Q110 60 220 105 T400 90 V160 H0 Z" fill="var(--hill-b)" stroke="#2b2350" stroke-width="3"/>
+  </svg>
+  <span class="deco d1">🌷</span><span class="deco d2">🌼</span><span class="deco d3">🐑</span>
+  <span class="deco d4">🌸</span><span class="deco d5">🌳</span>
+</div>
+
+<main class="app">
+  <header class="top">
+    <div class="pill level" id="levelBadge">Lesson 3A</div>
+    <div class="pill starsPill" id="starsPill" aria-live="polite">⭐ <span id="starCount">0</span></div>
+    <button class="gear" id="parentBtn" aria-label="Parent settings">⚙️</button>
+  </header>
+
+  <div class="pips" id="pips" aria-label="Progress in this level"></div>
+
+  <section class="card" id="card">
+    <div class="wordBox">
+      <div id="word" lang="ar" dir="rtl"></div>
+      <div id="pic" aria-hidden="true"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn hear" id="hearBtn" aria-label="Hear the word">🔊</button>
+      <button class="btn mic" id="micBtn" aria-label="Read the word aloud">🎤</button>
+      <button class="btn skip" id="skipBtn" aria-label="Skip this word">⏭️</button>
+    </div>
+
+    <div class="talk">
+      <div class="owl" aria-hidden="true">🦉</div>
+      <div class="bubble" id="bubble" aria-live="polite"></div>
+    </div>
+    <p class="note" id="note"></p>
+    <button class="parentOk" id="parentOk" hidden>✔ Parent: she read it correctly</button>
+  </section>
+</main>
+
+<!-- level up -->
+<div class="overlay" id="levelUp" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="luTitle">
+    <div class="bigStar">⭐</div>
+    <h2 id="luTitle">Lesson complete!</h2>
+    <p class="ar" id="luAr">مَا شَاءَ اللَّه! نَجْمَةٌ جَدِيدَة</p>
+    <p id="luLonger" hidden></p>
+    <button class="go" id="luGo">Next level ▶</button>
+  </div>
+</div>
+
+<!-- parent panel -->
+<div class="overlay" id="parentPanel" hidden>
+  <div class="sheet parent" role="dialog" aria-modal="true" aria-labelledby="ppTitle">
+    <h2 id="ppTitle">Parent settings</h2>
+    <div class="row"><span>Stars collected: <b id="ppStars">0</b></span>
+      <button class="small" id="resetStars">Reset stars</button></div>
+    <div class="row"><span>Current lesson: <b id="ppLevel">1</b></span>
+      <button class="small" id="resetLevel">Back to first lesson</button></div>
+    <hr class="divider">
+    <div class="row"><label for="lvlSel">Jump to lesson</label>
+      <select id="lvlSel"></select></div>
+    <div class="row"><label for="nameIn">Her name (for praise)</label>
+      <input type="text" id="nameIn" dir="rtl" lang="ar" maxlength="14"></div>
+    <div class="row"><label for="soundCb">Sounds</label><input type="checkbox" id="soundCb"></div>
+    <div class="row"><label for="okCb">Always show the “parent ✔” button</label><input type="checkbox" id="okCb"></div>
+    <p class="hint">Speech recognition checks that the right word was said, but it can't hear vowel marks (tashkeel) precisely. Listen along and use the ✔ button if you disagree. Works best in Chrome, Edge or Safari, with the microphone allowed.</p>
+    <div style="text-align:center"><button class="go" id="ppClose">Done</button></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- words: one level per lesson of the book ---------- */
+  var LESSONS = [
+    ['3A', ['كَتَبَ','ذَهَبَ','رَكَعَ','قَرَأَ','دَرَسَ','ذَكَرَ','هَدَأَ','شَكَرَ','أَكَلَ','صَدَقَ','حَفَرَ','نَصَرَ']],
+    ['3B', ['شَرِبَ','سَمِعَ','عَمِلَ','لَعِبَ','فَرِحَ','عَلِمَ','فَهِمَ','حَسِبَ','ضَحِكَ','رَغِبَ','خَسِرَ','شَهِدَ']],
+    ['3C', ['كَثُرَ','صَلُحَ','عَظُمَ','كَرُمَ','بَعُدَ','حَسُنَ','خَبُثَ','قَبُحَ','حُفِظَ','دُرِسَ','ضُرِبَ','لُعِنَ']],
+    ['3D', ['نَزَلَ','قَطَعَ','جُرِحَ','زُرِعَ','حَجَزَ','قَدِمَ','قُصِدَ','قُضِيَ','عَرَضَ','صَعُبَ','رَكَضَ','نُقِدَ']],
+    ['4A', ['بَلَدًا','حَطَبًا','غَدَقًا','رَشَدًا','صَعَدًا','عَدَدًا','أَمَدًا','لُبَدًا','طَبَقًا','شُهُبًا','هَرَبًا','شَطَطًا']],
+    ['4B', ['لَهَبٍ','مَسَدٍ','عَمَدٍ','طَبَقٍ','نُصُبٍ','أَجَلٍ','ذَكَرٍ','مَثَلٍ','غَضَبٍ','جُرُفٍ','سَفَرٍ','مَطَرٍ']],
+    ['4C', ['وَلَدٌ','كُتُبٌ','سُرُرٌ','نَفَرٌ','أَحَدٌ','بَشَرٌ','خُشُبٌ','نَصَبٌ','مَرَضٌ','لَعِبٌ','مَلَكٌ','قَتَرٌ']],
+    ['4D', ['رُسُلٌ','حَسَدًا','مَثَلًا','رَجُلٌ','سَفَرٍ','أَخٌ','حَكَمًا','جَبَلٍ','حَرَجٌ','عَمَلٍ','بَشَرًا','أُكُلٍ']],
+    ['5A', ['جَهْدَ','نَحْنُ','يَعْلَمُ','عَنْهُ','سَبْعٌ','أَكْثَرُ','نَفْسٍ','يُوَسْوِسُ','حَبْلٌ','يَحْذَرُ','قَبْلُ','وَجْهُهُ']],
+    ['5B', ['مِنْهُ','مِثْلُ','رِجْسٌ','تِلْكَ','فِتْنَةٌ','رِزْقٍ','رِحْلَةَ','نِسْوَةٌ','كِبْرٌ','شِرْبٍ','بِنِعْمَةِ','تُطْعِمُهُ']],
+    ['5C', ['بُكْمٌ','يُفْعَلُ','يُذْهِبْ','عُصْبَةٌ','قُلْنَ','عُمْيٌ','خُضْرٌ','يُرْجَعُ','يُثْخِنَ','يُرْسِلَ','بُعْثِرَ','يُخْزِهِمْ']],
+    ['5D', ['وِزْرَكَ','نَشْرَحْ','أَغْنَتْ','صَدْرَكَ','ذِكْرٍ','أَمْهِلْهُمْ','فَيُصْلَبُ','عَزْمٍ','فَرَغْتَ','سَمِعَتْ','مُلْكُ','عَسْعَسَ']],
+    ['5E', ['يَقْضِ','يَسْرِقْ','أُقْسِمُ','أَطْهَرُ','بِقِطْعٍ','نُطْعِمُ','أَبْصِرْ','حَسِبْتَ','يُبْعَثُ','أَجْرٌ','حِجْرٌ','يَخْرُجُ','عَدْلٍ','سِدْرٍ','يُدْخِلُ']],
+    ['6A', ['كَانَ','ذَاتَ','مَالًا','عَابِدٌ','غَاسِقٍ','طَعَامُ','حَاسِدٍ','نَارًا','خَالِدًا','نَاجٍ','يُغَاثُ','هَاوِيَةٌ']],
+    ['6B', ['شَهِيدٌ','رِيحٍ','خَبِيرٌ','كَبِيرًا','يُعِيدُ','حَدِيثُ','سَعِيرًا','مَجِيدٌ','يَسِيرًا','أَلِيمٍ','جِيدِهَا','نَعِيمٍ']],
+    ['6C', ['دُونِ','أَعُوذُ','صُدُورِ','رَسُولٌ','وُجُوهٌ','بُطُونِ','قُعُودٌ','ثُبُورًا','يَقُومُ','عُيُونٍ','جُوعٍ','يَطُوفُ']],
+    ['8A', ['نَزَّلَ','حَرَّمَ','قَدَّرَ','فَكَّرَ','صَدَّقَ','كَذَّبَ','عَلَّمَ','هَمَّتْ','تَبَّتْ','حَقٌّ','تَطَّلِعُ','جَنَّاتٍ']],
+    ['8B', ['مِنِّي','ظِلٍّ','فِضَّةٍ','سِجِّينٍ','فَسَبِّحْ','جِثِيًّا','إِيَّاكَ','يُتِمَّ','قَوِيًّا','فَتَزِلَّ','يُصِرُّونَ','تَسْتَخِفُّونَهَا']],
+    ['8C', ['بُسَّتِ','رُجَّتِ','حُقَّتْ','دُكَّتْ','مُدَّتْ','حُصِّلَ','ثُمَّ','خُشَّعًا','لِحُبِّ','أُجِّلَتْ','كُلٌّ','كُوِّرَتْ']]
+  ];
+  var LESSON_IDS = LESSONS.map(function (l) { return l[0]; });
+  var LEVELS = LESSONS.map(function (l) { return l[1].map(function (w) { return [w, '']; }); });
+  function wordsFor(level) { return LEVELS[level - 1]; }
+
+  /* ---------- saved state ---------- */
+  var KEY = 'arabic-reading-stars-v2';
+  var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false };
+  try {
+    var raw = localStorage.getItem(KEY);
+    var saved = JSON.parse(raw || '{}');
+    if (!raw) { // keep stars collected in the first version of the game
+      var old = JSON.parse(localStorage.getItem('arabic-reading-stars-v1') || '{}');
+      if (old.stars) saved.stars = old.stars;
+    }
+    for (var k in saved) if (k in S) S[k] = saved[k];
+  } catch (e) {}
+  S.stars = Math.max(0, S.stars | 0);
+  S.level = Math.min(LEVELS.length, Math.max(1, S.level | 0));
+  S.done = Math.min(wordsFor(S.level).length - 1, Math.max(0, S.done | 0));
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  /* ---------- helpers ---------- */
+  var $ = function (id) { return document.getElementById(id); };
+  function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function norm(s) {
+    return String(s).replace(/[\u0640\u064B-\u065F\u0670]/g, '')
+      .replace(/[\u0623\u0625\u0622\u0671]/g, '\u0627').replace(/\u0649/g, '\u064A')
+      .replace(/\u0629/g, '\u0647').replace(/\u0624/g, '\u0648').replace(/\u0626/g, '\u064A')
+      .replace(/[^\u0621-\u064A]/g, '');
+  }
+  function lev(a, b) {
+    var m = a.length, n = b.length, d = [], i, j;
+    for (i = 0; i <= m; i++) { d[i] = [i]; }
+    for (j = 1; j <= n; j++) d[0][j] = j;
+    for (i = 1; i <= m; i++) for (j = 1; j <= n; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[m][n];
+  }
+
+  /* ---------- sound ---------- */
+  var ac;
+  function tone(f, dur, at, type, vol) {
+    if (!S.sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      var o = ac.createOscillator(), g = ac.createGain(), t0 = ac.currentTime + (at || 0);
+      o.type = type || 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(vol || 0.15, t0);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+      o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur);
+    } catch (e) {}
+  }
+  function soundGood() { tone(660, .18, 0); tone(880, .18, .12); tone(1175, .3, .24); }
+  function soundTry() { tone(300, .25, 0, 'triangle', .1); }
+  function soundStar() { [523, 659, 784, 1047, 1319].forEach(function (f, i) { tone(f, .25, i * .11); }); }
+
+  function confetti(n) {
+    var bits = ['⭐', '🌟', '🎉', '🎈', '💖', '✨'];
+    for (var i = 0; i < n; i++) {
+      var s = document.createElement('span');
+      s.className = 'confetti';
+      s.textContent = bits[Math.floor(Math.random() * bits.length)];
+      s.style.left = Math.random() * 100 + 'vw';
+      s.style.fontSize = 18 + Math.random() * 26 + 'px';
+      s.style.animationDuration = 1.8 + Math.random() * 1.8 + 's';
+      s.style.animationDelay = Math.random() * .5 + 's';
+      document.body.appendChild(s);
+      setTimeout((function (el) { return function () { el.remove(); }; })(s), 4500);
+    }
+  }
+
+  /* ---------- game state ---------- */
+  var queue = [], qi = 0, cur = null, locked = false, listening = false, fails = 0;
+  var rec = null, gotResult = false, hadError = false, advanceTimer = null;
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var micUnavailable = !SR;
+
+  var wrapped = false;
+  var REWARDS = ['🌟', '🎉', '🦄', '🐣', '🌈', '🍭', '🎈', '🐬'];
+  var PRAISE = ['أَحْسَنْتِ', 'مُمْتَاز', 'رَائِع', 'بَرَافُو', 'مَا شَاءَ اللَّه'];
+
+  function say(text) {
+    var b = $('bubble'); b.textContent = text;
+    b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
+  }
+  function renderHud() {
+    $('levelBadge').textContent = 'Lesson ' + LESSON_IDS[S.level - 1];
+    $('starCount').textContent = S.stars;
+    var p = $('pips'); p.innerHTML = '';
+    for (var i = 0; i < wordsFor(S.level).length; i++) {
+      var d = document.createElement('div');
+      d.className = 'pip' + (i < S.done ? ' on' : '');
+      d.textContent = i < S.done ? '⭐' : '';
+      p.appendChild(d);
+    }
+  }
+  function buildQueue() { queue = shuffle(wordsFor(S.level).slice()); qi = 0; }
+  function showOk() { $('parentOk').hidden = !(S.alwaysOk || micUnavailable); }
+
+  function nextWord() {
+    clearTimeout(advanceTimer);
+    if (qi >= queue.length) buildQueue();
+    cur = queue[qi++];
+    locked = false; fails = 0;
+    var letters = norm(cur[0]).length;
+    $('word').textContent = cur[0];
+    $('word').style.setProperty('--fs', Math.max(44, 140 - (letters - 3) * 14 - Math.max(0, letters - 6) * 6));
+    $('pic').textContent = '';
+    $('pic').classList.remove('show');
+    $('card').className = 'card';
+    $('hearBtn').classList.remove('callout');
+    $('micBtn').disabled = false;
+    $('note').textContent = micUnavailable ? 'Speech recognition is not available in this browser. Use the parent ✔ button.' : '';
+    showOk();
+    say('اِقْرَئِي الكَلِمَة 🎤');
+    renderHud();
+  }
+
+  /* ---------- checking ---------- */
+  function matches(alts) {
+    var t = norm(cur[0]);
+    var tol = t.length <= 3 ? 0 : (t.length <= 5 ? 1 : 2);
+    for (var i = 0; i < alts.length; i++) {
+      var cands = [norm(alts[i])].concat(String(alts[i]).split(/\s+/).map(norm)).filter(Boolean);
+      for (var j = 0; j < cands.length; j++) {
+        var c = cands[j];
+        if (lev(c, t) <= tol) return true;
+        if (c.indexOf('\u0627\u0644') === 0 && lev(c.slice(2), t) <= tol) return true;
+      }
+    }
+    return false;
+  }
+
+  function success() {
+    if (locked) return;
+    locked = true;
+    $('micBtn').disabled = true;
+    $('card').className = 'card good';
+    $('pic').textContent = REWARDS[Math.floor(Math.random() * REWARDS.length)];
+    $('pic').classList.add('show');
+    $('note').textContent = '';
+    say(PRAISE[Math.floor(Math.random() * PRAISE.length)] + ' يَا ' + S.name + '! 🎉');
+    soundGood(); confetti(14);
+    S.done++;
+    if (S.done >= wordsFor(S.level).length) {
+      var finished = S.level;
+      S.stars++; S.done = 0;
+      wrapped = finished >= LEVELS.length;
+      S.level = wrapped ? 1 : finished + 1;
+      save();
+      advanceTimer = setTimeout(function () { showLevelUp(finished); }, 1500);
+    } else {
+      save();
+      advanceTimer = setTimeout(nextWord, 2300);
+    }
+    renderHud();
+  }
+
+  function tryAgain(msg) {
+    fails++;
+    soundTry();
+    if (fails >= 3) {
+      say('اِسْتَمِعِي أَوَّلاً 🔊');
+      $('hearBtn').classList.add('callout');
+    } else {
+      say(msg || 'حَاوِلِي مَرَّةً أُخْرَى 💪');
+    }
+  }
+
+  /* ---------- microphone ---------- */
+  function setListening(on) {
+    listening = on;
+    $('micBtn').classList.toggle('on', on);
+    $('card').classList.toggle('listening', on);
+  }
+  function startListening() {
+    if (locked) return;
+    if (!SR) { micUnavailable = true; showOk(); $('note').textContent = 'Speech recognition is not available in this browser. Use the parent ✔ button.'; return; }
+    if (listening) { try { rec.stop(); } catch (e) {} return; }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    rec = new SR();
+    rec.lang = 'ar-SA'; rec.interimResults = false; rec.maxAlternatives = 5; rec.continuous = false;
+    gotResult = false; hadError = false;
+    rec.onstart = function () { setListening(true); say('أَسْمَعُكِ... 👂'); $('note').textContent = ''; };
+    rec.onresult = function (e) {
+      gotResult = true;
+      var alts = [];
+      for (var i = 0; i < e.results.length; i++) for (var j = 0; j < e.results[i].length; j++) alts.push(e.results[i][j].transcript);
+      $('note').textContent = 'Heard: ' + (alts[0] || '—');
+      if (matches(alts)) success(); else tryAgain();
+    };
+    rec.onerror = function (e) {
+      hadError = true;
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        micUnavailable = true; showOk();
+        say('المَيْكْرُوفُون مُغْلَق 🔇');
+        $('note').textContent = 'The microphone is blocked. Open the game from its own web address (not inside another app), allow the microphone, and on iPhone turn on Settings > General > Keyboard > Enable Dictation. Or use the parent ✔ button.';
+      } else if (e.error === 'no-speech') {
+        say('لَمْ أَسْمَعْ شَيْئاً 🎤 حَاوِلِي مَرَّةً أُخْرَى');
+      } else if (e.error === 'network') {
+        $('note').textContent = 'Speech recognition needs an internet connection.';
+        say('حَاوِلِي مَرَّةً أُخْرَى');
+      } else if (e.error !== 'aborted') {
+        say('حَاوِلِي مَرَّةً أُخْرَى');
+      }
+    };
+    rec.onend = function () {
+      setListening(false);
+      if (!gotResult && !hadError && !locked) say('لَمْ أَسْمَعْ شَيْئاً 🎤 حَاوِلِي مَرَّةً أُخْرَى');
+    };
+    try { rec.start(); } catch (e) { setListening(false); }
+  }
+
+  function hearWord() {
+    if (!window.speechSynthesis || locked) return;
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(cur[0]);
+      u.lang = 'ar-SA'; u.rate = 0.6;
+      window.speechSynthesis.speak(u);
+      $('hearBtn').classList.remove('callout');
+    } catch (e) {}
+  }
+
+  /* ---------- level up ---------- */
+  function showLevelUp(finished) {
+    soundStar(); confetti(40);
+    $('luTitle').textContent = 'Lesson ' + LESSON_IDS[finished - 1] + ' complete!';
+    $('luLonger').hidden = !wrapped;
+    $('luLonger').textContent = 'You finished the whole book! Starting again from the first lesson.';
+    $('luGo').textContent = 'Lesson ' + LESSON_IDS[S.level - 1] + ' ▶';
+    $('levelUp').hidden = false;
+    var pill = $('starsPill');
+    pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
+    renderHud();
+    $('luGo').focus();
+  }
+  $('luGo').onclick = function () { $('levelUp').hidden = true; buildQueue(); nextWord(); };
+
+  /* ---------- parent panel ---------- */
+  function armed(btn, label, action) {
+    var on = false, t;
+    btn.onclick = function () {
+      if (!on) {
+        on = true; btn.textContent = 'Tap again to confirm'; btn.classList.add('armed');
+        t = setTimeout(function () { on = false; btn.textContent = label; btn.classList.remove('armed'); }, 3000);
+      } else {
+        clearTimeout(t); on = false; btn.textContent = label; btn.classList.remove('armed'); action();
+      }
+    };
+  }
+  function refreshPanel() {
+    $('ppStars').textContent = S.stars;
+    $('ppLevel').textContent = LESSON_IDS[S.level - 1];
+    $('lvlSel').value = String(S.level);
+    $('nameIn').value = S.name;
+    $('soundCb').checked = !!S.sound;
+    $('okCb').checked = !!S.alwaysOk;
+  }
+  for (var l = 1; l <= LEVELS.length; l++) {
+    var o = document.createElement('option');
+    o.value = l; o.textContent = 'Lesson ' + LESSON_IDS[l - 1];
+    $('lvlSel').appendChild(o);
+  }
+  $('parentBtn').onclick = function () { refreshPanel(); $('parentPanel').hidden = false; };
+  $('ppClose').onclick = function () { $('parentPanel').hidden = true; if (!locked) nextWord(); };
+  armed($('resetStars'), 'Reset stars', function () { S.stars = 0; save(); renderHud(); refreshPanel(); });
+  armed($('resetLevel'), 'Back to first lesson', function () { S.level = 1; S.done = 0; save(); buildQueue(); renderHud(); refreshPanel(); });
+  $('lvlSel').onchange = function () { S.level = parseInt(this.value, 10); S.done = 0; save(); buildQueue(); renderHud(); refreshPanel(); };
+  $('nameIn').oninput = function () { S.name = this.value.trim() || 'تالا'; save(); };
+  $('soundCb').onchange = function () { S.sound = this.checked; save(); };
+  $('okCb').onchange = function () { S.alwaysOk = this.checked; save(); showOk(); };
+
+  /* ---------- wire up ---------- */
+  $('micBtn').onclick = startListening;
+  $('hearBtn').onclick = hearWord;
+  $('skipBtn').onclick = function () { if (!locked) { if (listening) { try { rec.abort(); } catch (e) {} } nextWord(); } };
+  $('parentOk').onclick = success;
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { $('parentPanel').hidden = true; }
+  });
+
+  buildQueue();
+  nextWord();
+})();
+</script>
+</body>
+</html>
