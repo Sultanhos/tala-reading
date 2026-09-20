@@ -162,7 +162,7 @@
   .parent h2 { text-align: center; }
   .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0; font-size: 17px; }
   .row label { flex: 1; }
-  .row input[type=text], .row select { font-family: inherit; font-size: 17px; padding: 6px 10px; border: 3px solid var(--line);
+  .row input[type=text], .row input[type=number], .row select { font-family: inherit; font-size: 17px; padding: 6px 10px; border: 3px solid var(--line);
     border-radius: 12px; background: var(--paper); color: var(--card-ink); width: 130px; }
   .row input[type=checkbox] { width: 24px; height: 24px; accent-color: var(--grape); }
   .small { border: 3px solid var(--line); background: var(--paper); color: var(--card-ink); font-family: inherit; font-weight: 700; font-size: 16px;
@@ -180,6 +180,43 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
+
+  /* ---------- Sprechen (S / Z lisp practice) ---------- */
+  .view { display: flex; flex-direction: column; gap: 12px; }
+  .tabs, .modes { display: flex; gap: 10px; justify-content: center; }
+  .tab, .mode { border: 3px solid var(--line); background: var(--paper); color: var(--ink); font-family: inherit; font-weight: 700;
+    font-size: 18px; padding: 8px 18px; border-radius: 999px; box-shadow: 0 4px 0 var(--line); cursor: pointer; }
+  .tab:active, .mode:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+  .tab.on { background: var(--grape); color: #fff; }
+  .mode.on { background: var(--sun); }
+  .soundPick { display: flex; gap: 12px; justify-content: center; }
+  .snd { border: 3px solid var(--line); background: var(--paper); color: var(--card-ink); font-family: inherit; font-weight: 700;
+    font-size: 30px; width: 96px; height: 62px; border-radius: 22px; box-shadow: 0 5px 0 var(--line); cursor: pointer; }
+  .snd:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--line); }
+  .snd.on { background: var(--mint); }
+  .tip { width: 100%; background: #fff3b8; border: 3px solid var(--line); border-radius: 20px; padding: 10px 14px; text-align: center; color: var(--card-ink); }
+  .tipDe { font-weight: 700; font-size: 18px; line-height: 1.35; }
+  .tipEn { font-size: 13.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .wordBox.compact { min-height: 150px; gap: 4px; }
+  .deWord { font-family: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif; font-weight: 700; font-size: min(72px, 16vw); line-height: 1.2;
+    text-align: center; color: var(--card-ink); }
+  .deQ { font-family: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif; font-weight: 600; font-size: clamp(20px, 5.4vw, 27px);
+    line-height: 1.35; text-align: center; color: var(--card-ink); padding: 4px 8px; }
+  .qNum { font-size: 14px; font-weight: 700; color: var(--grape); }
+  .pic2 { font-size: 58px; line-height: 1; min-height: 62px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .chip { border: 2px solid var(--line); background: var(--paper); border-radius: 999px; padding: 4px 12px; font-family: inherit; font-weight: 600;
+    font-size: 15px; color: var(--card-ink); cursor: pointer; }
+  .chip.cur { background: #d9ccff; }
+  .chip.ok { background: #c9f5df; }
+  .bubble.de { font-family: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif; direction: ltr; font-size: 19px; font-weight: 600; }
+  .gpips .pip { width: 36px; height: 36px; font-size: 16px; font-weight: 700; }
+  .scoreBox { font-size: 46px; font-weight: 700; color: var(--grape); margin: 0; line-height: 1; }
+  .scoreBox small { font-size: 22px; color: var(--muted); }
+  .btnRow { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .go.mini { font-size: 18px; padding: 9px 20px; margin-top: 0; }
+  .bigEmoji { font-size: 84px; line-height: 1; text-align: center; }
+  .startTxt { font-family: 'Fredoka', system-ui, sans-serif; font-weight: 600; font-size: 19px; text-align: center; margin: 6px 0 0; }
 </style>
 </head>
 <body>
@@ -210,6 +247,12 @@
     <button class="gear" id="parentBtn" aria-label="Parent settings">⚙️</button>
   </header>
 
+  <nav class="tabs" id="tabs">
+    <button class="tab on" id="tabRead">📖 Lesen</button>
+    <button class="tab" id="tabSpeak">🐍 Sprechen</button>
+  </nav>
+
+  <div class="view" id="viewRead">
   <div class="pips" id="pips" aria-label="Progress in this level"></div>
 
   <section class="card" id="card">
@@ -231,6 +274,70 @@
     <p class="note" id="note"></p>
     <button class="parentOk" id="parentOk" hidden>✔ Parent: she read it correctly</button>
   </section>
+  </div>
+
+  <div class="view" id="viewSpeak" hidden>
+    <div class="modes">
+      <button class="mode on" id="modeTrain">🏋️ Training</button>
+      <button class="mode" id="modeGame">🎮 Spiel</button>
+    </div>
+
+    <!-- training -->
+    <section class="card" id="trainCard">
+      <div class="soundPick">
+        <button class="snd on" data-snd="s" aria-label="S sound">S 🐍</button>
+        <button class="snd" data-snd="z" aria-label="Z sound">Z 🦓</button>
+      </div>
+      <div class="tip"><div class="tipDe" id="tTipDe"></div><div class="tipEn" id="tTipEn"></div></div>
+      <div class="wordBox compact">
+        <div class="deWord" id="tWord"></div>
+        <div class="pic2" id="tPic"></div>
+      </div>
+      <div class="controls">
+        <button class="btn hear" id="tHear" aria-label="Hear the word">🔊</button>
+        <button class="btn mic" id="tMic" aria-label="Say the word">🎤</button>
+        <button class="btn skip" id="tNext" aria-label="Next word">➡️</button>
+      </div>
+      <div class="talk">
+        <div class="owl" aria-hidden="true">🐍</div>
+        <div class="bubble de" id="tBubble" aria-live="polite"></div>
+      </div>
+      <p class="note" id="tNote"></p>
+      <div class="chips" id="chips"></div>
+    </section>
+
+    <!-- game -->
+    <section class="card" id="gameCard" hidden>
+      <div id="gStart">
+        <div class="bigEmoji">🐍</div>
+        <p class="startTxt" id="gBest"></p>
+        <div class="btnRow" style="margin-top:14px"><button class="go mini" id="gGo">Los geht's! ▶</button></div>
+      </div>
+      <div id="gPlay" hidden style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div class="pips gpips" id="gPips"></div>
+        <div class="wordBox compact">
+          <div class="qNum" id="gNum"></div>
+          <div class="deQ" id="gQ"></div>
+          <div class="pic2" id="gPic"></div>
+        </div>
+        <div class="controls">
+          <button class="btn hear" id="gHear" aria-label="Hear the question again">🔊</button>
+          <button class="btn mic" id="gMic" aria-label="Answer">🎤</button>
+          <button class="btn skip" id="gHint" aria-label="Show a picture hint">💡</button>
+        </div>
+        <div class="scoreBox" id="gScore" hidden><span id="gScoreNum">0</span><small> / 10</small></div>
+        <div class="talk">
+          <div class="owl" aria-hidden="true">🐍</div>
+          <div class="bubble de" id="gBubble" aria-live="polite"></div>
+        </div>
+        <p class="note" id="gNote"></p>
+        <div class="btnRow">
+          <button class="go mini" id="gRetry" hidden>🔁 Nochmal</button>
+          <button class="go mini" id="gNext" hidden>Weiter ➡️</button>
+        </div>
+      </div>
+    </section>
+  </div>
 </main>
 
 <!-- level up -->
@@ -244,11 +351,30 @@
   </div>
 </div>
 
+<!-- lisp game result -->
+<div class="overlay" id="lispDone" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ldTitle">
+    <div class="bigStar" id="ldEmoji">🐍</div>
+    <h2 id="ldTitle">Ergebnis</h2>
+    <p class="scoreBox"><span id="ldTotal">0</span><small> / 50</small></p>
+    <p id="ldList"></p>
+    <p id="ldMsg" style="font-weight:700"></p>
+    <button class="go" id="ldAgain">Nochmal spielen 🔁</button>
+    <div style="margin-top:12px"><button class="small" id="ldTrain">🏋️ Zum Training</button></div>
+  </div>
+</div>
+
 <!-- parent panel -->
 <div class="overlay" id="parentPanel" hidden>
   <div class="sheet parent" role="dialog" aria-modal="true" aria-labelledby="ppTitle">
     <h2 id="ppTitle">Parent settings</h2>
-    <div class="row"><span>Stars collected: <b id="ppStars">0</b></span>
+    <div class="row"><label for="starIn">Stars collected</label>
+      <span style="display:flex;gap:6px;align-items:center">
+        <button class="small" id="starMinus" aria-label="One star less">−</button>
+        <input type="number" id="starIn" min="0" max="9999" inputmode="numeric" style="width:70px;text-align:center">
+        <button class="small" id="starPlus" aria-label="One star more">+</button>
+      </span></div>
+    <div class="row"><span>Start the count from zero</span>
       <button class="small" id="resetStars">Reset stars</button></div>
     <div class="row"><span>Current lesson: <b id="ppLevel">1</b></span>
       <button class="small" id="resetLevel">Back to first lesson</button></div>
@@ -260,8 +386,11 @@
     <div class="row"><label for="soundCb">Sounds</label><input type="checkbox" id="soundCb"></div>
     <div class="row"><label for="strictSel">How closely her reading must match</label>
       <select id="strictSel"><option value="0">Normal</option><option value="1">Flexible</option><option value="2">Very flexible</option></select></div>
+    <div class="row"><label for="triesSel">Tries per question in the Sprechen game</label>
+      <select id="triesSel"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
     <div class="row"><label for="okCb">Always show the “parent ✔” button</label><input type="checkbox" id="okCb"></div>
     <p class="hint">Speech recognition checks that the right word was said, but it can't hear vowel marks (tashkeel) precisely. Listen along and use the ✔ button if you disagree. Works best in Chrome, Edge or Safari, with the microphone allowed.</p>
+    <p class="hint">The Sprechen score (0–10) is only a practice indicator: it is based on how well the phone understands her, and it cannot measure how the “s” or “z” sound is really made. It is not a diagnosis. A speech therapist (Logopäde) can rate her lisp properly.</p>
     <div style="text-align:center"><button class="go" id="ppClose">Done</button></div>
   </div>
 </div>
@@ -298,7 +427,7 @@
 
   /* ---------- saved state ---------- */
   var KEY = 'arabic-reading-stars-v2';
-  var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1 };
+  var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1, doneList: [], lispTries: 2, lisp: { best: 0, rounds: 0 } };
   try {
     var raw = localStorage.getItem(KEY);
     var saved = JSON.parse(raw || '{}');
@@ -310,7 +439,9 @@
   } catch (e) {}
   S.stars = Math.max(0, S.stars | 0);
   S.level = Math.min(LEVELS.length, Math.max(1, S.level | 0));
-  S.done = Math.min(wordsFor(S.level).length - 1, Math.max(0, S.done | 0));
+  if (!Array.isArray(S.doneList)) S.doneList = [];
+  S.doneList = S.doneList.filter(function (w) { return wordsFor(S.level).some(function (pair) { return pair[0] === w; }); });
+  if (S.doneList.length >= wordsFor(S.level).length) S.doneList = [];
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
   /* ---------- helpers ---------- */
@@ -390,6 +521,7 @@
   var micUnavailable = !SR;
 
   var wrapped = false;
+  var view = 'read';
   var REWARDS = ['🌟', '🎉', '🦄', '🐣', '🌈', '🍭', '🎈', '🐬'];
   var PRAISE = ['أَحْسَنْتِ', 'مُمْتَاز', 'رَائِع', 'بَرَافُو', 'مَا شَاءَ اللَّه'];
 
@@ -398,17 +530,20 @@
     b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
   }
   function renderHud() {
-    $('levelBadge').textContent = 'Lesson ' + LESSON_IDS[S.level - 1];
+    $('levelBadge').textContent = view === 'speak' ? 'Sprechen' : 'Lesson ' + LESSON_IDS[S.level - 1];
     $('starCount').textContent = S.stars;
     var p = $('pips'); p.innerHTML = '';
     for (var i = 0; i < wordsFor(S.level).length; i++) {
       var d = document.createElement('div');
-      d.className = 'pip' + (i < S.done ? ' on' : '');
-      d.textContent = i < S.done ? '⭐' : '';
+      d.className = 'pip' + (i < S.doneList.length ? ' on' : '');
+      d.textContent = i < S.doneList.length ? '⭐' : '';
       p.appendChild(d);
     }
   }
-  function buildQueue() { queue = shuffle(wordsFor(S.level).slice()); qi = 0; }
+  function buildQueue() {
+    queue = shuffle(wordsFor(S.level).filter(function (pair) { return S.doneList.indexOf(pair[0]) < 0; }));
+    qi = 0;
+  }
   function showOk() { $('parentOk').hidden = !(S.alwaysOk || micUnavailable); }
 
   function nextWord() {
@@ -456,10 +591,10 @@
     $('note').textContent = '';
     say(PRAISE[Math.floor(Math.random() * PRAISE.length)] + ' يَا ' + S.name + '! 🎉');
     soundGood(); confetti(14);
-    S.done++;
-    if (S.done >= wordsFor(S.level).length) {
+    if (S.doneList.indexOf(cur[0]) < 0) S.doneList.push(cur[0]);
+    if (S.doneList.length >= wordsFor(S.level).length) {
       var finished = S.level;
-      S.stars++; S.done = 0;
+      S.stars++; S.doneList = [];
       wrapped = finished >= LEVELS.length;
       S.level = wrapped ? 1 : finished + 1;
       save();
@@ -565,12 +700,13 @@
     };
   }
   function refreshPanel() {
-    $('ppStars').textContent = S.stars;
+    $('starIn').value = S.stars;
     $('ppLevel').textContent = LESSON_IDS[S.level - 1];
     $('lvlSel').value = String(S.level);
     $('nameIn').value = S.name;
     $('soundCb').checked = !!S.sound;
     $('okCb').checked = !!S.alwaysOk;
+    $('triesSel').value = String(S.lispTries || 2);
     $('strictSel').value = String(S.lenient == null ? 1 : S.lenient);
   }
   for (var l = 1; l <= LEVELS.length; l++) {
@@ -579,13 +715,18 @@
     $('lvlSel').appendChild(o);
   }
   $('parentBtn').onclick = function () { refreshPanel(); $('parentPanel').hidden = false; };
-  $('ppClose').onclick = function () { $('parentPanel').hidden = true; if (!locked) nextWord(); };
+  $('ppClose').onclick = function () { $('parentPanel').hidden = true; };
+  function setStars(n) { S.stars = Math.max(0, Math.min(9999, n | 0)); save(); renderHud(); refreshPanel(); }
+  $('starMinus').onclick = function () { setStars(S.stars - 1); };
+  $('starPlus').onclick = function () { setStars(S.stars + 1); };
+  $('starIn').onchange = function () { setStars(parseInt(this.value, 10) || 0); };
   armed($('resetStars'), 'Reset stars', function () { S.stars = 0; save(); renderHud(); refreshPanel(); });
-  armed($('resetLevel'), 'Back to first lesson', function () { S.level = 1; S.done = 0; save(); buildQueue(); renderHud(); refreshPanel(); });
-  $('lvlSel').onchange = function () { S.level = parseInt(this.value, 10); S.done = 0; save(); buildQueue(); renderHud(); refreshPanel(); };
+  armed($('resetLevel'), 'Back to first lesson', function () { S.level = 1; S.doneList = []; save(); buildQueue(); nextWord(); refreshPanel(); });
+  $('lvlSel').onchange = function () { S.level = parseInt(this.value, 10); S.doneList = []; save(); buildQueue(); nextWord(); refreshPanel(); };
   $('nameIn').oninput = function () { S.name = this.value.trim() || 'تالا'; save(); };
   $('soundCb').onchange = function () { S.sound = this.checked; save(); };
   $('strictSel').onchange = function () { S.lenient = parseInt(this.value, 10); save(); };
+  $('triesSel').onchange = function () { S.lispTries = parseInt(this.value, 10); save(); };
   $('okCb').onchange = function () { S.alwaysOk = this.checked; save(); showOk(); };
 
   /* ---------- wire up ---------- */
@@ -596,6 +737,283 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { $('parentPanel').hidden = true; }
   });
+
+  /* ================= Sprechen: S / Z training + game (German) ================= */
+  var SOUNDS = {
+    s: {
+      tipDe: 'Zähne fast zusammen, Zunge bleibt hinter den Zähnen – wie eine Schlange: ssssss! 🐍',
+      tipEn: 'Teeth almost together, tongue tip stays behind the teeth (not between them). A thin, steady hiss.',
+      words: [['Sonne','☀️'],['Sand','🏖️'],['Suppe','🍲'],['Seife','🧼'],['Sofa','🛋️'],['Salat','🥗'],['Wasser','💧'],['Tasse','☕'],['Haus','🏠'],['Maus','🐭'],['Eis','🍦'],['Bus','🚌']]
+    },
+    z: {
+      tipDe: 'Die Zungenspitze tippt hinter die oberen Zähne, dann zischt es: tssss! 🦓',
+      tipEn: 'Tongue tip taps just behind the upper teeth, then flows into an “s” hiss (t + s). Keep the tongue behind the teeth.',
+      words: [['Zahn','🦷'],['Zebra','🦓'],['Zug','🚂'],['Zitrone','🍋'],['Zelt','⛺'],['Zucker','🍬'],['Katze','🐱'],['Kerze','🕯️'],['Herz','❤️'],['Pilz','🍄'],['Zirkus','🎪'],['Cent','🪙']]
+    }
+  };
+  // one question is picked per level (5 levels per round)
+  var QBANK = [
+    [ {q:'Was strahlt am Himmel und macht warm?', a:['sonne'], p:'☀️'},
+      {q:'Welches Tier hat schwarze und weiße Streifen?', a:['zebra'], p:'🦓'},
+      {q:'Woraus baut man am Strand eine Burg?', a:['sand'], p:'🏖️'} ],
+    [ {q:'Was ist nass und man kann darin schwimmen?', a:['wasser'], p:'💧'},
+      {q:'Welches kleine Tier frisst gern Käse?', a:['maus'], p:'🐭'},
+      {q:'Womit fährt man mit vielen Leuten in die Stadt?', a:['bus'], p:'🚌'} ],
+    [ {q:'Welches Tier sagt miau?', a:['katze','kater'], p:'🐱'},
+      {q:'Was ist gelb und schmeckt sauer?', a:['zitrone'], p:'🍋'},
+      {q:'Was fährt auf Schienen und macht tuut tuut?', a:['zug'], p:'🚂'} ],
+    [ {q:'Was ist weiß und süß und kommt in den Tee?', a:['zucker'], p:'🍬'},
+      {q:'Was streut man auf die Pommes? Es ist weiß und salzig.', a:['salz'], p:'🧂'},
+      {q:'Wo gibt es Clowns und Zauberer?', a:['zirkus','circus'], p:'🎪'} ],
+    [ {q:'Welche Zahl kommt nach sechs?', a:['sieben','7'], p:'7️⃣'},
+      {q:'Welche Zahl kommt nach eins?', a:['zwei','2'], p:'2️⃣'},
+      {q:'Wie viele Finger hast du an beiden Händen zusammen?', a:['zehn','10'], p:'🔟'} ]
+  ];
+
+  function normDe(x) {
+    return String(x).toLowerCase().replace(/ß/g, 'ss').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/[^a-z0-9]/g, '');
+  }
+  function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+
+  // Practice score 0-10: how clearly the phone understood the wanted word
+  function scoreAlts(alts, accepted) {
+    var acc = accepted.map(normDe), best = 0;
+    var heard = alts.length ? alts[0].text : '';
+    alts.forEach(function (a, idx) {
+      var conf = a.conf > 0 ? a.conf : 0.85; // some browsers don't report a confidence
+      var toks = a.text.split(/\s+/).map(normDe).filter(Boolean);
+      var whole = normDe(a.text); if (whole) toks.push(whole);
+      toks.forEach(function (t) {
+        if (acc.indexOf(t) > -1) {
+          best = Math.max(best, idx === 0 ? 7 + 3 * clamp01((conf - 0.5) / 0.4) : 5 + clamp01((conf - 0.5) / 0.4));
+        } else {
+          acc.forEach(function (w) {
+            var lim = w.length <= 4 ? 1 : 2;
+            if (t.length > 1 && Math.abs(t.length - w.length) <= lim && lev(t, w) <= lim) best = Math.max(best, idx === 0 ? 3 : 2);
+          });
+        }
+      });
+    });
+    if (best === 0 && heard.trim()) best = 1;
+    return { score: Math.round(best), heard: heard };
+  }
+  function feedback(n) {
+    if (n >= 9) return 'Super, ganz klar gesprochen! 🌟';
+    if (n >= 7) return 'Sehr gut! 👏';
+    if (n >= 4) return 'Gut! Noch einmal mit der Schlangen-Zunge 🐍';
+    if (n >= 1) return 'Fast! Zähne zusammen, Zunge hinter die Zähne 🐍';
+    return 'Ich habe nichts gehört. Versuch es nochmal 🎤';
+  }
+
+  function speakDe(text, rate) {
+    if (!window.speechSynthesis) return;
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'de-DE'; u.rate = rate || 0.85; u.pitch = 1.1;
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  var deRec = null, deListening = false, deAborted = false;
+  function listenDe(btn, h) {
+    if (!SR) { h.error('unsupported'); return; }
+    if (deListening) { try { deRec.stop(); } catch (e) {} return; }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    deRec = new SR();
+    deRec.lang = 'de-DE'; deRec.interimResults = false; deRec.maxAlternatives = 5; deRec.continuous = false;
+    var got = false, err = false; deAborted = false;
+    deRec.onstart = function () { deListening = true; btn.classList.add('on'); h.start(); };
+    deRec.onresult = function (e) {
+      got = true;
+      var r = e.results[0], alts = [];
+      for (var i = 0; i < r.length; i++) alts.push({ text: r[i].transcript, conf: r[i].confidence });
+      h.result(alts);
+    };
+    deRec.onerror = function (e) { err = true; if (!deAborted) h.error(e.error); };
+    deRec.onend = function () { deListening = false; btn.classList.remove('on'); if (!got && !err && !deAborted) h.none(); };
+    try { deRec.start(); } catch (e) { deListening = false; }
+  }
+  function deErr(code, say, note) {
+    if (code === 'not-allowed' || code === 'service-not-allowed') {
+      say('Das Mikrofon ist aus 🔇');
+      note('The microphone is blocked. Open the game from its own web address, allow the microphone, and on iPhone turn on Settings > General > Keyboard > Enable Dictation.');
+    } else if (code === 'unsupported') {
+      say('Hier geht das Mikrofon nicht 🔇');
+      note('Speech recognition is not available in this browser. Use Chrome, Edge or Safari.');
+    } else if (code === 'no-speech') {
+      say('Ich habe nichts gehört 🎤 Nochmal!');
+    } else if (code === 'network') {
+      say('Nochmal versuchen 🎤'); note('Speech recognition needs an internet connection.');
+    } else if (code !== 'aborted') {
+      say('Nochmal versuchen 🎤');
+    }
+  }
+  function popBubble(el, text) { el.textContent = text; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
+  /* ----- training ----- */
+  var tSound = 's', tIdx = 0, tDone = {};
+  function tWords() { return SOUNDS[tSound].words; }
+  function tSay(t) { popBubble($('tBubble'), t); }
+  function tChips() {
+    var c = $('chips'); c.innerHTML = '';
+    tWords().forEach(function (w, i) {
+      var ok = tDone[tSound + ':' + w[0]];
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip' + (i === tIdx ? ' cur' : '') + (ok ? ' ok' : '');
+      b.textContent = (ok ? '✓ ' : '') + w[0];
+      b.onclick = function () { tIdx = i; tRender(); speakDe(w[0], 0.7); };
+      c.appendChild(b);
+    });
+  }
+  function tRender() {
+    var w = tWords()[tIdx];
+    $('tWord').textContent = w[0];
+    $('tPic').textContent = w[1];
+    $('tTipDe').textContent = SOUNDS[tSound].tipDe;
+    $('tTipEn').textContent = SOUNDS[tSound].tipEn;
+    Array.prototype.forEach.call(document.querySelectorAll('.snd'), function (b) { b.classList.toggle('on', b.getAttribute('data-snd') === tSound); });
+    $('tNote').textContent = '';
+    tSay('Hör zu und sag nach: ' + w[0] + ' 🎤');
+    tChips();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.snd'), function (b) {
+    b.onclick = function () { tSound = b.getAttribute('data-snd'); tIdx = 0; stopAll(); tRender(); };
+  });
+  $('tHear').onclick = function () { speakDe(tWords()[tIdx][0], 0.7); };
+  $('tNext').onclick = function () { stopAll(); tIdx = (tIdx + 1) % tWords().length; tRender(); speakDe(tWords()[tIdx][0], 0.7); };
+  $('tMic').onclick = function () {
+    listenDe($('tMic'), {
+      start: function () { tSay('Ich höre zu... 👂'); $('tNote').textContent = ''; },
+      result: function (alts) {
+        var w = tWords()[tIdx][0], r = scoreAlts(alts, [w]);
+        $('tNote').textContent = 'Gehört: ' + (r.heard || '—');
+        if (r.score >= 7) { tDone[tSound + ':' + w] = true; tSay('Toll gemacht! 🌟'); soundGood(); confetti(8); tChips(); }
+        else { soundTry(); tSay('Fast! Noch einmal: ' + w + ' 🐍'); }
+      },
+      error: function (c) { deErr(c, tSay, function (t) { $('tNote').textContent = t; }); },
+      none: function () { tSay('Ich habe nichts gehört 🎤 Nochmal!'); }
+    });
+  };
+
+  /* ----- game: 5 levels, each rated 0-10, more than 40 of 50 = star ----- */
+  var G = { qs: [], i: 0, q: null, tries: 0, cur: -1, scores: [] };
+  function gSay(t) { popBubble($('gBubble'), t); }
+  function gPips() {
+    var p = $('gPips'); p.innerHTML = '';
+    for (var i = 0; i < 5; i++) {
+      var d = document.createElement('div');
+      d.className = 'pip' + (i < G.scores.length ? ' on' : '');
+      d.textContent = i < G.scores.length ? String(G.scores[i]) : (i === G.i ? '•' : '');
+      p.appendChild(d);
+    }
+  }
+  function gStartScreen() {
+    $('gStart').hidden = false; $('gPlay').hidden = true;
+    var L = S.lisp || { best: 0, rounds: 0 };
+    $('gBest').textContent = L.rounds ? 'Bestes Ergebnis: ' + L.best + ' / 50' : 'Ich stelle dir 5 Fragen. Antworte schön klar!';
+  }
+  function gBegin() {
+    G.qs = QBANK.map(function (lvl) { return lvl[Math.floor(Math.random() * lvl.length)]; });
+    G.i = 0; G.scores = [];
+    $('gStart').hidden = true; $('gPlay').hidden = false;
+    gLoad();
+  }
+  function gLoad() {
+    G.q = G.qs[G.i]; G.tries = 0; G.cur = -1;
+    $('gNum').textContent = 'Frage ' + (G.i + 1) + ' von 5';
+    $('gQ').textContent = G.q.q;
+    $('gPic').textContent = '';
+    $('gScore').hidden = true; $('gRetry').hidden = true; $('gNext').hidden = true;
+    $('gMic').disabled = false; $('gNote').textContent = '';
+    gSay('Hör zu und antworte! 🎤');
+    gPips();
+    speakDe(G.q.q);
+  }
+  function gAnswer(alts) {
+    var r = scoreAlts(alts, G.q.a);
+    G.tries++; G.cur = Math.max(G.cur, r.score);
+    $('gScoreNum').textContent = r.score; $('gScore').hidden = false;
+    $('gNote').textContent = 'Gehört: ' + (r.heard || '—') + (G.tries > 1 ? '  ·  Zählt: ' + G.cur + ' / 10' : '');
+    gSay(feedback(r.score));
+    if (r.score >= 7) soundGood(); else soundTry();
+    if (r.score >= 9) confetti(10);
+    var canRetry = G.tries < (S.lispTries || 2) && r.score < 9;
+    $('gRetry').hidden = !canRetry;
+    $('gMic').disabled = !canRetry;
+    $('gNext').hidden = false;
+    $('gNext').textContent = G.i === 4 ? 'Ergebnis ▶' : 'Weiter ➡️';
+  }
+  function gFinish() {
+    var total = G.scores.reduce(function (a, b) { return a + b; }, 0);
+    var star = total > 40;
+    S.lisp = S.lisp || { best: 0, rounds: 0 };
+    S.lisp.rounds++; S.lisp.best = Math.max(S.lisp.best, total);
+    if (star) S.stars++;
+    save(); renderHud();
+    $('ldTotal').textContent = total;
+    $('ldList').textContent = G.scores.join('  ·  ');
+    $('ldEmoji').textContent = star ? '⭐' : '🐍';
+    $('ldMsg').textContent = star ? 'Du hast einen Stern verdient! ⭐' : 'Fast geschafft! Für einen Stern brauchst du mehr als 40 Punkte. Übe noch ein bisschen 🐍';
+    if (star) {
+      soundStar(); confetti(40);
+      var pill = $('starsPill'); pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
+    }
+    $('lispDone').hidden = false;
+  }
+  $('gGo').onclick = gBegin;
+  $('gHear').onclick = function () { if (G.q) speakDe(G.q.q); };
+  $('gHint').onclick = function () { if (G.q) { $('gPic').textContent = G.q.p; } };
+  $('gRetry').onclick = function () {
+    $('gScore').hidden = true; $('gRetry').hidden = true; $('gNext').hidden = true;
+    $('gMic').disabled = false; $('gNote').textContent = '';
+    gSay('Nochmal! Zunge hinter die Zähne 🐍');
+  };
+  $('gNext').onclick = function () {
+    stopAll();
+    G.scores.push(Math.max(0, G.cur));
+    if (G.i === 4) { gPips(); gFinish(); } else { G.i++; gLoad(); }
+  };
+  $('gMic').onclick = function () {
+    listenDe($('gMic'), {
+      start: function () { gSay('Ich höre zu... 👂'); $('gNote').textContent = ''; },
+      result: gAnswer,
+      error: function (c) { deErr(c, gSay, function (t) { $('gNote').textContent = t; }); },
+      none: function () { gSay('Ich habe nichts gehört 🎤 Nochmal!'); }
+    });
+  };
+  $('ldAgain').onclick = function () { $('lispDone').hidden = true; gStartScreen(); };
+  $('ldTrain').onclick = function () { $('lispDone').hidden = true; setMode('train'); };
+
+  /* ----- page / mode switching ----- */
+  function stopAll() {
+    if (listening) { hadError = true; try { rec.abort(); } catch (e) {} }
+    if (deListening) { deAborted = true; try { deRec.abort(); } catch (e) {} }
+    if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+  }
+  function setMode(m) {
+    stopAll();
+    $('modeTrain').classList.toggle('on', m === 'train');
+    $('modeGame').classList.toggle('on', m === 'game');
+    $('trainCard').hidden = m !== 'train';
+    $('gameCard').hidden = m !== 'game';
+    if (m === 'train') tRender(); else gStartScreen();
+  }
+  function showView(v) {
+    stopAll();
+    view = v;
+    $('viewRead').hidden = v !== 'read';
+    $('viewSpeak').hidden = v !== 'speak';
+    $('tabRead').classList.toggle('on', v === 'read');
+    $('tabSpeak').classList.toggle('on', v === 'speak');
+    renderHud();
+    if (v === 'speak') setMode($('modeGame').classList.contains('on') ? 'game' : 'train');
+  }
+  $('tabRead').onclick = function () { showView('read'); };
+  $('tabSpeak').onclick = function () { showView('speak'); };
+  $('modeTrain').onclick = function () { setMode('train'); };
+  $('modeGame').onclick = function () { setMode('game'); };
 
   buildQueue();
   nextWord();
