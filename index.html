@@ -6,7 +6,7 @@
 <title>Arabic Reading Stars</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Noto+Naskh+Arabic:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Fredoka:wght@500;700&family=Noto+Naskh+Arabic:wght@600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     box-sizing: border-box;
@@ -315,6 +315,9 @@
   .stThink { display: inline-block; animation: think 1s ease-in-out infinite; }
   @keyframes think { 50% { transform: translateY(-4px) rotate(8deg); } }
   #recText { font-size: 18px; min-height: 90px; margin: 8px 0; }
+  .stText.quran { font-family: 'Amiri Quran', 'Amiri', 'Noto Naskh Arabic', serif; font-weight: 400; font-size: 25px; line-height: 2.3;
+    background: #fffdf3; border: 4px double #c9a227; }
+  .stText.quran .ref { display: block; font-family: 'Noto Naskh Arabic', serif; font-weight: 700; font-size: 15px; line-height: 1.6; color: #9a7b12; margin-top: 6px; }
   .recOn { background: var(--coral) !important; color: #fff !important; }
 </style>
 </head>
@@ -2069,6 +2072,7 @@
   var MPIC = ['🍎', '⭐', '🐟', '🌸', '🐤', '🍓', '🎈', '🐞', '🦋', '🍪'];
   var M = { q: null, locked: false, fails: 0, hint: false, timer: 0, started: false };
 
+  function mNumAr(n) { return String(n).replace(/\d/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[d]; }); }
   function mNum(n) { return S.mDigits === 'en' ? String(n) : String(n).replace(/\d/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[d]; }); }
   function mRand(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
   function mEl(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
@@ -2278,7 +2282,32 @@
   var ST_DEFAULT_JUDGE = 'https://tala-judge.onrender.com';
   var ST_SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
   var ST = { s: null, i: 0, playing: false, token: 0, after: 0, player: new Audio(), url: null, clips: {}, qi: 0, tries: 0, got: 0, res: [],
-             rec: null, listening: false, aborted: false, busy: false, utts: [] };
+             rec: null, listening: false, aborted: false, busy: false, utts: [], files: {}, fileVoice: '' };
+  // the Quran verses are recited by Sheikh Mahmoud Khalil Al-Husary (teaching recitation), from the EveryAyah archive
+  var ST_RECITER = 'https://everyayah.com/data/Husary_Muallim_128kbps/';
+  var SURAH = { 11: 'هود', 17: 'الإسراء', 21: 'الأنبياء', 27: 'النمل', 28: 'القصص', 66: 'التحريم', 105: 'الفيل' };
+  // fixed sentences the owl says in the quiz (also made once as audio files)
+  var ST_UI = window.TALA_UI || {};
+  function stIsQuran(part) { return Array.isArray(part[1]); }
+  function stLoadFiles() {
+    if (!window.fetch) return;
+    fetch('audio/manifest.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (m) {
+      if (m && m.files) { ST.files = m.files; ST.fileVoice = m.voice || ''; if (!$('stList').hidden) $('stVoice').textContent = stVoiceText(); }
+    }, function () {});
+  }
+  // play a list of audio addresses one after another
+  function stPlayUrls(urls, tok, done, fail) {
+    var k = 0;
+    (function next() {
+      if (tok !== ST.token) return;
+      if (k >= urls.length) { if (done) done(); return; }
+      ST.player.onended = next;
+      ST.player.onerror = function () { if (tok === ST.token && fail) fail(); };
+      ST.player.src = urls[k++];
+      var pr = ST.player.play();
+      if (pr && pr.catch) pr.catch(function () { if (tok === ST.token && fail) fail(); });
+    })();
+  }
 
   // the phone's voice: an Egyptian Arabic one if the device has it, otherwise any Arabic voice
   function stVoicePick() {
@@ -2292,6 +2321,8 @@
     return egBest || eg || ar;
   }
   function stVoiceText() {
+    var n = Object.keys(ST.files).length;
+    if (n) return 'Story voice: saved Egyptian audio (' + (ST.fileVoice || 'neural voice') + ', ' + n + ' files)';
     var v = stVoicePick();
     if (!v) return 'Story voice: no Arabic voice found on this device';
     return 'Story voice: ' + v.name + (/^ar[-_]eg/i.test(v.lang) ? ' (Egyptian)' : ' (' + v.lang + ', not Egyptian on this device)');
@@ -2334,10 +2365,11 @@
       window.speechSynthesis.speak(u);
     })();
   }
-  // say a part in the parent's recorded voice if there is one, otherwise with the phone's voice
+  // say something: the parent's recording if there is one, else the saved Egyptian audio file, else the phone's voice
   function stSay(key, text, done) {
     stHush();
     var tok = ST.token;
+    if (key && !ST.clips[key] && ST.files[key]) { stPlayUrls([ST.files[key]], tok, done, function () { stTTS(text, tok, done); }); return; }
     if (!key || !ST.clips[key]) { stTTS(text, tok, done); return; }
     recGet(key).then(function (blob) {
       if (tok !== ST.token) return;
@@ -2403,9 +2435,13 @@
     $('stVoice').textContent = stVoiceText();
   }
   function stShow() {
-    var p = ST.s.p[ST.i];
+    var p = ST.s.p[ST.i], box = $('stText');
     $('stScene').textContent = p[0];
-    $('stText').textContent = p[1];
+    box.classList.toggle('quran', stIsQuran(p));
+    if (stIsQuran(p)) {
+      box.textContent = p[1].map(function (a, j) { return a + ' ﴿' + mNumAr(p[2][1] + j) + '﴾'; }).join(' ');
+      box.appendChild(mEl('span', 'ref', 'سورة ' + (SURAH[p[2][0]] || p[2][0]) + (p[1].length > 1 ? '' : '، الآية ' + mNumAr(p[2][1]))));
+    } else box.textContent = p[1];
     $('stFill').style.width = Math.round((ST.i + 1) / ST.s.p.length * 100) + '%';
     $('stPlayBtn').textContent = ST.playing ? '⏸️' : '▶️';
   }
@@ -2419,14 +2455,21 @@
     recKeys().then(function () { if (ST.s === s && ST.playing) stPlayFrom(0); });
   }
   function stPlayFrom(i) {
-    var s = ST.s;
+    var s = ST.s, part = s.p[i];
     ST.i = i; ST.playing = true; stShow();
-    stSay(s.id + ':p' + i, s.p[i][1], function () {
+    function after() {
       if (!ST.playing || ST.s !== s) return;
       var tok = ST.token;
       if (ST.i + 1 < s.p.length) ST.after = setTimeout(function () { if (tok === ST.token && ST.playing) stPlayFrom(ST.i + 1); }, 1100);
       else { ST.playing = false; stShow(); ST.after = setTimeout(function () { if (tok === ST.token) stQuizStart(); }, 900); }
-    });
+    }
+    if (stIsQuran(part)) { // a real reciter; without internet the verse stays on screen for a moment instead
+      stHush();
+      var tok = ST.token, urls = part[1].map(function (a, j) { var n = String(part[2][0]).padStart(3, '0') + String(part[2][1] + j).padStart(3, '0'); return ST_RECITER + n + '.mp3'; });
+      stPlayUrls(urls, tok, after, function () { ST.after = setTimeout(function () { if (tok === ST.token) after(); }, 6000); });
+      return;
+    }
+    stSay(s.id + ':p' + i, part[1], after);
   }
   function stPause() { ST.playing = false; stHush(); if (ST.s) stShow(); }
   $('stPlayBtn').onclick = function () { stUnlock(); if (ST.playing) stPause(); else stPlayFrom(ST.i); };
@@ -2466,7 +2509,7 @@
         if (!SR) { $('stOk').hidden = false; $('stNo').hidden = false; $('stNote').textContent = 'This browser cannot listen: she answers aloud and you tap ✔ or ✘.'; }
       });
     }
-    if (first) stSay(null, 'خلصت الحكاية! يلا نشوف إنتي فاكرة إيه.', ask); else ask();
+    if (first) stSay('ui:start', ST_UI['ui:start'], ask); else ask();
   }
   function stMicStop() {
     if (ST.rec && ST.listening) { ST.aborted = true; try { ST.rec.abort(); } catch (e) {} }
@@ -2548,25 +2591,26 @@
     var pill = $('starsPill'); pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
     soundGood(); confetti(12); stPips();
     $('stOk').hidden = true; $('stNo').hidden = true; $('stMic').disabled = true;
-    var t = fb || 'برافو عليكي يا ' + S.name + '! 🌟';
-    popBubble($('stBubble'), t);
-    stSay(null, t, function () { var tok = ST.token; ST.after = setTimeout(function () { if (tok === ST.token) stNextQ(); }, 700); });
+    var key = 'ui:right' + (1 + Math.floor(Math.random() * 4));
+    popBubble($('stBubble'), (fb || ST_UI[key]) + ' 🌟');
+    // spoken: the saved praise if there is one (natural voice), otherwise Claude's own words
+    stSay(key, ST.files[key] || !fb ? ST_UI[key] : fb, function () { var tok = ST.token; ST.after = setTimeout(function () { if (tok === ST.token) stNextQ(); }, 700); });
   }
   function stWrong(fb) {
     var q = ST.s.q[ST.qi];
     ST.tries++; soundTry();
     $('stOk').hidden = false; $('stNo').hidden = true;
     if (ST.tries < 2) {
-      var t = fb || 'قربتي! فكري تاني وجاوبي 💪';
-      popBubble($('stBubble'), t);
+      var key = 'ui:try' + ST.tries;
+      popBubble($('stBubble'), (fb || ST_UI[key]) + ' 💪');
       $('stMic').disabled = false;
-      stSay(null, t);
+      stSay(key, ST.files[key] || !fb ? ST_UI[key] : fb);
     } else {
       ST.res[ST.qi] = 2; stPips();
       $('stMic').disabled = true;
       var t2 = 'الإجابة: ' + q.a;
       popBubble($('stBubble'), t2 + ' 💡');
-      stSay(null, t2, function () { var tok = ST.token; ST.after = setTimeout(function () { if (tok === ST.token) stNextQ(); }, 1500); });
+      stSay(ST.s.id + ':a' + ST.qi, t2, function () { var tok = ST.token; ST.after = setTimeout(function () { if (tok === ST.token) stNextQ(); }, 1500); });
     }
   }
   function stNextQ() {
@@ -2579,14 +2623,14 @@
     S.stBest = S.stBest || {};
     S.stBest[s.id] = Math.max(S.stBest[s.id] || 0, ST.got);
     save();
-    var msg = ST.got === n ? 'ما شاء الله! جاوبتي كل الأسئلة صح 🎉' : ST.got >= 3 ? 'برافو عليكي! إنتي فاكرة الحكاية كويس 👏' : 'شاطرة! اسمعي الحكاية تاني وهتفتكري أكتر 💪';
+    var endKey = ST.got === n ? 'ui:endAll' : ST.got >= 3 ? 'ui:endGood' : 'ui:endTry', msg = ST_UI[endKey];
     $('sdTitle').textContent = s.e + ' ' + s.t;
     $('sdGot').textContent = ST.got;
     $('sdEmoji').textContent = ST.got === n ? '🏆' : ST.got >= 3 ? '⭐' : '💛';
     $('sdMsg').textContent = msg;
     $('stDone').hidden = false;
     if (ST.got >= 3) { soundStar(); confetti(40); }
-    stSay(null, msg);
+    stSay(endKey, msg);
     $('sdBack').focus();
   }
   $('sdBack').onclick = function () { $('stDone').hidden = true; stList(); };
@@ -2596,6 +2640,7 @@
   $('stNo').onclick = function () { if (!ST.s || ST.busy) return; stWrong(''); };
   function stEnter() {
     if (window.speechSynthesis) window.speechSynthesis.getVoices();
+    stLoadFiles();
     if (!ST.s) stList();
     else if (!$('stPlay').hidden) stShow();
   }
@@ -2606,7 +2651,8 @@
   /* ----- parent: record the stories in their own voice ----- */
   var RC = { s: null, i: 0, mr: null, discard: false };
   function recItems(s) {
-    return s.p.map(function (p, i) { return { key: s.id + ':p' + i, text: p[1], label: 'Part ' + (i + 1) + ' of ' + s.p.length }; })
+    return s.p.map(function (p, i) { return { key: s.id + ':p' + i, text: p[1], label: 'Part ' + (i + 1) + ' of ' + s.p.length, quran: stIsQuran(p) }; })
+      .filter(function (x) { return !x.quran; })
       .concat(s.q.map(function (q, i) { return { key: s.id + ':q' + i, text: q.q, label: 'Question ' + (i + 1) + ' of ' + s.q.length }; }));
   }
   function recShow() {
