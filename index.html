@@ -238,9 +238,39 @@
   .gauge .start { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: .55; }
 
   /* ---------- Schreiben (letter writing) ---------- */
-  .tabs { gap: 8px; flex-wrap: wrap; }
-  .tab { font-size: 17px; padding: 8px 14px; }
-  @media (max-width: 400px) { .tabs { gap: 6px; } .tab { font-size: 14px; padding: 7px 9px; } }
+  .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .tab { font-size: 15px; padding: 6px 4px 7px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.15; min-width: 0; }
+  .tab .ti { font-size: 22px; line-height: 1.1; }
+  @media (max-width: 400px) { .tabs { gap: 6px; } .tab { font-size: 12.5px; } .tab .ti { font-size: 20px; } }
+
+  /* ---------- Rechnen (math, grade 1) ---------- */
+  .mTitle { font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; font-size: 22px; color: var(--grape); direction: rtl; text-align: center; }
+  .mBox { min-height: 190px; gap: 10px; padding: 14px 3px; }
+  .mRow { display: flex; direction: rtl; align-items: flex-start; justify-content: center; gap: 5px; flex-wrap: nowrap; max-width: 100%; }
+  .mTok { font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; font-size: min(54px, 11.5vw); line-height: 1.2; color: var(--card-ink); text-align: center; }
+  .mTok.op { color: var(--grape); }
+  .mTok.q { color: var(--coral); }
+  .mSlot { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+  .mPics { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .mPicRow { display: flex; direction: rtl; gap: 2px; font-size: 26px; line-height: 1.15; }
+  .mPics.mini .mPicRow { font-size: 15px; gap: 1px; }
+  .mPicRow .gone { opacity: .28; position: relative; }
+  .mPicRow .gone::after { content: '✕'; position: absolute; inset: 0; display: grid; place-items: center; color: var(--coral); font-weight: 700; font-size: .9em; }
+  .mSeq { display: flex; direction: rtl; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .mCell { min-width: 58px; height: 64px; border: 3px solid var(--line); border-radius: 16px; background: var(--paper); display: grid; place-items: center;
+    font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; font-size: 34px; color: var(--card-ink); }
+  .mCell.q { background: #ffe1e1; color: var(--coral); }
+  .mStory { font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; font-size: 23px; line-height: 1.75; direction: rtl; text-align: center; color: var(--card-ink); padding: 0 6px; }
+  .mChoices { display: flex; direction: rtl; gap: 12px; justify-content: center; flex-wrap: wrap; width: 100%; }
+  .mChoice { min-width: 84px; min-height: 84px; padding: 6px 12px; border: 3px solid var(--line); border-radius: 24px; background: var(--sun); color: var(--line);
+    box-shadow: 0 6px 0 var(--line); cursor: pointer; font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; font-size: 44px; line-height: 1.1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .mChoice:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 1px 0 var(--line); }
+  .mChoice.ok { background: var(--mint); }
+  .mChoice.no { background: #ffc9c9; opacity: .6; animation: shake .4s; }
+  .mChoice:disabled { cursor: default; }
+  .mChoice .mPics .mPicRow { font-size: 15px; }
+  @keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
   .wHead { display: flex; align-items: center; justify-content: center; gap: 16px; min-height: 80px; width: 100%; }
   .wModel { font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; font-size: 52px; line-height: 1; min-width: 80px; height: 80px;
     display: grid; place-items: center; background: var(--paper); border: 3px solid var(--line); border-radius: 20px; padding: 0 8px; color: var(--card-ink); }
@@ -295,9 +325,10 @@
   </header>
 
   <nav class="tabs" id="tabs">
-    <button class="tab on" id="tabRead">📖 Lesen</button>
-    <button class="tab" id="tabWrite">✍️ Schreiben</button>
-    <button class="tab" id="tabSpeak">🐍 Sprechen</button>
+    <button class="tab on" id="tabRead"><span class="ti">📖</span>Lesen</button>
+    <button class="tab" id="tabWrite"><span class="ti">✍️</span>Schreiben</button>
+    <button class="tab" id="tabMath"><span class="ti">🔢</span>Rechnen</button>
+    <button class="tab" id="tabSpeak"><span class="ti">🐍</span>Sprechen</button>
   </nav>
 
   <div class="view" id="viewRead">
@@ -356,10 +387,27 @@
     </section>
   </div>
 
+  <div class="view" id="viewMath" hidden>
+    <div class="pips" id="mPips" aria-label="Progress in this math level"></div>
+    <section class="card" id="mCard">
+      <div class="mTitle" id="mTitle" lang="ar" dir="rtl"></div>
+      <div class="wordBox mBox" id="mBox" lang="ar" dir="rtl"></div>
+      <div class="mChoices" id="mChoices" lang="ar"></div>
+      <div class="controls">
+        <button class="btn hear" id="mHear" aria-label="Hear the question">🔊</button>
+        <button class="btn skip" id="mHint" aria-label="Show a picture hint" style="background:#fff3b8">💡</button>
+        <button class="btn skip" id="mSkip" aria-label="Skip this question">⏭️</button>
+      </div>
+      <div class="talk">
+        <div class="owl" aria-hidden="true">🦉</div>
+        <div class="bubble" id="mBubble" aria-live="polite"></div>
+      </div>
+    </section>
+  </div>
+
   <div class="view" id="viewSpeak" hidden>
     <div class="modes">
       <button class="mode on" id="modeTrain">🏋️ Training</button>
-      <button class="mode" id="modeHiss">🐍 Zisch-Test</button>
       <button class="mode" id="modeGame">🎮 Spiel</button>
     </div>
 
@@ -383,28 +431,6 @@
       <p class="note" id="tNote"></p>
       <div class="rate" id="tRate" hidden><div class="rateTxt">Eltern: Wie klang der S-/Z-Laut? Taste kurz gedrückt halten</div><div class="rateBtns"></div></div>
       <div class="pips" id="tPips"></div>
-    </section>
-
-    <!-- Zisch-Test (sound meter) -->
-    <section class="card" id="hissCard" hidden>
-      <div class="tip">
-        <div class="tipDe">Zisch wie eine Schlange: ssssss 🐍<br>Der Schlangen-Zeiger soll ganz nach rechts!</div>
-        <div class="tipEn">The phone measures how high and bright the hiss is. A clear “s” is bright; a lisp sounds duller. Quiet room, phone about a hand’s width from the mouth, slightly to the side. Experimental – see the settings hint.</div>
-      </div>
-      <div class="gauge" aria-hidden="true"><span class="start">🔈</span><span class="marker" id="hMarker">🐍</span><span class="goal">🏆</span></div>
-      <div class="scoreBox" id="hScore" hidden><span id="hScoreNum">0</span><small> / 10</small></div>
-      <div class="controls"><button class="btn mic" id="hMic" aria-label="Start the hiss test">🎤</button></div>
-      <div class="talk">
-        <div class="owl" aria-hidden="true">🐍</div>
-        <div class="bubble de" id="hBubble" aria-live="polite"></div>
-      </div>
-      <p class="note" id="hNote"></p>
-      <p class="note" id="hRef"></p>
-      <div class="btnRow">
-        <button class="small" id="hCalGood">👨‍👩‍👧 Referenz: richtiges S</button>
-        <button class="small" id="hCalPoor">Referenz: ihr S (Lispeln)</button>
-        <button class="small" id="hCalReset">Zurücksetzen</button>
-      </div>
     </section>
 
     <!-- game -->
@@ -507,9 +533,15 @@
       </select></div>
     <div class="row"><label for="wStrictSel">How neat her writing must be</label>
       <select id="wStrictSel"><option value="0">Normal</option><option value="1">Flexible</option><option value="2">Very flexible</option></select></div>
+    <hr class="divider">
+    <div class="row"><label for="mLvlSel">Rechnen: math level</label>
+      <select id="mLvlSel" dir="auto"></select></div>
+    <div class="row"><label for="mDigitSel">Numbers shown as</label>
+      <select id="mDigitSel"><option value="ar">١ ٢ ٣ (Arabic)</option><option value="en">1 2 3</option></select></div>
+    <p class="hint">Rechnen follows the first school year: counting to 10, the missing number, bigger or smaller, adding to 5 and 10, taking away within 10, counting and numbers to 20, adding and taking away to 20, and short picture stories. Ten right answers finish a level and earn a star. The owl reads every question aloud; after a wrong answer she gets pictures to count.</p>
     <p class="hint">Schreiben: the check runs on this device. It lines up her strokes with the printed letter, then checks that every part of the letter is there, that the dots are complete and in the right place (a dash or a “^” for two or three dots is fine), and that there are no extra lines. If her letter looks more like another letter, the owl says which one. It does not check stroke order or direction. If you think she wrote it correctly, use the ✔ button after two tries.</p>
     <p class="hint">Speech recognition checks that the right word was said, but it can't hear vowel marks (tashkeel) precisely. Listen along and use the ✔ button if you disagree. Works best in Chrome, Edge or Safari, with the microphone allowed.</p>
-    <p class="hint">Sprechen: the phone records her word and measures the S / Z hiss itself: how high, how sharp and how strong it is compared with her vowels. A clear S is a loud, sharp, high hiss; with the tongue between the teeth it becomes weak and flat, and a “slushy” S (air escaping at the sides) sounds lower. Every time you rate with 😀 or 😕, the phone keeps that sound as an example of her good or her lisped S and gets better at telling them apart on this phone. You rate first without seeing the phone's guess; afterwards it shows “📱 Handy: x / 10” so you can see whether it agrees with you. Once it agrees most of the time, you can switch to “Phone”. Use a quiet room and hold the phone about a hand's width from her mouth. The Zisch-Test measures the hiss directly from the microphone; it is experimental and works best after calibrating it once (buttons on that page). None of this is a diagnosis – a speech therapist (Logopäde) can rate her lisp properly.</p>
+    <p class="hint">Sprechen: the phone records her word and measures the S / Z hiss itself: how high, how sharp and how strong it is compared with her vowels. A clear S is a loud, sharp, high hiss; with the tongue between the teeth it becomes weak and flat, and a “slushy” S (air escaping at the sides) sounds lower. Every time you rate with 😀 or 😕, the phone keeps that sound as an example of her good or her lisped S and gets better at telling them apart on this phone. You rate first without seeing the phone's guess; afterwards it shows “📱 Handy: x / 10” so you can see whether it agrees with you. Once it agrees most of the time, you can switch to “Phone”. Use a quiet room and hold the phone about a hand's width from her mouth. None of this is a diagnosis – a speech therapist (Logopäde) can rate her lisp properly.</p>
     <div style="text-align:center"><button class="go" id="ppClose">Done</button></div>
   </div>
 </div>
@@ -546,7 +578,7 @@
 
   /* ---------- saved state ---------- */
   var KEY = 'arabic-reading-stars-v2';
-  var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1, doneList: [], lispTries: 2, lisp: { best: 0, rounds: 0 }, rateMode: 'parent', hissGood: 0, hissPoor: 0, hissBest: 0, wLevel: 1, wDone: [], wHelp: 'auto', wLenient: 1, sEx: [], sHist: [] };
+  var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1, doneList: [], lispTries: 2, lisp: { best: 0, rounds: 0 }, rateMode: 'parent', wLevel: 1, wDone: [], wHelp: 'auto', wLenient: 1, sEx: [], sHist: [], mLevel: 1, mDone: 0, mDigits: 'ar' };
   try {
     var raw = localStorage.getItem(KEY);
     var saved = JSON.parse(raw || '{}');
@@ -645,7 +677,7 @@
     b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
   }
   function renderHud() {
-    $('levelBadge').textContent = view === 'speak' ? 'Sprechen' : view === 'write' ? 'Schreiben ' + S.wLevel : 'Lesson ' + LESSON_IDS[S.level - 1];
+    $('levelBadge').textContent = view === 'speak' ? 'Sprechen' : view === 'write' ? 'Schreiben ' + S.wLevel : view === 'math' ? 'Rechnen ' + S.mLevel :'Lesson ' + LESSON_IDS[S.level - 1];
     $('starCount').textContent = S.stars;
     var p = $('pips'); p.innerHTML = '';
     for (var i = 0; i < wordsFor(S.level).length; i++) {
@@ -804,7 +836,7 @@
   }
   $('luGo').onclick = function () {
     $('levelUp').hidden = true;
-    if (luMode === 'write') { wBuild(); wNext(); } else { buildQueue(); nextWord(); }
+    if (luMode === 'write') { wBuild(); wNext(); } else if (luMode === 'math') { mNext(); } else { buildQueue(); nextWord(); }
   };
 
   /* ---------- parent panel ---------- */
@@ -831,6 +863,9 @@
     $('sDetInfo').textContent = sStatus();
     $('strictSel').value = String(S.lenient == null ? 1 : S.lenient);
     $('wLvlSel').value = String(S.wLevel);
+    mRefreshLevelNames();
+    $('mLvlSel').value = String(S.mLevel);
+    $('mDigitSel').value = S.mDigits === 'en' ? 'en' : 'ar';
     $('wHelpSel').value = S.wHelp || 'auto';
     $('wStrictSel').value = String(S.wLenient == null ? 1 : S.wLenient);
   }
@@ -1311,129 +1346,6 @@
   }
   makeRate($('tRate'), tRated);
   makeRate($('gRate'), function (v) { sLearn(G.last, v); gScoreDone(v, true); });
-
-  /* ----- Zisch-Test: measures the hiss from the microphone (experimental) ----- */
-  var H = { phase: 'idle', mode: 'test', ctx: null, stream: null, an: null, buf: null, raf: 0, t0: 0, last: 0, nfSum: 0, nfN: 0, nf: 1e-11, cents: [], hissTime: 0, sm: 0 };
-  function hRef() {
-    var good = S.hissGood > 0 ? S.hissGood : 6500;
-    var poor = S.hissPoor > 0 ? S.hissPoor : good * 0.62;
-    if (poor > good - 400) poor = good - 400;
-    return { good: good, poor: poor };
-  }
-  function hPos(c) { var r = hRef(); return clamp01((c - r.poor) / (r.good - r.poor)); }
-  function hSay(t) { popBubble($('hBubble'), t); }
-  function hMarker(pos) { $('hMarker').style.left = (6 + pos * 88) + '%'; }
-  function hStop() {
-    if (H.raf) cancelAnimationFrame(H.raf);
-    H.raf = 0;
-    try { if (H.stream) H.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
-    try { if (H.ctx && H.ctx.close) H.ctx.close(); } catch (e) {}
-    H.stream = null; H.ctx = null; H.an = null; H.phase = 'idle';
-    $('hMic').classList.remove('on');
-  }
-  function hRefresh() {
-    var r = hRef(), t = [];
-    t.push(S.hissGood > 0 ? 'Referenz „richtiges S“ ≈ ' + (S.hissGood / 1000).toFixed(1) + ' kHz' : 'Standardwerte (noch nicht kalibriert)');
-    if (S.hissPoor > 0) t.push('ihr S ≈ ' + (S.hissPoor / 1000).toFixed(1) + ' kHz');
-    if (S.hissBest > 0) t.push('Beste Punktzahl: ' + S.hissBest + ' / 10');
-    $('hRef').textContent = t.join('  ·  ');
-    $('hCalReset').hidden = !(S.hissGood > 0 || S.hissPoor > 0);
-  }
-  function hIdle() {
-    hStop(); hMarker(0);
-    $('hScore').hidden = true; $('hNote').textContent = '';
-    hSay('Tippe auf 🎤 und zisch wie eine Schlange: ssssss 🐍');
-    hRefresh();
-  }
-  function hStart(mode) {
-    if (H.phase !== 'idle') { hStop(); hSay('Abgebrochen. Nochmal? 🐍'); return; }
-    stopAll();
-    var AC = window.AudioContext || window.webkitAudioContext;
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !AC) {
-      hSay('Hier geht das nicht 🔇'); $('hNote').textContent = 'This browser cannot analyse the microphone. Use Chrome, Edge or Safari.'; return;
-    }
-    H.mode = mode; H.phase = 'starting';
-    $('hScore').hidden = true; $('hNote').textContent = ''; hMarker(0);
-    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } }).then(function (stream) {
-      if (H.phase !== 'starting') { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
-      H.stream = stream; H.ctx = new AC();
-      var go = function () {
-        if (H.phase !== 'starting') return;
-        H.an = H.ctx.createAnalyser(); H.an.fftSize = 2048; H.an.smoothingTimeConstant = 0.3;
-        H.buf = new Float32Array(H.an.frequencyBinCount);
-        H.ctx.createMediaStreamSource(stream).connect(H.an);
-        H.nfSum = 0; H.nfN = 0; H.cents = []; H.hissTime = 0; H.sm = 0;
-        H.t0 = H.last = performance.now(); H.phase = 'quiet';
-        $('hMic').classList.add('on');
-        hSay('Sei kurz ganz leise... 🤫');
-        if (H.ctx.sampleRate < 22000) $('hNote').textContent = 'Low audio quality on this microphone (' + Math.round(H.ctx.sampleRate) + ' Hz): the result will be less reliable.';
-        H.raf = requestAnimationFrame(hFrame);
-      };
-      if (H.ctx.state === 'suspended' && H.ctx.resume) H.ctx.resume().then(go, go); else go();
-    }, function () {
-      H.phase = 'idle';
-      hSay('Das Mikrofon ist aus 🔇');
-      $('hNote').textContent = 'The microphone is blocked. Open the game from its own web address and allow the microphone.';
-    });
-  }
-  function hFrame() {
-    if (H.phase !== 'quiet' && H.phase !== 'hiss') return;
-    var now = performance.now(), dt = now - H.last; H.last = now;
-    H.an.getFloatFrequencyData(H.buf);
-    var sr = H.ctx.sampleRate, n = H.buf.length, bw = sr / (n * 2), nyq = sr / 2 * 0.94;
-    var eL = 0, eM = 0, eH = 0, cn = 0, cd = 0;
-    for (var i = 1; i < n; i++) {
-      var f = i * bw; if (f > nyq) break;
-      var db = H.buf[i], pw = isFinite(db) ? Math.pow(10, db / 10) : 0;
-      if (f >= 100 && f < 1000) eL += pw; else if (f >= 1500 && f < 4000) eM += pw; else if (f >= 4000 && f <= 14000) eH += pw;
-      if (f >= 2000 && f <= 14000) { cn += f * pw; cd += pw; }
-    }
-    var cent = cd > 0 ? cn / cd : 0, el = (now - H.t0) / 1000;
-    if (H.phase === 'quiet') {
-      H.nfSum += eH; H.nfN++;
-      if (el >= 0.7) { H.nf = Math.max(H.nfSum / Math.max(1, H.nfN), 1e-11); H.phase = 'hiss'; H.t0 = now; hSay('Zisch jetzt! sssssss 🐍'); }
-    } else {
-      var tot = eL + eM + eH;
-      if (eH > H.nf * 10 && tot > 0 && eH / tot >= 0.5) {
-        H.cents.push(cent); H.hissTime += dt / 1000;
-        H.sm = H.sm ? H.sm * 0.8 + cent * 0.2 : cent;
-        hMarker(hPos(H.sm));
-      }
-      $('hNote').textContent = 'Noch ' + Math.max(0, Math.ceil(3.5 - el)) + ' s';
-      if (el >= 3.5) { hFinish(); return; }
-    }
-    H.raf = requestAnimationFrame(hFrame);
-  }
-  function hFinish() {
-    var cents = H.cents.slice().sort(function (a, b) { return a - b; }), ht = H.hissTime, mode = H.mode;
-    hStop();
-    if (ht < 0.5 || cents.length < 10) {
-      hSay('Ich habe kein Zischen gehört. Näher ans Handy und länger zischen! 🐍');
-      $('hNote').textContent = 'No hiss detected (about half a second of steady “ssss” is needed). Quiet room, phone a hand’s width from the mouth, slightly to the side.';
-      return;
-    }
-    var med = cents[Math.floor(cents.length / 2)], kHz = (med / 1000).toFixed(1);
-    if (mode === 'calGood') {
-      S.hissGood = Math.round(med * 0.95); save();
-      hSay('Referenz „richtiges S“ gespeichert ✅'); $('hNote').textContent = 'Saved: hiss height ≈ ' + kHz + ' kHz.';
-    } else if (mode === 'calPoor') {
-      S.hissPoor = Math.round(med * 1.03); save();
-      hSay('Referenz „ihr S“ gespeichert ✅'); $('hNote').textContent = 'Saved: her usual hiss ≈ ' + kHz + ' kHz.';
-    } else {
-      var sc = Math.round(10 * hPos(med)), r = hRef();
-      S.hissBest = Math.max(S.hissBest || 0, sc); save();
-      $('hScoreNum').textContent = sc; $('hScore').hidden = false;
-      hMarker(hPos(med));
-      hSay(sc >= 9 ? 'Super! Ein klares, helles S 🌟' : sc >= 6 ? 'Gut! Fast ganz oben 🐍' : sc >= 3 ? 'Noch etwas heller: Zähne zusammen, Zunge hinter die Zähne 🐍' : 'Zunge zurück hinter die Zähne und ganz dünn zischen 🐍');
-      if (sc >= 9) { soundStar(); confetti(20); } else if (sc >= 6) soundGood(); else soundTry();
-      $('hNote').textContent = 'Hiss height ≈ ' + kHz + ' kHz  ·  hiss detected ' + ht.toFixed(1) + ' s  ·  full score from ≈ ' + (r.good / 1000).toFixed(1) + ' kHz';
-    }
-    hRefresh();
-  }
-  $('hMic').onclick = function () { hStart('test'); };
-  $('hCalGood').onclick = function () { hStart('calGood'); };
-  $('hCalPoor').onclick = function () { hStart('calPoor'); };
-  $('hCalReset').onclick = function () { S.hissGood = 0; S.hissPoor = 0; save(); hRefresh(); hSay('Standardwerte sind wieder aktiv'); };
 
   /* ================= Schreiben: letter writing, checked on the device ================= */
   // letters grouped by shape family; each letter is written twice per level (trace, then alone)
@@ -2028,12 +1940,235 @@
   $('wHelpSel').onchange = function () { S.wHelp = this.value; save(); if (W.started && !W.locked) { W.mode = wModeFor(W.item); W.qi--; wNext(); } };
   $('wStrictSel').onchange = function () { S.wLenient = parseInt(this.value, 10); save(); };
 
+  /* ================= Rechnen: math for the first school year, in Arabic ================= */
+  var MQ = 10; // correct answers needed per level
+  var MLEVELS = [
+    { k: 'count', max: 10, t: function () { return 'العَدُّ حَتَّى ' + mNum(10); } },
+    { k: 'seq', max: 10, t: function () { return 'مَا العَدَدُ النَّاقِصُ؟'; } },
+    { k: 'cmp', max: 10, t: function () { return 'أَكْبَرُ أَمْ أَصْغَرُ؟'; } },
+    { k: 'add', max: 5, pics: 'always', t: function () { return 'الجَمْعُ حَتَّى ' + mNum(5); } },
+    { k: 'add', max: 10, pics: 'hint', t: function () { return 'الجَمْعُ حَتَّى ' + mNum(10); } },
+    { k: 'sub', max: 10, pics: 'hint', t: function () { return 'الطَّرْحُ حَتَّى ' + mNum(10); } },
+    { k: 'count', min: 11, max: 20, t: function () { return 'العَدُّ حَتَّى ' + mNum(20); } },
+    { k: 'seq', min: 8, max: 20, t: function () { return 'الأَعْدَادُ حَتَّى ' + mNum(20); } },
+    { k: 'add', max: 20, pics: 'hint', t: function () { return 'الجَمْعُ حَتَّى ' + mNum(20); } },
+    { k: 'sub', max: 20, pics: 'hint', t: function () { return 'الطَّرْحُ حَتَّى ' + mNum(20); } },
+    { k: 'story', max: 10, pics: 'hint', t: function () { return 'مَسَائِلُ مُصَوَّرَةٌ'; } }
+  ];
+  var NUMW = ['صِفْر', 'وَاحِد', 'اِثْنَان', 'ثَلَاثَة', 'أَرْبَعَة', 'خَمْسَة', 'سِتَّة', 'سَبْعَة', 'ثَمَانِيَة', 'تِسْعَة', 'عَشَرَة',
+    'أَحَدَ عَشَرَ', 'اِثْنَا عَشَرَ', 'ثَلَاثَةَ عَشَرَ', 'أَرْبَعَةَ عَشَرَ', 'خَمْسَةَ عَشَرَ', 'سِتَّةَ عَشَرَ', 'سَبْعَةَ عَشَرَ', 'ثَمَانِيَةَ عَشَرَ', 'تِسْعَةَ عَشَرَ', 'عِشْرُون'];
+  var MPIC = ['🍎', '⭐', '🐟', '🌸', '🐤', '🍓', '🎈', '🐞', '🦋', '🍪'];
+  var M = { q: null, locked: false, fails: 0, hint: false, timer: 0, started: false };
+
+  function mNum(n) { return S.mDigits === 'en' ? String(n) : String(n).replace(/\d/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[d]; }); }
+  function mRand(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+  function mEl(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function mSay(t) { popBubble($('mBubble'), t); }
+  function mLevel() { return MLEVELS[S.mLevel - 1]; }
+  // pictures in rows of 5 (up to 10) or 10 (above 10) so she can see fives and tens; the last `gone` are crossed out (taken away)
+  function mPics(n, emo, gone, small, per) {
+    var wrap = mEl('div', 'mPics' + (small ? ' mini' : '')), row = null;
+    per = per || (n > 10 ? 10 : 5);
+    for (var i = 0; i < n; i++) {
+      if (i % per === 0) { row = mEl('div', 'mPicRow'); wrap.appendChild(row); }
+      row.appendChild(mEl('span', i >= n - (gone || 0) ? 'gone' : '', emo));
+    }
+    return wrap;
+  }
+  function mNear(ans, lo, hi) {
+    var c = [ans], d = shuffle([-1, 1, -2, 2, 3, -3]);
+    for (var i = 0; i < d.length && c.length < 3; i++) { var v = ans + d[i]; if (v >= lo && v <= hi && c.indexOf(v) < 0) c.push(v); }
+    return shuffle(c);
+  }
+
+  function mMake(L) {
+    var q = { k: L.k, emo: MPIC[mRand(0, MPIC.length - 1)], max: L.max, pics: L.pics }, a, b, i;
+    if (L.k === 'count') {
+      q.ans = mRand(L.min || 1, L.max);
+      q.bubble = 'كَمْ عَدَدُهَا؟ 🤔'; q.say = 'كَمْ عَدَدُهَا؟'; q.hintSay = 'عُدِّي بِإِصْبَعِكِ 👆';
+    } else if (L.k === 'seq') {
+      var st = mRand(L.min || 0, L.max - 4);
+      q.miss = mRand(0, 4); q.seq = []; for (i = 0; i < 5; i++) q.seq.push(st + i);
+      q.ans = st + q.miss;
+      q.bubble = 'مَا العَدَدُ النَّاقِصُ؟ 🤔';
+      q.say = q.seq.map(function (v, j) { return j === q.miss ? 'كَمْ؟' : NUMW[v]; }).join('، ');
+      q.hintSay = 'عُدِّي بِالتَّرْتِيبِ 👆';
+    } else if (L.k === 'cmp') {
+      a = mRand(1, L.max); do { b = mRand(1, L.max); } while (b === a);
+      var big = Math.random() < 0.5;
+      q.opts = [a, b]; q.ans = big ? Math.max(a, b) : Math.min(a, b);
+      q.bubble = big ? 'أَيُّهُمَا أَكْبَرُ؟ 🐘' : 'أَيُّهُمَا أَصْغَرُ؟ 🐭';
+      q.say = (big ? 'أَيُّهُمَا أَكْبَرُ؟ ' : 'أَيُّهُمَا أَصْغَرُ؟ ') + NUMW[a] + ' أَمْ ' + NUMW[b] + '؟';
+      q.hintSay = 'قَارِنِي الصُّوَرَ 👀';
+    } else if (L.k === 'add') {
+      var sum = mRand(L.max > 10 ? 11 : 2, L.max);
+      b = L.max > 10 ? mRand(2, Math.min(9, sum - 1)) : mRand(1, sum - 1); a = sum - b;
+      q.toks = [{ n: a, p: [a, 0] }, { op: '+' }, { n: b, p: [b, 0] }, { op: '=' }, { q: 1 }];
+      q.ans = sum; q.bubble = 'اِحْسُبِي 🤔'; q.say = NUMW[a] + ' زَائِد ' + NUMW[b] + '، يُسَاوِي كَمْ؟';
+    } else if (L.k === 'sub') {
+      a = mRand(L.max > 10 ? 11 : 2, L.max); b = mRand(1, L.max > 10 ? Math.min(9, a) : a);
+      q.toks = [{ n: a, p: [a, b] }, { op: '−' }, { n: b }, { op: '=' }, { q: 1 }];
+      q.ans = a - b; q.bubble = 'اِحْسُبِي 🤔'; q.say = NUMW[a] + ' نَاقِص ' + NUMW[b] + '، يُسَاوِي كَمْ؟';
+    } else { // picture stories
+      var t = mRand(0, 3), add = t % 2 === 0, food = t < 2, name = S.name || 'تالا';
+      q.emo = food ? ['🍎', '🍓', '🍬', '🍪', '🍌'][mRand(0, 4)] : ['🐦', '🐤', '🦋', '🐞'][mRand(0, 3)];
+      if (add) { a = mRand(1, 8); b = mRand(1, 10 - a); q.ans = a + b; q.sp = [[a, 0], [b, 0]]; }
+      else { a = mRand(3, 10); b = mRand(1, a - 1); q.ans = a - b; q.sp = [[a, b]]; }
+      var A = mNum(a), B = mNum(b), E = q.emo;
+      if (t === 0) { q.story = 'مَعَ ' + name + ' ' + A + ' ' + E + '، وَأَعْطَتْهَا مَامَا ' + B + ' ' + E + '. كَمْ ' + E + ' مَعَهَا الآنَ؟';
+                     q.say = 'مَعَ ' + name + ' ' + NUMW[a] + '، وَأَعْطَتْهَا مَامَا ' + NUMW[b] + '. كَمْ مَعَهَا الآنَ؟'; }
+      if (t === 1) { q.story = 'مَعَ ' + name + ' ' + A + ' ' + E + '، أَكَلَتْ ' + B + '. كَمْ ' + E + ' بَقِيَ مَعَهَا؟';
+                     q.say = 'مَعَ ' + name + ' ' + NUMW[a] + '، أَكَلَتْ ' + NUMW[b] + '. كَمْ بَقِيَ مَعَهَا؟'; }
+      if (t === 2) { q.story = 'عَلَى الشَّجَرَةِ ' + A + ' ' + E + '، وَجَاءَ ' + B + ' ' + E + '. كَمْ ' + E + ' عَلَى الشَّجَرَةِ الآنَ؟';
+                     q.say = 'عَلَى الشَّجَرَةِ ' + NUMW[a] + '، وَجَاءَ ' + NUMW[b] + '. كَمْ عَلَى الشَّجَرَةِ الآنَ؟'; }
+      if (t === 3) { q.story = 'عَلَى الشَّجَرَةِ ' + A + ' ' + E + '، طَارَ مِنْهَا ' + B + '. كَمْ ' + E + ' بَقِيَ؟';
+                     q.say = 'عَلَى الشَّجَرَةِ ' + NUMW[a] + '، طَارَ مِنْهَا ' + NUMW[b] + '. كَمْ بَقِيَ؟'; }
+      q.bubble = 'اِسْتَمِعِي وَاحْسُبِي 🤔';
+    }
+    q.hasPics = !!(q.toks || q.sp) && L.pics !== 'always';
+    return q;
+  }
+
+  function mDraw() {
+    var q = M.q, box = $('mBox'), pics = q.pics === 'always' || M.hint;
+    box.innerHTML = '';
+    if (q.k === 'count') box.appendChild(mPics(q.ans, q.emo, 0, q.ans > 10));
+    else if (q.k === 'seq') {
+      var s = mEl('div', 'mSeq');
+      q.seq.forEach(function (v, j) { s.appendChild(mEl('div', 'mCell' + (j === q.miss ? ' q' : ''), j === q.miss ? '؟' : mNum(v))); });
+      box.appendChild(s);
+    } else if (q.k === 'cmp') {
+      box.appendChild(mEl('div', 'mStory', q.bubble.replace(/ \S+$/, '')));
+      box.appendChild(mEl('div', 'bigEmoji', '⚖️'));
+    } else if (q.toks) {
+      var row = mEl('div', 'mRow');
+      q.toks.forEach(function (t) {
+        var slot = mEl('div', 'mSlot');
+        slot.appendChild(mEl('div', 'mTok' + (t.op ? ' op' : '') + (t.q ? ' q' : ''), t.op || (t.q ? '؟' : mNum(t.n))));
+        if (pics && t.p) slot.appendChild(mPics(t.p[0], q.emo, t.p[1], q.max > 5, 5));
+        row.appendChild(slot);
+      });
+      box.appendChild(row);
+    } else {
+      box.appendChild(mEl('div', 'mStory', q.story));
+      if (pics) {
+        var pr = mEl('div', 'mRow');
+        q.sp.forEach(function (p, j) { if (j) pr.appendChild(mEl('div', 'mTok op', '+')); pr.appendChild(mPics(p[0], q.emo, p[1], true, 5)); });
+        box.appendChild(pr);
+      }
+    }
+  }
+  function mChoices() {
+    var q = M.q, wrap = $('mChoices');
+    wrap.innerHTML = '';
+    (q.opts || mNear(q.ans, 0, Math.max(10, q.max))).forEach(function (v) {
+      var b = mEl('button', 'mChoice'); b.type = 'button';
+      b.appendChild(mEl('span', '', mNum(v)));
+      if (q.k === 'cmp') b.appendChild(mPics(v, q.emo, 0, true));
+      b.onclick = function () { mPick(v, b); };
+      wrap.appendChild(b);
+    });
+  }
+  function mPips() {
+    var p = $('mPips'); p.innerHTML = '';
+    for (var i = 0; i < MQ; i++) {
+      var d = mEl('div', 'pip' + (i < S.mDone ? ' on' : ''), i < S.mDone ? '⭐' : '');
+      p.appendChild(d);
+    }
+  }
+  function mSpeak() {
+    if (!window.speechSynthesis || !M.q) return;
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(M.q.say);
+      u.lang = 'ar-SA'; u.rate = 0.75;
+      window.speechSynthesis.speak(u);
+      $('mHear').classList.remove('callout');
+    } catch (e) {}
+  }
+  function mNext() {
+    clearTimeout(M.timer);
+    M.q = mMake(mLevel()); M.locked = false; M.fails = 0; M.hint = false;
+    $('mCard').className = 'card';
+    $('mTitle').textContent = mLevel().t();
+    $('mHint').hidden = false;
+    $('mHear').classList.remove('callout');
+    mDraw(); mChoices(); mPips(); renderHud();
+    mSay(M.q.bubble);
+    mSpeak();
+  }
+  function mPick(v, btn) {
+    if (M.locked) return;
+    if (v === M.q.ans) { btn.classList.add('ok'); mSuccess(); return; }
+    btn.classList.add('no'); btn.disabled = true;
+    M.fails++; soundTry();
+    if (M.fails >= 1 && M.q.hasPics && !M.hint) { M.hint = true; mDraw(); mSay('عُدِّي الصُّوَرَ 👀'); }
+    else mSay(M.fails >= 2 ? (M.q.hintSay || 'اِسْتَمِعِي مَرَّةً أُخْرَى 🔊') : 'حَاوِلِي مَرَّةً أُخْرَى 💪');
+    if (M.fails >= 2) $('mHear').classList.add('callout');
+  }
+  function mSuccess() {
+    M.locked = true;
+    [].forEach.call($('mChoices').children, function (b) { b.disabled = true; });
+    $('mBox').querySelectorAll('.q').forEach(function (el) { el.textContent = mNum(M.q.ans); el.classList.remove('q'); el.style.color = '#1fae6f'; });
+    if (M.q.k === 'count') { var t = mEl('div', 'mTok', mNum(M.q.ans)); t.style.color = '#1fae6f'; $('mBox').appendChild(t); }
+    $('mCard').className = 'card good';
+    mSay(PRAISE[Math.floor(Math.random() * PRAISE.length)] + ' يَا ' + S.name + '! 🎉');
+    soundGood(); confetti(10);
+    S.mDone++;
+    if (S.mDone >= MQ) {
+      var fin = S.mLevel, wrap = fin >= MLEVELS.length;
+      S.stars++; S.mDone = 0; S.mLevel = wrap ? 1 : fin + 1;
+      save();
+      mPips(); $('mPips').querySelectorAll('.pip').forEach(function (p) { p.className = 'pip on'; p.textContent = '⭐'; });
+      M.timer = setTimeout(function () { mLevelUp(fin, wrap); }, 1500);
+    } else {
+      save(); mPips();
+      M.timer = setTimeout(mNext, 1800);
+    }
+    renderHud();
+  }
+  function mLevelUp(fin, wrap) {
+    luMode = 'math';
+    soundStar(); confetti(40);
+    $('luTitle').textContent = 'Math level ' + fin + ' complete!';
+    $('luLonger').hidden = !wrap;
+    $('luLonger').textContent = 'She finished all the math levels! Starting again from the first level.';
+    $('luGo').textContent = 'Level ' + S.mLevel + ' ▶';
+    $('levelUp').hidden = false;
+    var pill = $('starsPill');
+    pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
+    renderHud();
+    $('luGo').focus();
+  }
+  function mEnter() {
+    S.mLevel = Math.min(MLEVELS.length, Math.max(1, S.mLevel | 0));
+    S.mDone = Math.min(MQ - 1, Math.max(0, S.mDone | 0));
+    if (!M.started) { M.started = true; mNext(); } else { mPips(); }
+  }
+  $('mHear').onclick = mSpeak;
+  $('mSkip').onclick = function () { if (!M.locked) mNext(); };
+  $('mHint').onclick = function () {
+    if (!M.q || M.locked) return;
+    if (M.q.hasPics && !M.hint) { M.hint = true; mDraw(); mSay('عُدِّي الصُّوَرَ 👀'); }
+    else mSay(M.q.hintSay || 'عُدِّي بِإِصْبَعِكِ 👆');
+  };
+  MLEVELS.forEach(function (L, i) {
+    var o = document.createElement('option');
+    o.value = i + 1; o.textContent = 'Level ' + (i + 1);
+    $('mLvlSel').appendChild(o);
+  });
+  function mRefreshLevelNames() { [].forEach.call($('mLvlSel').options, function (o, i) { o.textContent = 'Level ' + (i + 1) + ': ' + MLEVELS[i].t(); }); }
+  $('mLvlSel').onchange = function () { S.mLevel = parseInt(this.value, 10); S.mDone = 0; save(); if (M.started) mNext(); renderHud(); };
+  $('mDigitSel').onchange = function () {
+    S.mDigits = this.value; save(); mRefreshLevelNames();
+    if (M.started && M.q) { $('mTitle').textContent = mLevel().t(); if (!M.locked) { M.q = mMake(mLevel()); M.hint = false; mDraw(); mChoices(); mSay(M.q.bubble); } }
+  };
+
   /* ----- page / mode switching ----- */
   var curMode = 'train';
   function stopAll() {
     if (listening) { hadError = true; try { rec.abort(); } catch (e) {} }
     sRecStop(true);
-    if (H.phase !== 'idle') hStop();
     wStopDemo();
     if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
   }
@@ -2041,31 +2176,32 @@
     stopAll();
     curMode = m;
     $('modeTrain').classList.toggle('on', m === 'train');
-    $('modeHiss').classList.toggle('on', m === 'hiss');
     $('modeGame').classList.toggle('on', m === 'game');
     $('trainCard').hidden = m !== 'train';
-    $('hissCard').hidden = m !== 'hiss';
     $('gameCard').hidden = m !== 'game';
-    if (m === 'train') tRender(); else if (m === 'hiss') hIdle(); else gStartScreen();
+    if (m === 'train') tRender(); else gStartScreen();
   }
   function showView(v) {
     stopAll();
     view = v;
     $('viewRead').hidden = v !== 'read';
     $('viewWrite').hidden = v !== 'write';
+    $('viewMath').hidden = v !== 'math';
     $('viewSpeak').hidden = v !== 'speak';
     $('tabRead').classList.toggle('on', v === 'read');
     $('tabWrite').classList.toggle('on', v === 'write');
+    $('tabMath').classList.toggle('on', v === 'math');
     $('tabSpeak').classList.toggle('on', v === 'speak');
     renderHud();
     if (v === 'speak') setMode(curMode);
     if (v === 'write') wEnter();
+    if (v === 'math') mEnter();
   }
+  $('tabMath').onclick = function () { showView('math'); };
   $('tabWrite').onclick = function () { showView('write'); };
   $('tabRead').onclick = function () { showView('read'); };
   $('tabSpeak').onclick = function () { showView('speak'); };
   $('modeTrain').onclick = function () { setMode('train'); };
-  $('modeHiss').onclick = function () { setMode('hiss'); };
   $('modeGame').onclick = function () { setMode('game'); };
 
   buildQueue();
