@@ -379,6 +379,7 @@
         <div class="owl" aria-hidden="true">🐍</div>
         <div class="bubble de" id="tBubble" aria-live="polite"></div>
       </div>
+      <div class="gauge" id="tGauge" hidden aria-hidden="true"><span class="start">😕</span><span class="marker" id="tMarker">🐍</span><span class="goal">🏆</span></div>
       <p class="note" id="tNote"></p>
       <div class="rate" id="tRate" hidden><div class="rateTxt">Eltern: Wie klang der S-/Z-Laut? Taste kurz gedrückt halten</div><div class="rateBtns"></div></div>
       <div class="pips" id="tPips"></div>
@@ -488,7 +489,9 @@
     <div class="row"><label for="strictSel">How closely her reading must match</label>
       <select id="strictSel"><option value="0">Normal</option><option value="1">Flexible</option><option value="2">Very flexible</option></select></div>
     <div class="row"><label for="rateSel">Sprechen: who rates the S / Z sound</label>
-      <select id="rateSel"><option value="parent">Parents (😀🙂😕)</option><option value="phone">Phone only</option></select></div>
+      <select id="rateSel"><option value="parent">Parents (😀🙂😕) – phone learns</option><option value="phone">Phone (S-detector)</option></select></div>
+    <div class="row"><span id="sDetInfo" style="font-size:14px;line-height:1.4"></span>
+      <button class="small" id="sDetReset">Reset S-detector</button></div>
     <div class="row"><label for="triesSel">Tries per question in the Sprechen game</label>
       <select id="triesSel"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
     <div class="row"><label for="okCb">Always show the “parent ✔” button</label><input type="checkbox" id="okCb"></div>
@@ -506,7 +509,7 @@
       <select id="wStrictSel"><option value="0">Normal</option><option value="1">Flexible</option><option value="2">Very flexible</option></select></div>
     <p class="hint">Schreiben: the check runs on this device. It lines up her strokes with the printed letter, then checks that every part of the letter is there, that the dots are complete and in the right place (a dash or a “^” for two or three dots is fine), and that there are no extra lines. If her letter looks more like another letter, the owl says which one. It does not check stroke order or direction. If you think she wrote it correctly, use the ✔ button after two tries.</p>
     <p class="hint">Speech recognition checks that the right word was said, but it can't hear vowel marks (tashkeel) precisely. Listen along and use the ✔ button if you disagree. Works best in Chrome, Edge or Safari, with the microphone allowed.</p>
-    <p class="hint">Sprechen: the phone only understands words, it cannot hear how the “s” or “z” is made. With “Parents”, you rate the sound yourself (hold 😀 / 🙂 / 😕 for a moment) and your rating counts as the score. With “Phone only”, the score just shows how clearly the phone understood the word. The Zisch-Test measures the hiss directly from the microphone; it is experimental and works best after calibrating it once (buttons on that page). None of this is a diagnosis – a speech therapist (Logopäde) can rate her lisp properly.</p>
+    <p class="hint">Sprechen: the phone records her word and measures the S / Z hiss itself: how high, how sharp and how strong it is compared with her vowels. A clear S is a loud, sharp, high hiss; with the tongue between the teeth it becomes weak and flat, and a “slushy” S (air escaping at the sides) sounds lower. Every time you rate with 😀 or 😕, the phone keeps that sound as an example of her good or her lisped S and gets better at telling them apart on this phone. You rate first without seeing the phone's guess; afterwards it shows “📱 Handy: x / 10” so you can see whether it agrees with you. Once it agrees most of the time, you can switch to “Phone”. Use a quiet room and hold the phone about a hand's width from her mouth. The Zisch-Test measures the hiss directly from the microphone; it is experimental and works best after calibrating it once (buttons on that page). None of this is a diagnosis – a speech therapist (Logopäde) can rate her lisp properly.</p>
     <div style="text-align:center"><button class="go" id="ppClose">Done</button></div>
   </div>
 </div>
@@ -543,7 +546,7 @@
 
   /* ---------- saved state ---------- */
   var KEY = 'arabic-reading-stars-v2';
-  var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1, doneList: [], lispTries: 2, lisp: { best: 0, rounds: 0 }, rateMode: 'parent', hissGood: 0, hissPoor: 0, hissBest: 0, wLevel: 1, wDone: [], wHelp: 'auto', wLenient: 1 };
+  var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1, doneList: [], lispTries: 2, lisp: { best: 0, rounds: 0 }, rateMode: 'parent', hissGood: 0, hissPoor: 0, hissBest: 0, wLevel: 1, wDone: [], wHelp: 'auto', wLenient: 1, sEx: [], sHist: [] };
   try {
     var raw = localStorage.getItem(KEY);
     var saved = JSON.parse(raw || '{}');
@@ -560,6 +563,8 @@
   if (S.doneList.length >= wordsFor(S.level).length) S.doneList = [];
   S.wLevel = Math.min(7, Math.max(1, S.wLevel | 0));
   if (!Array.isArray(S.wDone)) S.wDone = [];
+  if (!Array.isArray(S.sEx)) S.sEx = [];
+  if (!Array.isArray(S.sHist)) S.sHist = [];
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
   /* ---------- helpers ---------- */
@@ -570,14 +575,6 @@
       .replace(/[\u0623\u0625\u0622\u0671]/g, '\u0627').replace(/\u0649/g, '\u064A')
       .replace(/\u0629/g, '\u0647').replace(/\u0624/g, '\u0648').replace(/\u0626/g, '\u064A')
       .replace(/[^\u0621-\u064A]/g, '');
-  }
-  function lev(a, b) {
-    var m = a.length, n = b.length, d = [], i, j;
-    for (i = 0; i <= m; i++) { d[i] = [i]; }
-    for (j = 1; j <= n; j++) d[0][j] = j;
-    for (i = 1; i <= m; i++) for (j = 1; j <= n; j++)
-      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
-    return d[m][n];
   }
 
   // Forgiving distance: letters that sound alike cost half, dropping/adding a long-vowel letter costs half
@@ -831,6 +828,7 @@
     $('okCb').checked = !!S.alwaysOk;
     $('triesSel').value = String(S.lispTries || 2);
     $('rateSel').value = S.rateMode || 'parent';
+    $('sDetInfo').textContent = sStatus();
     $('strictSel').value = String(S.lenient == null ? 1 : S.lenient);
     $('wLvlSel').value = String(S.wLevel);
     $('wHelpSel').value = S.wHelp || 'auto';
@@ -854,6 +852,7 @@
   $('soundCb').onchange = function () { S.sound = this.checked; save(); };
   $('strictSel').onchange = function () { S.lenient = parseInt(this.value, 10); save(); };
   $('rateSel').onchange = function () { S.rateMode = this.value; save(); };
+  armed($('sDetReset'), 'Reset S-detector', function () { S.sEx = []; S.sHist = []; save(); refreshPanel(); });
   $('triesSel').onchange = function () { S.lispTries = parseInt(this.value, 10); save(); };
   $('okCb').onchange = function () { S.alwaysOk = this.checked; save(); showOk(); };
 
@@ -913,46 +912,12 @@
       {q:'Sag nach: Zwei Katzen sitzen auf dem Sofa.', needs:[['zwei','2'],['katzen','katze'],['sitzen','sitzt'],['sofa']], p:'2️⃣ 🐱 🛋️'} ]
   ];
 
-  // needs = list of wanted words; the score is the average over them
-  function scoreNeeds(alts, needs) {
-    var sum = 0, heard = alts.length ? alts[0].text : '';
-    needs.forEach(function (n) { sum += scoreAlts(alts, n).score; });
-    return { score: Math.round(sum / needs.length), heard: heard };
-  }
-
-  function normDe(x) {
-    return String(x).toLowerCase().replace(/ß/g, 'ss').replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u').replace(/[^a-z0-9]/g, '');
-  }
   function clamp01(x) { return Math.max(0, Math.min(1, x)); }
-
-  // Practice score 0-10: how clearly the phone understood the wanted word
-  function scoreAlts(alts, accepted) {
-    var acc = accepted.map(normDe), best = 0;
-    var heard = alts.length ? alts[0].text : '';
-    alts.forEach(function (a, idx) {
-      var conf = a.conf > 0 ? a.conf : 0.85; // some browsers don't report a confidence
-      var toks = a.text.split(/\s+/).map(normDe).filter(Boolean);
-      var whole = normDe(a.text); if (whole) toks.push(whole);
-      toks.forEach(function (t) {
-        if (acc.indexOf(t) > -1) {
-          best = Math.max(best, idx === 0 ? 7 + 3 * clamp01((conf - 0.5) / 0.4) : 5 + clamp01((conf - 0.5) / 0.4));
-        } else {
-          acc.forEach(function (w) {
-            var lim = w.length <= 4 ? 1 : 2;
-            if (t.length > 1 && Math.abs(t.length - w.length) <= lim && lev(t, w) <= lim) best = Math.max(best, idx === 0 ? 3 : 2);
-          });
-        }
-      });
-    });
-    if (best === 0 && heard.trim()) best = 1;
-    return { score: Math.round(best), heard: heard };
-  }
   function feedback(n) {
     if (n >= 9) return 'Super, ganz klar gesprochen! 🌟';
     if (n >= 7) return 'Sehr gut! 👏';
     if (n >= 4) return 'Gut! Noch einmal mit der Schlangen-Zunge 🐍';
-    if (n >= 1) return 'Fast! Zähne zusammen, Zunge hinter die Zähne 🐍';
-    return 'Ich habe nichts gehört. Versuch es nochmal 🎤';
+    return 'Fast! Zähne zusammen, Zunge hinter die Zähne 🐍';
   }
 
   function speakDe(text, rate) {
@@ -965,40 +930,190 @@
     } catch (e) {}
   }
 
-  var deRec = null, deListening = false, deAborted = false;
-  function listenDe(btn, h) {
-    if (!SR) { h.error('unsupported'); return; }
-    if (deListening) { try { deRec.stop(); } catch (e) {} return; }
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
-    deRec = new SR();
-    deRec.lang = 'de-DE'; deRec.interimResults = false; deRec.maxAlternatives = 5; deRec.continuous = false;
-    var got = false, err = false; deAborted = false;
-    deRec.onstart = function () { deListening = true; btn.classList.add('on'); h.start(); };
-    deRec.onresult = function (e) {
-      got = true;
-      var r = e.results[0], alts = [];
-      for (var i = 0; i < r.length; i++) alts.push({ text: r[i].transcript, conf: r[i].confidence });
-      h.result(alts);
-    };
-    deRec.onerror = function (e) { err = true; if (!deAborted) h.error(e.error); };
-    deRec.onend = function () { deListening = false; btn.classList.remove('on'); if (!got && !err && !deAborted) h.none(); };
-    try { deRec.start(); } catch (e) { deListening = false; }
+  /* ----- S-Detektor: records her word and measures the S / Z sound itself -----
+     Speech recognition only hears *which* word was said and is built to ignore a lisp, so it cannot judge the S.
+     Instead the raw sound is analysed: a clear S is a loud, sharp, high hiss; a lisp (tongue between the teeth)
+     makes it weak and flat, a lateral lisp ("slushy" S) makes it lower. Every parent rating (😀 / 😕) is kept
+     as an example of HER good and HER lisped S, so the detector adapts to her voice and to this phone. */
+  var SREC = { on: false };
+  function sRecord(btn, h) {
+    if (SREC.on) { sRecStop(false); return; } // second tap: stop and check now
+    stopAll();
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !AC) { h.error('unsupported'); return; }
+    SREC = { on: true, btn: btn, h: h, chunks: [], len: 0, sr: 48000, nf: 0, nfN: 0, voiced: false, quietMs: 0 };
+    var me = SREC;
+    // create and wake the audio engine right inside the tap (Safari only allows that from a tap)
+    try { me.ctx = new AC(); if (me.ctx.resume) me.ctx.resume(); } catch (e) { me.on = false; h.error('unsupported'); return; }
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } }).then(function (stream) {
+      if (!me.on) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+      me.stream = stream;
+      setTimeout(function () { // no sound arriving at all: don't leave the button stuck
+        if (me.on && SREC === me && me.len === 0) { sRecStop(true); h.error('nosound'); }
+      }, 3000);
+      var go = function () {
+        if (!me.on) return;
+        var src = me.ctx.createMediaStreamSource(stream), proc = me.ctx.createScriptProcessor(2048, 1, 1), mute = me.ctx.createGain();
+        mute.gain.value = 0;
+        src.connect(proc); proc.connect(mute); mute.connect(me.ctx.destination);
+        me.proc = proc; me.sr = me.ctx.sampleRate;
+        proc.onaudioprocess = function (e) {
+          if (!me.on) return;
+          var c = new Float32Array(e.inputBuffer.getChannelData(0)), s = 0, i;
+          me.chunks.push(c); me.len += c.length;
+          for (i = 0; i < c.length; i++) s += c[i] * c[i];
+          var rms = Math.sqrt(s / c.length), el = me.len / me.sr;
+          if (el < 0.25) { me.nf += rms; me.nfN++; return; } // first quarter second: room noise
+          var nf = Math.max(me.nf / Math.max(1, me.nfN), 2e-4);
+          if (rms > nf * 4) { me.voiced = true; me.quietMs = 0; } else if (me.voiced) me.quietMs += c.length / me.sr * 1000;
+          if ((me.voiced && me.quietMs > 900) || el > 6 || (!me.voiced && el > 4)) sRecStop(false);
+        };
+        btn.classList.add('on'); h.start();
+      };
+      if (me.ctx.state === 'suspended' && me.ctx.resume) me.ctx.resume().then(go, go); else go();
+    }, function () { sRecStop(true); h.error('not-allowed'); });
+  }
+  function sRecStop(abort) {
+    var me = SREC;
+    if (!me.on) return;
+    me.on = false;
+    try { if (me.proc) { me.proc.onaudioprocess = null; me.proc.disconnect(); } } catch (e) {}
+    try { if (me.stream) me.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+    try { if (me.ctx && me.ctx.close) me.ctx.close(); } catch (e) {}
+    if (me.btn) me.btn.classList.remove('on');
+    if (abort) return;
+    var x = new Float32Array(me.len), o = 0;
+    me.chunks.forEach(function (c) { x.set(c, o); o += c.length; });
+    var a = sAnalyse(x, me.sr);
+    if (a.speech) me.h.result(a); else me.h.none();
+  }
+
+  function sFft(re, im) {
+    var n = re.length, i, j, k, t, bit;
+    for (i = 1, j = 0; i < n; i++) {
+      for (bit = n >> 1; j & bit; bit >>= 1) j ^= bit;
+      j ^= bit;
+      if (i < j) { t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; }
+    }
+    for (var len = 2; len <= n; len <<= 1) {
+      var ang = -2 * Math.PI / len, wr = Math.cos(ang), wi = Math.sin(ang), half = len >> 1;
+      for (i = 0; i < n; i += len) {
+        var cr = 1, ci = 0;
+        for (k = 0; k < half; k++) {
+          var a = i + k, b = a + half, xr = re[b] * cr - im[b] * ci, xi = re[b] * ci + im[b] * cr;
+          re[b] = re[a] - xr; im[b] = im[a] - xi; re[a] += xr; im[a] += xi;
+          t = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = t;
+        }
+      }
+    }
+  }
+  function sPct(arr, p) { var a = arr.slice().sort(function (x, y) { return x - y; }); return a.length ? a[Math.min(a.length - 1, Math.floor(p * a.length))] : 0; }
+  // -> { speech, sib, feat: [centre kHz-ish (Hz), peak (Hz), flatness 0-1, strength vs. vowels (dB)], dur }
+  function sAnalyse(x, sr) {
+    var N = 256; while (N < sr * 0.02) N *= 2; // ~20 ms frames
+    var hop = N >> 1, bw = sr / N, top = Math.min(11000, sr / 2 * 0.95), kTop = Math.floor(top / bw);
+    var k80 = Math.ceil(80 / bw), k1 = Math.round(1000 / bw), k2 = Math.round(2000 / bw), k25 = Math.round(2500 / bw), k35 = Math.round(3500 / bw);
+    var win = new Float64Array(N), re = new Float64Array(N), im = new Float64Array(N), fr = [], i, k;
+    for (i = 0; i < N; i++) win[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (N - 1));
+    for (var s = 0; s + N <= x.length; s += hop) {
+      for (i = 0; i < N; i++) { re[i] = x[s + i] * win[i]; im[i] = 0; }
+      sFft(re, im);
+      var P = new Float32Array(kTop + 1), lo = 0, mid = 0, hi = 0;
+      for (k = k80; k <= kTop; k++) { var p = re[k] * re[k] + im[k] * im[k]; P[k] = p; if (k < k1) lo += p; else if (k < k35) mid += p; else hi += p; }
+      fr.push({ lo: lo, mid: mid, hi: hi, tot: lo + mid + hi, P: P });
+    }
+    var res = { speech: false, sib: false, lowRate: top < 7000 };
+    if (fr.length < 8) return res;
+    var totNF = Math.max(sPct(fr.map(function (f) { return f.tot; }), 0.1), 1e-12);
+    var hiNF = Math.max(sPct(fr.map(function (f) { return f.hi; }), 0.1), 1e-14);
+    var sp = fr.filter(function (f) { return f.tot > totNF * 30; });
+    if (sp.length < 6) return res;
+    res.speech = true;
+    var vref = Math.max(sPct(sp.map(function (f) { return f.lo + f.mid; }), 0.9), 1e-20);
+    // hiss frames: high band clearly above the room noise, more high than mid energy (vowels are the other way round), not inaudibly weak
+    var flag = fr.map(function (f) { return f.hi > hiNF * 10 && f.hi > f.mid && f.hi > vref * 1e-3; });
+    for (i = 1; i < flag.length - 1; i++) if (!flag[i] && flag[i - 1] && flag[i + 1]) flag[i] = true;
+    var sib = [], run = [];
+    for (i = 0; i <= fr.length; i++) {
+      if (i < fr.length && flag[i]) run.push(fr[i]);
+      else { if (run.length >= 3) sib = sib.concat(run); run = []; }
+    }
+    if (!sib.length) return res;
+    res.sib = true;
+    var M = new Float64Array(kTop + 1), hiSum = 0, num = 0, den = 0, lg = 0, cnt = 0;
+    sib.forEach(function (f) { for (k = k2; k <= kTop; k++) M[k] += f.P[k]; hiSum += f.hi; });
+    for (k = k2; k <= kTop; k++) { num += k * bw * M[k]; den += M[k]; lg += Math.log(M[k] + 1e-30); cnt++; }
+    var h = Math.max(1, Math.round(250 / bw)), best = 0, peak = 0;
+    for (k = k25; k <= kTop; k++) {
+      var a = 0;
+      for (var j = Math.max(k2, k - h); j <= Math.min(kTop, k + h); j++) a += M[j];
+      if (a > best) { best = a; peak = k * bw; }
+    }
+    res.feat = [num / den, peak, Math.exp(lg / cnt) / (den / cnt), 10 * Math.log10(hiSum / sib.length / vref)];
+    res.dur = sib.length * hop / sr;
+    return res;
+  }
+
+  // starting guess for a child's clear S vs. a lisped S; replaced step by step by her own rated examples
+  var S_DEF = { g: [6800, 7000, 0.65, -12], b: [4800, 4000, 0.9, -25], sd: [800, 1300, 0.1, 4] };
+  function sModel() {
+    var ex = S.sEx || [], G = ex.filter(function (e) { return e.y >= 9; }), B = ex.filter(function (e) { return e.y <= 4; }), m0 = 2;
+    function mean(list, def) { return def.map(function (d, i) { return (m0 * d + list.reduce(function (a, e) { return a + e.f[i]; }, 0)) / (m0 + list.length); }); }
+    var mg = mean(G, S_DEF.g), mb = mean(B, S_DEF.b), sd = S_DEF.sd.slice();
+    if (G.length + B.length >= 6) sd = sd.map(function (fl, i) {
+      var ss = 0, n = 0;
+      [[G, mg], [B, mb]].forEach(function (c) { c[0].forEach(function (e) { ss += Math.pow(e.f[i] - c[1][i], 2); n++; }); });
+      return Math.max(fl * 0.5, Math.sqrt(ss / Math.max(1, n - 2)));
+    });
+    // each measurement counts as much as it separates her good S from her lisped S
+    var w = mg.map(function (g, i) { return (g - mb[i]) / (sd[i] * sd[i]); }), d = 0;
+    w.forEach(function (wi, i) { d += wi * (mg[i] - mb[i]); });
+    return { mg: mg, mb: mb, w: w, d: d, nG: G.length, nB: B.length };
+  }
+  function sScore(a) {
+    if (!a.sib) return 1; // she spoke, but no clear hiss at all
+    var m = sModel(), t = 0.5;
+    if (m.d > 1e-9) { t = 0; m.w.forEach(function (wi, i) { t += wi * (a.feat[i] - m.mb[i]); }); t /= m.d; }
+    return Math.round(10 * clamp01(t));
+  }
+  // a parent rating teaches the detector (the phone's guess was made before, so the agreement count is fair)
+  function sLearn(a, v) {
+    if (!a) return;
+    S.sHist = (S.sHist || []).concat([[a.score, v]]).slice(-20);
+    if (a.feat && (v >= 9 || v <= 4)) {
+      S.sEx = (S.sEx || []).concat([{ f: a.feat.map(function (x) { return Math.round(x * 100) / 100; }), y: v }]);
+      var good = S.sEx.filter(function (e) { return e.y >= 9; }).slice(-30), bad = S.sEx.filter(function (e) { return e.y <= 4; }).slice(-30);
+      S.sEx = good.concat(bad);
+    }
+    save();
+  }
+  function sInfo(a, withScore) {
+    if (!a) return '';
+    var t = a.sib ? 'S-Höhe ' + (a.feat[0] / 1000).toFixed(1) + ' kHz  ·  S-Stärke ' + Math.round(a.feat[3]) + ' dB' : 'Kein klares S gefunden';
+    if (withScore) t = '📱 Handy: ' + a.score + ' / 10  ·  ' + t;
+    if (a.lowRate) t += '  ·  low-quality microphone';
+    return t;
+  }
+  function sStatus() {
+    var ex = S.sEx || [], g = ex.filter(function (e) { return e.y >= 9; }).length, b = ex.length - g, h = S.sHist || [];
+    var agree = h.filter(function (p) { return (p[1] >= 10) === (p[0] >= 7); }).length;
+    var t = 'S-detector learned from ' + g + ' 😀 and ' + b + ' 😕 ratings.';
+    if (h.length) t += ' It agreed with you in ' + agree + ' of your last ' + h.length + ' ratings.';
+    if (g < 5 || b < 5) t += ' Rate at least 5 of each in "Parents" mode before trusting "Phone" mode.';
+    return t;
   }
   function deErr(code, say, note) {
     if (code === 'not-allowed' || code === 'service-not-allowed') {
       say('Das Mikrofon ist aus 🔇');
-      note('The microphone is blocked. Open the game from its own web address, allow the microphone, and on iPhone turn on Settings > General > Keyboard > Enable Dictation.');
+      note('The microphone is blocked. Open the game from its own web address and allow the microphone.');
     } else if (code === 'unsupported') {
       say('Hier geht das Mikrofon nicht 🔇');
-      note('Speech recognition is not available in this browser. Use Chrome, Edge or Safari.');
-    } else if (code === 'no-speech') {
-      say('Ich habe nichts gehört 🎤 Nochmal!');
-    } else if (code === 'network') {
-      say('Nochmal versuchen 🎤'); note('Speech recognition needs an internet connection.');
+      note('This browser cannot record from the microphone. Use Chrome, Edge or Safari.');
     } else if (code !== 'aborted') {
       say('Nochmal versuchen 🎤');
     }
   }
+  function sMarker(id, score) { $(id).style.left = (6 + clamp01(score / 10) * 88) + '%'; }
   function popBubble(el, text) { el.textContent = text; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
 
   /* ----- training (S and Z mixed) ----- */
@@ -1030,7 +1145,7 @@
     $('tTipDe').textContent = TIP_DE;
     $('tTipEn').textContent = TIP_EN;
     $('tNote').textContent = '';
-    $('tRate').hidden = true;
+    $('tRate').hidden = true; $('tGauge').hidden = true; tLast = null;
     tSay('Hör zu und sag nach: ' + w[0] + ' 🎤');
     tPips();
   }
@@ -1047,25 +1162,32 @@
     if (tAllDone()) { tSay('Alle Wörter geschafft! 🎉 Tippe auf ➡️ für neue Wörter.'); soundStar(); confetti(30); }
     else { tSay('Toll gemacht! 🌟'); confetti(8); }
   }
+  var tLast = null;
+  function tShowPhone(a) { $('tGauge').hidden = false; sMarker('tMarker', a.score); }
   function tRated(v) {
     $('tRate').hidden = true;
+    if (tLast) { // the parent rated without seeing the phone's guess; now show it and learn from the rating
+      sLearn(tLast, v); tShowPhone(tLast);
+      $('tNote').textContent = sInfo(tLast, true) + '  ·  Eltern: ' + (v >= 10 ? '😀' : v >= 7 ? '🙂' : '😕');
+      tLast = null;
+    }
     if (v >= 10) tMarkDone();
     else { soundTry(); tSay(v >= 7 ? 'Fast! Noch einmal: ' + tRound[tIdx][0] + ' 🐍' : 'Nochmal! Zunge hinter die Zähne 🐍'); }
   }
   function tAskParent() { tSay('Mama oder Papa bewertet 👂'); $('tRate').hidden = false; }
   $('tMic').onclick = function () {
-    $('tRate').hidden = true;
-    listenDe($('tMic'), {
-      start: function () { tSay('Ich höre zu... 👂'); $('tNote').textContent = ''; },
-      result: function (alts) {
-        var w = tRound[tIdx], r = scoreNeeds(alts, w[2]);
-        $('tNote').textContent = 'Gehört: ' + (r.heard || '—');
-        if (S.rateMode === 'parent') tAskParent();
-        else if (r.score >= 7) tMarkDone();
-        else { soundTry(); tSay('Fast! Noch einmal: ' + w[0] + ' 🐍'); }
+    $('tRate').hidden = true; $('tGauge').hidden = true; tLast = null;
+    sRecord($('tMic'), {
+      start: function () { tSay('Ich höre zu... sag: ' + tRound[tIdx][0] + ' 👂'); $('tNote').textContent = ''; },
+      result: function (a) {
+        a.score = sScore(a);
+        if (S.rateMode === 'parent') { tLast = a; $('tNote').textContent = sInfo(a, false); tAskParent(); return; }
+        tShowPhone(a); $('tNote').textContent = sInfo(a, true);
+        if (a.score >= 7) tMarkDone();
+        else { soundTry(); tSay(a.sib ? feedback(a.score) : 'Ich habe kein klares S gehört 🐍 Zunge hinter die Zähne!'); }
       },
       error: function (c) { deErr(c, tSay, function (t) { $('tNote').textContent = t; }); },
-      none: function () { if (S.rateMode === 'parent') tAskParent(); else tSay('Ich habe nichts gehört 🎤 Nochmal!'); }
+      none: function () { tSay('Ich habe nichts gehört 🎤 Nochmal!'); }
     });
   };
 
@@ -1103,25 +1225,21 @@
     gPips();
     speakDe(G.q.q);
   }
-  function gAnswer(alts) {
-    var r = scoreNeeds(alts, G.q.needs);
-    gAttempt(r.score, r.heard);
-  }
-  // an attempt was made: in "parent" mode the parent rates the S / Z sound, otherwise the phone's score counts
-  function gAttempt(phoneScore, heard) {
-    G.tries++; G.heard = heard;
+  // an attempt was made: in "parent" mode the parent rates the S / Z sound, otherwise the S-detector's score counts
+  function gAttempt(a) {
+    G.tries++; G.last = a;
     if (S.rateMode === 'parent') {
       $('gMic').disabled = true;
-      $('gNote').textContent = 'Gehört: ' + (heard || '—');
+      $('gNote').textContent = sInfo(a, false);
       $('gRate').hidden = false;
       gSay('Mama oder Papa bewertet 👂');
-    } else gScoreDone(phoneScore, false);
+    } else gScoreDone(a.score, false);
   }
   function gScoreDone(score, byParent) {
     G.cur = Math.max(G.cur, score);
     $('gRate').hidden = true;
     $('gScoreNum').textContent = score; $('gScore').hidden = false;
-    $('gNote').textContent = 'Gehört: ' + (G.heard || '—') + (byParent ? '  ·  Bewertung der Eltern' : '') + (G.tries > 1 ? '  ·  Zählt: ' + G.cur + ' / 10' : '');
+    $('gNote').textContent = sInfo(G.last, true) + (byParent ? '  ·  Bewertung der Eltern' : '') + (G.tries > 1 ? '  ·  Zählt: ' + G.cur + ' / 10' : '');
     gSay(feedback(score));
     if (score >= 7) soundGood(); else soundTry();
     if (score >= 9) confetti(10);
@@ -1162,11 +1280,11 @@
     if (G.i === 4) { gPips(); gFinish(); } else { G.i++; gLoad(); }
   };
   $('gMic').onclick = function () {
-    listenDe($('gMic'), {
+    sRecord($('gMic'), {
       start: function () { gSay('Ich höre zu... 👂'); $('gNote').textContent = ''; },
-      result: gAnswer,
+      result: function (a) { a.score = sScore(a); gAttempt(a); },
       error: function (c) { deErr(c, gSay, function (t) { $('gNote').textContent = t; }); },
-      none: function () { if (S.rateMode === 'parent') gAttempt(0, ''); else gSay('Ich habe nichts gehört 🎤 Nochmal!'); }
+      none: function () { gSay('Ich habe nichts gehört 🎤 Nochmal!'); }
     });
   };
   $('ldAgain').onclick = function () { $('lispDone').hidden = true; gStartScreen(); };
@@ -1192,7 +1310,7 @@
     });
   }
   makeRate($('tRate'), tRated);
-  makeRate($('gRate'), function (v) { gScoreDone(v, true); });
+  makeRate($('gRate'), function (v) { sLearn(G.last, v); gScoreDone(v, true); });
 
   /* ----- Zisch-Test: measures the hiss from the microphone (experimental) ----- */
   var H = { phase: 'idle', mode: 'test', ctx: null, stream: null, an: null, buf: null, raf: 0, t0: 0, last: 0, nfSum: 0, nfN: 0, nf: 1e-11, cents: [], hissTime: 0, sm: 0 };
@@ -1914,7 +2032,7 @@
   var curMode = 'train';
   function stopAll() {
     if (listening) { hadError = true; try { rec.abort(); } catch (e) {} }
-    if (deListening) { deAborted = true; try { deRec.abort(); } catch (e) {} }
+    sRecStop(true);
     if (H.phase !== 'idle') hStop();
     wStopDemo();
     if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
