@@ -1,0 +1,17 @@
+{
+  "name": "tala-judge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Checks Tala's spoken answers to story questions with Claude",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0"
+  }
+}
