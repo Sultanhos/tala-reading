@@ -159,7 +159,8 @@
     font-size: 22px; padding: 12px 26px; border-radius: 999px; box-shadow: 0 6px 0 var(--line); cursor: pointer; }
   .go:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--line); }
 
-  .parent { text-align: left; }
+  .parent { text-align: start; }
+  .parent h2, .parent .row, .parent .hint { font-family: 'Noto Naskh Arabic', 'Fredoka', system-ui, sans-serif; }
   .parent h2 { text-align: center; }
   .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0; font-size: 17px; }
   .row label { flex: 1; }
@@ -197,7 +198,7 @@
   .snd.on { background: var(--mint); }
   .tip { width: 100%; background: #fff3b8; border: 3px solid var(--line); border-radius: 20px; padding: 10px 14px; text-align: center; color: var(--card-ink); }
   .tipDe { font-weight: 700; font-size: 18px; line-height: 1.35; }
-  .tipEn { font-size: 13.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .tipEn { font-size: 14px; color: var(--muted); margin-top: 4px; line-height: 1.6; font-family: 'Noto Naskh Arabic', 'Fredoka', sans-serif; direction: rtl; }
   .wordBox.compact { min-height: 150px; gap: 4px; }
   .deWord { font-family: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif; font-weight: 700; font-size: min(72px, 16vw); line-height: 1.2;
     text-align: center; color: var(--card-ink); }
@@ -238,10 +239,11 @@
   .gauge .start { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: .55; }
 
   /* ---------- Schreiben (letter writing) ---------- */
-  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
-  .tab { font-size: 15px; padding: 6px 4px 7px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.15; min-width: 0; }
+  .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; direction: rtl; }
+  .tabs.five { grid-template-columns: repeat(5, 1fr); }
+  .tab { font-family: 'Noto Naskh Arabic', 'Fredoka', system-ui, sans-serif; font-size: 16px; padding: 6px 4px 7px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.15; min-width: 0; }
   .tab .ti { font-size: 22px; line-height: 1.1; }
-  @media (max-width: 400px) { .tabs { gap: 5px; } .tab { font-size: 11px; padding: 6px 2px 7px; } .tab .ti { font-size: 20px; } }
+  @media (max-width: 400px) { .tabs { gap: 6px; } .tab { font-size: 14px; padding: 6px 2px 7px; } .tab .ti { font-size: 20px; } }
 
   /* ---------- Rechnen (math, grade 1) ---------- */
   .mTitle { font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; font-size: 22px; color: var(--grape); direction: rtl; text-align: center; }
@@ -350,11 +352,11 @@
   </header>
 
   <nav class="tabs" id="tabs">
-    <button class="tab on" id="tabRead"><span class="ti">📖</span>Lesen</button>
-    <button class="tab" id="tabWrite"><span class="ti">✍️</span>Schreiben</button>
-    <button class="tab" id="tabMath"><span class="ti">🔢</span>Rechnen</button>
-    <button class="tab" id="tabSpeak"><span class="ti">🐍</span>Sprechen</button>
-    <button class="tab" id="tabStory"><span class="ti">📚</span>حكايات</button>
+    <button class="tab on" id="tabRead"><span class="ti">📖</span>قراءة</button>
+    <button class="tab" id="tabWrite"><span class="ti">✍️</span>كتابة</button>
+    <button class="tab" id="tabMath"><span class="ti">🔢</span>حساب</button>
+    <button class="tab" id="tabSpeak"><span class="ti">🐍</span>نطق</button>
+    <button class="tab" id="tabStory" hidden><span class="ti">📚</span>حكايات</button>
   </nav>
 
   <div class="view" id="viewRead">
@@ -377,7 +379,7 @@
       <div class="bubble" id="bubble" aria-live="polite"></div>
     </div>
     <p class="note" id="note"></p>
-    <button class="parentOk" id="parentOk" hidden>✔ Parent: she read it correctly</button>
+    <button class="parentOk" id="parentOk" hidden>✔ ولي الأمر: قرأت صح</button>
   </section>
   </div>
 
@@ -409,7 +411,7 @@
         <div class="bubble" id="wBubble" aria-live="polite"></div>
       </div>
       <p class="note" id="wNote"></p>
-      <button class="parentOk" id="wParentOk" hidden>✔ Parent: she wrote it correctly</button>
+      <button class="parentOk" id="wParentOk" hidden>✔ ولي الأمر: كتبت صح</button>
     </section>
   </div>
 
@@ -470,14 +472,33 @@
       </div>
       <p class="note" id="stNote"></p>
       <div class="btnRow">
-        <button class="parentOk" id="stOk" hidden>✔ Parent: that was right</button>
-        <button class="parentOk" id="stNo" hidden style="background:#ffc9c9">✘ Parent: wrong</button>
+        <button class="parentOk" id="stOk" hidden>✔ ولي الأمر: الإجابة صح</button>
+        <button class="parentOk" id="stNo" hidden style="background:#ffc9c9">✘ ولي الأمر: غلط</button>
       </div>
     </section>
   </div>
 
   <div class="view" id="viewSpeak" hidden>
-    <div class="modes">
+    <!-- warm-up: every time Sprechen is opened -->
+    <section class="card" id="warmCard" hidden>
+      <div class="tip"><div class="tipDe">Aufwärmen! Sag 3-mal schön: 🐍</div><div class="tipEn">تمرين البداية: تقول «Siii – Saaa – Sooo» صح ٣ مرات، وبعدها يتفتح التدريب واللعبة.</div></div>
+      <div class="wordBox compact"><div class="deWord" id="warmWord" style="font-size:min(46px, 10.5vw);white-space:nowrap">Siii – Saaa – Sooo</div><div class="pic2">🐍</div></div>
+      <div class="pips gpips" id="warmPips"></div>
+      <div class="controls">
+        <button class="btn hear" id="warmHear" aria-label="Hear it">🔊</button>
+        <button class="btn mic" id="warmMic" aria-label="Say it">🎤</button>
+      </div>
+      <div class="gauge" id="warmGauge" hidden aria-hidden="true"><span class="start">😕</span><span class="marker" id="warmMarker">🐍</span><span class="goal">🏆</span></div>
+      <div class="talk">
+        <div class="owl" aria-hidden="true">🐍</div>
+        <div class="bubble de" id="warmBubble" aria-live="polite"></div>
+      </div>
+      <p class="note" id="warmNote"></p>
+      <div class="rate" id="warmRate" hidden><div class="rateTxt">Eltern: War das S richtig? Taste kurz gedrückt halten</div><div class="rateBtns"></div></div>
+      <button class="parentOk" id="warmOk" hidden>✔ ولي الأمر: قالتها صح</button>
+    </section>
+
+    <div class="modes" id="speakModes">
       <button class="mode on" id="modeTrain">🏋️ Training</button>
       <button class="mode" id="modeGame">🎮 Spiel</button>
     </div>
@@ -543,10 +564,10 @@
 <div class="overlay" id="levelUp" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="luTitle">
     <div class="bigStar">⭐</div>
-    <h2 id="luTitle">Lesson complete!</h2>
+    <h2 id="luTitle" class="ar">برافو! خلصتي الدرس</h2>
     <p class="ar" id="luAr">مَا شَاءَ اللَّه! نَجْمَةٌ جَدِيدَة</p>
     <p id="luLonger" hidden></p>
-    <button class="go" id="luGo">Next level ▶</button>
+    <button class="go" id="luGo">المستوى الجاي ◀</button>
   </div>
 </div>
 
@@ -596,61 +617,66 @@
 
 <!-- parent panel -->
 <div class="overlay" id="parentPanel" hidden>
-  <div class="sheet parent" role="dialog" aria-modal="true" aria-labelledby="ppTitle">
-    <h2 id="ppTitle">Parent settings</h2>
-    <div class="row"><label for="starIn">Stars collected</label>
+  <div class="sheet parent" role="dialog" aria-modal="true" aria-labelledby="ppTitle" dir="rtl" lang="ar">
+    <h2 id="ppTitle">إعدادات ولي الأمر</h2>
+    <div class="row"><label for="starIn">النجوم اللي جمعتها</label>
       <span style="display:flex;gap:6px;align-items:center">
-        <button class="small" id="starMinus" aria-label="One star less">−</button>
-        <input type="number" id="starIn" min="0" max="9999" inputmode="numeric" style="width:70px;text-align:center">
-        <button class="small" id="starPlus" aria-label="One star more">+</button>
+        <button class="small" id="starPlus" aria-label="نجمة زيادة">+</button>
+        <input type="number" id="starIn" min="0" max="9999" inputmode="numeric" style="width:70px;text-align:center" dir="ltr">
+        <button class="small" id="starMinus" aria-label="نجمة أقل">−</button>
       </span></div>
-    <div class="row"><span>Start the count from zero</span>
-      <button class="small" id="resetStars">Reset stars</button></div>
-    <div class="row"><span>Current lesson: <b id="ppLevel">1</b></span>
-      <button class="small" id="resetLevel">Back to first lesson</button></div>
+    <div class="row"><span>ابدأ العد من الصفر</span>
+      <button class="small" id="resetStars">تصفير النجوم</button></div>
+    <div class="row"><span>الدرس الحالي: <b id="ppLevel">1</b></span>
+      <button class="small" id="resetLevel">الرجوع لأول درس</button></div>
     <hr class="divider">
-    <div class="row"><label for="lvlSel">Jump to lesson</label>
+    <div class="row"><label for="lvlSel">قراءة: الانتقال لدرس</label>
       <select id="lvlSel"></select></div>
-    <div class="row"><label for="nameIn">Her name (for praise)</label>
+    <div class="row"><label for="nameIn">اسمها (للتشجيع)</label>
       <input type="text" id="nameIn" dir="rtl" lang="ar" maxlength="14"></div>
-    <div class="row"><label for="soundCb">Sounds</label><input type="checkbox" id="soundCb"></div>
-    <div class="row"><label for="strictSel">How closely her reading must match</label>
-      <select id="strictSel"><option value="0">Normal</option><option value="1">Flexible</option><option value="2">Very flexible</option></select></div>
-    <div class="row"><label for="rateSel">Sprechen: who rates the S / Z sound</label>
-      <select id="rateSel"><option value="parent">Parents (😀🙂😕) – phone learns</option><option value="phone">Phone (S-detector)</option></select></div>
-    <div class="row"><span id="sDetInfo" style="font-size:14px;line-height:1.4"></span>
-      <button class="small" id="sDetReset">Reset S-detector</button></div>
-    <div class="row"><label for="triesSel">Tries per question in the Sprechen game</label>
-      <select id="triesSel"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
-    <div class="row"><label for="okCb">Always show the “parent ✔” button</label><input type="checkbox" id="okCb"></div>
+    <div class="row"><label for="soundCb">الأصوات</label><input type="checkbox" id="soundCb"></div>
+    <div class="row"><label for="strictSel">قراءة: قد إيه لازم تكون القراءة مطابقة</label>
+      <select id="strictSel"><option value="0">عادي</option><option value="1">مرن</option><option value="2">مرن جدًا</option></select></div>
+    <div class="row"><label for="okCb">إظهار زر «✔ ولي الأمر» دايمًا</label><input type="checkbox" id="okCb"></div>
     <hr class="divider">
-    <div class="row"><label for="wLvlSel">Schreiben: writing level</label>
+    <div class="row"><label for="wLvlSel">كتابة: المستوى</label>
       <select id="wLvlSel"></select></div>
-    <div class="row"><label for="wHelpSel">Writing help</label>
+    <div class="row"><label for="wHelpSel">كتابة: المساعدة</label>
       <select id="wHelpSel">
-        <option value="auto">Trace, then write alone</option>
-        <option value="trace">Always trace</option>
-        <option value="copy">Copy (letter shown)</option>
-        <option value="memory">From memory (hear it)</option>
+        <option value="auto">تتبع الحرف، وبعدين تكتبه لوحدها</option>
+        <option value="trace">تتبع الحرف دايمًا</option>
+        <option value="copy">نقل (الحرف ظاهر)</option>
+        <option value="memory">من الذاكرة (بتسمعه بس)</option>
       </select></div>
-    <div class="row"><label for="wStrictSel">How neat her writing must be</label>
-      <select id="wStrictSel"><option value="0">Normal</option><option value="1">Flexible</option><option value="2">Very flexible</option></select></div>
+    <div class="row"><label for="wStrictSel">كتابة: قد إيه لازم يكون الخط مظبوط</label>
+      <select id="wStrictSel"><option value="0">عادي</option><option value="1">مرن</option><option value="2">مرن جدًا</option></select></div>
     <hr class="divider">
-    <div class="row"><label for="stJudgeIn">حكايات: AI answer check (server address)</label></div>
-    <div class="row"><input type="text" id="stJudgeIn" dir="ltr" style="width:100%" placeholder="https://tala-judge.onrender.com" autocomplete="off" spellcheck="false"></div>
-    <div class="row"><span id="stJudgeStatus" style="font-size:14px"></span><button class="small" id="stJudgeTest">Test</button></div>
-    <div class="row"><span id="stVoiceInfo" style="font-size:14px"></span><button class="small" id="recOpen">🎙 Record stories</button></div>
-    <p class="hint">حكايات: true stories from the Quran and authentic hadith, told in Egyptian Arabic. After each story she answers 5 questions by voice; every right answer earns a star. Her answer goes (as text) to your own small server, which asks Claude whether it is right. If the server isn't reachable, the game checks for key words instead. The phone's Arabic voice is used, an Egyptian one when the device has it (e.g. the Edge browser), unless you record the story in your own voice.</p>
-    <hr class="divider">
-    <div class="row"><label for="mLvlSel">Rechnen: math level</label>
+    <div class="row"><label for="mLvlSel">حساب: المستوى</label>
       <select id="mLvlSel" dir="auto"></select></div>
-    <div class="row"><label for="mDigitSel">Numbers shown as</label>
-      <select id="mDigitSel"><option value="ar">١ ٢ ٣ (Arabic)</option><option value="en">1 2 3</option></select></div>
-    <p class="hint">Rechnen follows the first school year: counting to 10, the missing number, bigger or smaller, adding to 5 and 10, taking away within 10, counting and numbers to 20, adding and taking away to 20, and short picture stories. Ten right answers finish a level and earn a star. The owl reads every question aloud; after a wrong answer she gets pictures to count.</p>
-    <p class="hint">Schreiben: the check runs on this device. It lines up her strokes with the printed letter, then checks that every part of the letter is there, that the dots are complete and in the right place (a dash or a “^” for two or three dots is fine), and that there are no extra lines. If her letter looks more like another letter, the owl says which one. It does not check stroke order or direction. If you think she wrote it correctly, use the ✔ button after two tries.</p>
-    <p class="hint">Speech recognition checks that the right word was said, but it can't hear vowel marks (tashkeel) precisely. Listen along and use the ✔ button if you disagree. Works best in Chrome, Edge or Safari, with the microphone allowed.</p>
-    <p class="hint">Sprechen: the phone records her word and measures the S / Z hiss itself: how high, how sharp and how strong it is compared with her vowels. A clear S is a loud, sharp, high hiss; with the tongue between the teeth it becomes weak and flat, and a “slushy” S (air escaping at the sides) sounds lower. Every time you rate with 😀 or 😕, the phone keeps that sound as an example of her good or her lisped S and gets better at telling them apart on this phone. You rate first without seeing the phone's guess; afterwards it shows “📱 Handy: x / 10” so you can see whether it agrees with you. Once it agrees most of the time, you can switch to “Phone”. Use a quiet room and hold the phone about a hand's width from her mouth. None of this is a diagnosis – a speech therapist (Logopäde) can rate her lisp properly.</p>
-    <div style="text-align:center"><button class="go" id="ppClose">Done</button></div>
+    <div class="row"><label for="mDigitSel">شكل الأرقام</label>
+      <select id="mDigitSel"><option value="ar">١ ٢ ٣ (عربي)</option><option value="en">1 2 3</option></select></div>
+    <hr class="divider">
+    <div class="row"><label for="warmCb">نطق: تمرين البداية «Siii – Saaa – Sooo» صح ٣ مرات</label><input type="checkbox" id="warmCb"></div>
+    <div class="row"><label for="rateSel">نطق: مين يقيّم صوت S / Z</label>
+      <select id="rateSel"><option value="parent">الأهل (😀🙂😕) – والتليفون بيتعلم</option><option value="phone">التليفون (كاشف حرف S)</option></select></div>
+    <div class="row"><span id="sDetInfo" style="font-size:14px;line-height:1.6"></span>
+      <button class="small" id="sDetReset">مسح ما تعلمه الكاشف</button></div>
+    <div class="row"><label for="triesSel">نطق: عدد المحاولات لكل سؤال في اللعبة</label>
+      <select id="triesSel"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+    <div id="ppStories" hidden>
+      <hr class="divider">
+    <div class="row"><label for="stJudgeIn">حكايات: عنوان خادم تصحيح الإجابات بالذكاء الاصطناعي</label></div>
+    <div class="row"><input type="text" id="stJudgeIn" dir="ltr" style="width:100%" placeholder="https://tala-judge.onrender.com" autocomplete="off" spellcheck="false"></div>
+    <div class="row"><span id="stJudgeStatus" style="font-size:14px"></span><button class="small" id="stJudgeTest">اختبار</button></div>
+    <div class="row"><span id="stVoiceInfo" style="font-size:14px"></span><button class="small" id="recOpen">🎙 تسجيل الحكايات</button></div>
+    <p class="hint">حكايات: قصص حقيقية من القرآن والأحاديث الصحيحة باللهجة المصرية، وبعد كل حكاية ٥ أسئلة تجاوب عليها بصوتها، وكل إجابة صح عليها نجمة.</p>
+    </div>
+    <hr class="divider">
+    <p class="hint">قراءة: التعرف على الصوت بيتأكد إن الكلمة الصحيحة اتقالت، لكنه مش بيسمع التشكيل بدقة. اسمعوا معاها واستخدموا زر ✔ لو مش موافقين. بيشتغل أحسن على كروم أو إيدج أو سفاري مع السماح بالميكروفون.</p>
+    <p class="hint">كتابة: التصحيح بيتم على الجهاز نفسه. بيطابق خطوطها مع شكل الحرف، ويتأكد إن كل أجزاء الحرف موجودة، وإن النقط كاملة وفي مكانها (الشَرطة أو علامة ^ بدل نقطتين أو تلاتة مقبولة)، ومفيش خطوط زيادة. ولو اللي كتبته شبه حرف تاني أكتر، البومة بتقول أنهي حرف. مش بيراجع ترتيب الخطوط أو اتجاهها. ولو شايفين إنها كتبت صح، استخدموا زر ✔ بعد محاولتين.</p>
+    <p class="hint">حساب: بيمشي على منهج أولى ابتدائي: العد لحد ١٠، العدد الناقص، أكبر وأصغر، الجمع لحد ٥ و١٠، الطرح في حدود ١٠، العد والأعداد لحد ٢٠، الجمع والطرح لحد ٢٠، ومسائل بالصور. ١٠ إجابات صح بتخلص المستوى وتدي نجمة. البومة بتقرا كل سؤال، وبعد الإجابة الغلط بتظهر صور للعد.</p>
+    <p class="hint">نطق (تدريب على حرفي S وZ في الألماني): التليفون بيسجل الكلمة ويقيس صوت الصفير نفسه: ارتفاعه وحدّته وقوته مقارنة بباقي الكلام. حرف S الواضح صفير قوي وحاد وعالي؛ ولما اللسان يكون بين الأسنان بيبقى ضعيف ومفلطح، ولما الهوا يطلع من الجناب بيبقى أوطى. كل تقييم منكم بـ 😀 أو 😕 التليفون بيحفظه كمثال لنطقها الصح أو الغلط، فبيتحسن مع الوقت. قيّموا الأول من غير ما تشوفوا تقدير التليفون، وبعدها بيظهر «📱 Handy: x / 10» عشان تشوفوا هو متفق معاكم ولا لأ. ولما يتفق أغلب الوقت تقدروا تختاروا «التليفون». في أول كل مرة تفتح «نطق» لازم تقول «Siii – Saaa – Sooo» صح ٣ مرات قبل التدريب واللعبة. استخدموا أوضة هادية، والتليفون على بعد كف من بقها. ده مش تشخيص؛ أخصائي التخاطب (Logopäde) هو اللي يقيّم اللثغة.</p>
+    <div style="text-align:center"><button class="go" id="ppClose">تم</button></div>
   </div>
 </div>
 
@@ -687,7 +713,7 @@
 
   /* ---------- saved state ---------- */
   var KEY = 'arabic-reading-stars-v2';
-  var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1, doneList: [], lispTries: 2, lisp: { best: 0, rounds: 0 }, rateMode: 'parent', wLevel: 1, wDone: [], wHelp: 'auto', wLenient: 1, sEx: [], sHist: [], mLevel: 1, mDone: 0, mDigits: 'ar', stBest: {}, stJudge: 'https://tala-judge.onrender.com' };
+  var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1, doneList: [], lispTries: 2, lisp: { best: 0, rounds: 0 }, rateMode: 'parent', wLevel: 1, wDone: [], wHelp: 'auto', wLenient: 1, sEx: [], sHist: [], mLevel: 1, mDone: 0, mDigits: 'ar', stBest: {}, stJudge: 'https://tala-judge.onrender.com', warmOn: true };
   try {
     var raw = localStorage.getItem(KEY);
     var saved = JSON.parse(raw || '{}');
@@ -786,7 +812,7 @@
     b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
   }
   function renderHud() {
-    $('levelBadge').textContent = view === 'speak' ? 'Sprechen' : view === 'write' ? 'Schreiben ' + S.wLevel : view === 'math' ? 'Rechnen ' + S.mLevel : view === 'story' ? 'حكايات' : 'Lesson ' + LESSON_IDS[S.level - 1];
+    $('levelBadge').textContent = view === 'speak' ? 'نطق' : view === 'write' ? 'كتابة ' + mNumAr(S.wLevel) : view === 'math' ? 'حساب ' + mNumAr(S.mLevel) : view === 'story' ? 'حكايات' : 'الدرس ' + LESSON_IDS[S.level - 1];
     $('starCount').textContent = S.stars;
     var p = $('pips'); p.innerHTML = '';
     for (var i = 0; i < wordsFor(S.level).length; i++) {
@@ -815,7 +841,7 @@
     $('card').className = 'card';
     $('hearBtn').classList.remove('callout');
     $('micBtn').disabled = false;
-    $('note').textContent = micUnavailable ? 'Speech recognition is not available in this browser. Use the parent ✔ button.' : '';
+    $('note').textContent = micUnavailable ? 'التعرف على الصوت غير متاح في هذا المتصفح. استخدموا زر ✔ ولي الأمر.' : '';
     showOk();
     say('اِقْرَئِي الكَلِمَة 🎤');
     renderHud();
@@ -881,7 +907,7 @@
   }
   function startListening() {
     if (locked) return;
-    if (!SR) { micUnavailable = true; showOk(); $('note').textContent = 'Speech recognition is not available in this browser. Use the parent ✔ button.'; return; }
+    if (!SR) { micUnavailable = true; showOk(); $('note').textContent = 'التعرف على الصوت غير متاح في هذا المتصفح. استخدموا زر ✔ ولي الأمر.'; return; }
     if (listening) { try { rec.stop(); } catch (e) {} return; }
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     rec = new SR();
@@ -892,7 +918,7 @@
       gotResult = true;
       var alts = [];
       for (var i = 0; i < e.results.length; i++) for (var j = 0; j < e.results[i].length; j++) alts.push(e.results[i][j].transcript);
-      $('note').textContent = 'Heard: ' + (alts[0] || '—');
+      $('note').textContent = 'سمعت: ' + (alts[0] || '—');
       if (matches(alts)) success(); else tryAgain();
     };
     rec.onerror = function (e) {
@@ -900,11 +926,11 @@
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
         micUnavailable = true; showOk();
         say('المَيْكْرُوفُون مُغْلَق 🔇');
-        $('note').textContent = 'The microphone is blocked. Open the game from its own web address (not inside another app), allow the microphone, and on iPhone turn on Settings > General > Keyboard > Enable Dictation. Or use the parent ✔ button.';
+        $('note').textContent = 'الميكروفون مقفول. افتحوا اللعبة من عنوانها مباشرة (مش من داخل تطبيق تاني)، واسمحوا بالميكروفون، وعلى الآيفون فعّلوا: الإعدادات > عام > لوحة المفاتيح > تفعيل الإملاء. أو استخدموا زر ✔ ولي الأمر.';
       } else if (e.error === 'no-speech') {
         say('لَمْ أَسْمَعْ شَيْئاً 🎤 حَاوِلِي مَرَّةً أُخْرَى');
       } else if (e.error === 'network') {
-        $('note').textContent = 'Speech recognition needs an internet connection.';
+        $('note').textContent = 'التعرف على الصوت يحتاج اتصال بالإنترنت.';
         say('حَاوِلِي مَرَّةً أُخْرَى');
       } else if (e.error !== 'aborted') {
         say('حَاوِلِي مَرَّةً أُخْرَى');
@@ -933,10 +959,10 @@
   function showLevelUp(finished) {
     luMode = 'read';
     soundStar(); confetti(40);
-    $('luTitle').textContent = 'Lesson ' + LESSON_IDS[finished - 1] + ' complete!';
+    $('luTitle').textContent = 'برافو! خلصتي الدرس ' + LESSON_IDS[finished - 1];
     $('luLonger').hidden = !wrapped;
-    $('luLonger').textContent = 'You finished the whole book! Starting again from the first lesson.';
-    $('luGo').textContent = 'Lesson ' + LESSON_IDS[S.level - 1] + ' ▶';
+    $('luLonger').textContent = 'خلصتي الكتاب كله! هنبدأ تاني من أول درس.';
+    $('luGo').textContent = 'الدرس ' + LESSON_IDS[S.level - 1] + ' ◀';
     $('levelUp').hidden = false;
     var pill = $('starsPill');
     pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
@@ -953,7 +979,7 @@
     var on = false, t;
     btn.onclick = function () {
       if (!on) {
-        on = true; btn.textContent = 'Tap again to confirm'; btn.classList.add('armed');
+        on = true; btn.textContent = 'اضغط تاني للتأكيد'; btn.classList.add('armed');
         t = setTimeout(function () { on = false; btn.textContent = label; btn.classList.remove('armed'); }, 3000);
       } else {
         clearTimeout(t); on = false; btn.textContent = label; btn.classList.remove('armed'); action();
@@ -975,6 +1001,7 @@
     mRefreshLevelNames();
     $('mLvlSel').value = String(S.mLevel);
     $('mDigitSel').value = S.mDigits === 'en' ? 'en' : 'ar';
+    $('warmCb').checked = S.warmOn !== false;
     $('stJudgeIn').value = S.stJudge == null ? ST_DEFAULT_JUDGE : S.stJudge;
     $('stJudgeStatus').textContent = '';
     $('stVoiceInfo').textContent = stVoiceText();
@@ -983,7 +1010,7 @@
   }
   for (var l = 1; l <= LEVELS.length; l++) {
     var o = document.createElement('option');
-    o.value = l; o.textContent = 'Lesson ' + LESSON_IDS[l - 1];
+    o.value = l; o.textContent = 'الدرس ' + LESSON_IDS[l - 1];
     $('lvlSel').appendChild(o);
   }
   $('parentBtn').onclick = function () { refreshPanel(); $('parentPanel').hidden = false; };
@@ -992,14 +1019,15 @@
   $('starMinus').onclick = function () { setStars(S.stars - 1); };
   $('starPlus').onclick = function () { setStars(S.stars + 1); };
   $('starIn').onchange = function () { setStars(parseInt(this.value, 10) || 0); };
-  armed($('resetStars'), 'Reset stars', function () { S.stars = 0; save(); renderHud(); refreshPanel(); });
-  armed($('resetLevel'), 'Back to first lesson', function () { S.level = 1; S.doneList = []; save(); buildQueue(); nextWord(); refreshPanel(); });
+  armed($('resetStars'), 'تصفير النجوم', function () { S.stars = 0; save(); renderHud(); refreshPanel(); });
+  armed($('resetLevel'), 'الرجوع لأول درس', function () { S.level = 1; S.doneList = []; save(); buildQueue(); nextWord(); refreshPanel(); });
   $('lvlSel').onchange = function () { S.level = parseInt(this.value, 10); S.doneList = []; save(); buildQueue(); nextWord(); refreshPanel(); };
   $('nameIn').oninput = function () { S.name = this.value.trim() || 'تالا'; save(); };
   $('soundCb').onchange = function () { S.sound = this.checked; save(); };
   $('strictSel').onchange = function () { S.lenient = parseInt(this.value, 10); save(); };
   $('rateSel').onchange = function () { S.rateMode = this.value; save(); };
-  armed($('sDetReset'), 'Reset S-detector', function () { S.sEx = []; S.sHist = []; save(); refreshPanel(); });
+  $('warmCb').onchange = function () { S.warmOn = this.checked; save(); };
+  armed($('sDetReset'), 'مسح ما تعلمه الكاشف', function () { S.sEx = []; S.sHist = []; save(); refreshPanel(); });
   $('triesSel').onchange = function () { S.lispTries = parseInt(this.value, 10); save(); };
   $('okCb').onchange = function () { S.alwaysOk = this.checked; save(); showOk(); };
 
@@ -1180,11 +1208,12 @@
     // hiss frames: high band clearly above the room noise, more high than mid energy (vowels are the other way round), not inaudibly weak
     var flag = fr.map(function (f) { return f.hi > hiNF * 10 && f.hi > f.mid && f.hi > vref * 1e-3; });
     for (i = 1; i < flag.length - 1; i++) if (!flag[i] && flag[i - 1] && flag[i + 1]) flag[i] = true;
-    var sib = [], run = [];
+    var sib = [], run = [], runs = 0;
     for (i = 0; i <= fr.length; i++) {
       if (i < fr.length && flag[i]) run.push(fr[i]);
-      else { if (run.length >= 3) sib = sib.concat(run); run = []; }
+      else { if (run.length >= 3) { sib = sib.concat(run); runs++; } run = []; }
     }
+    res.runs = runs; // separate hisses (Siii – Saaa – Sooo has three)
     if (!sib.length) return res;
     res.sib = true;
     var M = new Float64Array(kTop + 1), hiSum = 0, num = 0, den = 0, lg = 0, cnt = 0;
@@ -1238,24 +1267,24 @@
     if (!a) return '';
     var t = a.sib ? 'S-Höhe ' + (a.feat[0] / 1000).toFixed(1) + ' kHz  ·  S-Stärke ' + Math.round(a.feat[3]) + ' dB' : 'Kein klares S gefunden';
     if (withScore) t = '📱 Handy: ' + a.score + ' / 10  ·  ' + t;
-    if (a.lowRate) t += '  ·  low-quality microphone';
+    if (a.lowRate) t += '  ·  ميكروفون ضعيف الجودة';
     return t;
   }
   function sStatus() {
     var ex = S.sEx || [], g = ex.filter(function (e) { return e.y >= 9; }).length, b = ex.length - g, h = S.sHist || [];
     var agree = h.filter(function (p) { return (p[1] >= 10) === (p[0] >= 7); }).length;
-    var t = 'S-detector learned from ' + g + ' 😀 and ' + b + ' 😕 ratings.';
-    if (h.length) t += ' It agreed with you in ' + agree + ' of your last ' + h.length + ' ratings.';
-    if (g < 5 || b < 5) t += ' Rate at least 5 of each in "Parents" mode before trusting "Phone" mode.';
+    var t = 'كاشف حرف S اتعلم من ' + g + ' تقييم 😀 و' + b + ' تقييم 😕.';
+    if (h.length) t += ' اتفق معكم في ' + agree + ' من آخر ' + h.length + ' تقييم.';
+    if (g < 5 || b < 5) t += ' قيّموا ٥ على الأقل من كل نوع في وضع «الأهل» قبل الاعتماد على وضع «التليفون».';
     return t;
   }
   function deErr(code, say, note) {
     if (code === 'not-allowed' || code === 'service-not-allowed') {
       say('Das Mikrofon ist aus 🔇');
-      note('The microphone is blocked. Open the game from its own web address and allow the microphone.');
+      note('الميكروفون مقفول. افتحوا اللعبة من عنوانها مباشرة واسمحوا بالميكروفون.');
     } else if (code === 'unsupported') {
       say('Hier geht das Mikrofon nicht 🔇');
-      note('This browser cannot record from the microphone. Use Chrome, Edge or Safari.');
+      note('هذا المتصفح لا يستطيع التسجيل من الميكروفون. استخدموا كروم أو إيدج أو سفاري.');
     } else if (code !== 'aborted') {
       say('Nochmal versuchen 🎤');
     }
@@ -1265,7 +1294,7 @@
 
   /* ----- training (S and Z mixed) ----- */
   var TIP_DE = 'Zähne fast zusammen, Zunge hinter die Zähne: ssss 🐍  ·  bei Z: tssss 🦓';
-  var TIP_EN = 'Teeth almost together, tongue tip stays behind the teeth (not between them). S = a thin, steady hiss. Z = a quick “t”, then the hiss.';
+  var TIP_EN = 'الأسنان شبه مقفولة، وطرف اللسان يفضل ورا الأسنان (مش بينها). S = صفير رفيع ومستمر. Z = «ت» سريعة وبعدها الصفير.';
   var tRound = [], tIdx = 0, tDone = {};
   function tNewRound() {
     var singles = shuffle(POOL.filter(function (x) { return x[0].indexOf(' ') < 0; })).slice(0, 7);
@@ -1923,7 +1952,7 @@
     var lenient = S.wLenient == null ? 1 : S.wLenient, g = W.g, ink = wInkData(g), r = wAssess(g, ink, lenient);
     if (r.pass) { var o = wLookalike(r, ink); if (o) { r.pass = false; r.reason = 'like'; r.like = o; } }
     else if (r.reason === 'shape' || r.reason === 'messy') { r.like = wLookalike(null, ink); if (r.like) r.reason = 'like'; }
-    if (r.cov != null) $('wNote').textContent = 'Letter drawn ' + Math.round(r.cov * 100) + '%  ·  on the letter ' + Math.round(r.prec * 100) + '%' + (g.groups.length ? '  ·  dots ' + (r.missG.length || r.manyG.length ? '✘' : '✔') : '');
+    if (r.cov != null) $('wNote').textContent = 'الحرف مكتمل ' + Math.round(r.cov * 100) + '٪  ·  على الحرف ' + Math.round(r.prec * 100) + '٪' + (g.groups.length ? '  ·  النقاط ' + (r.missG.length || r.manyG.length ? '✘' : '✔') : '');
     if (r.pass) { wSuccess(); return; }
     wFail(r);
   }
@@ -1986,10 +2015,10 @@
   function wLevelUp(fin, wrap) {
     luMode = 'write';
     soundStar(); confetti(40);
-    $('luTitle').textContent = 'Writing level ' + fin + ' complete!';
+    $('luTitle').textContent = 'برافو! خلصتي مستوى الكتابة ' + mNumAr(fin);
     $('luLonger').hidden = !wrap;
-    $('luLonger').textContent = 'She can write every letter! Starting again from the first level.';
-    $('luGo').textContent = 'Level ' + S.wLevel + ' ▶';
+    $('luLonger').textContent = 'بقيتي تكتبي كل الحروف! هنبدأ تاني من أول مستوى.';
+    $('luGo').textContent = 'المستوى ' + mNumAr(S.wLevel) + ' ◀';
     $('levelUp').hidden = false;
     var pill = $('starsPill');
     pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
@@ -2045,7 +2074,7 @@
   else window.addEventListener('resize', function () { if (view === 'write' && W.started) wLayout(); });
   for (var wl = 1; wl <= WLEVELS.length; wl++) {
     var wo = document.createElement('option');
-    wo.value = wl; wo.textContent = 'Level ' + wl + ':  ' + WLEVELS[wl - 1].join(' ');
+    wo.value = wl; wo.textContent = 'المستوى ' + mNumAr(wl) + ':  ' + WLEVELS[wl - 1].join(' ');
     $('wLvlSel').appendChild(wo);
   }
   $('wLvlSel').onchange = function () { S.wLevel = parseInt(this.value, 10); S.wDone = []; save(); W.queue = []; W.qi = 0; if (W.started) { wBuild(); wNext(); } else wPips(); renderHud(); };
@@ -2243,10 +2272,10 @@
   function mLevelUp(fin, wrap) {
     luMode = 'math';
     soundStar(); confetti(40);
-    $('luTitle').textContent = 'Math level ' + fin + ' complete!';
+    $('luTitle').textContent = 'برافو! خلصتي مستوى الحساب ' + mNumAr(fin);
     $('luLonger').hidden = !wrap;
-    $('luLonger').textContent = 'She finished all the math levels! Starting again from the first level.';
-    $('luGo').textContent = 'Level ' + S.mLevel + ' ▶';
+    $('luLonger').textContent = 'خلصتي كل مستويات الحساب! هنبدأ تاني من أول مستوى.';
+    $('luGo').textContent = 'المستوى ' + mNumAr(S.mLevel) + ' ◀';
     $('levelUp').hidden = false;
     var pill = $('starsPill');
     pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
@@ -2267,10 +2296,10 @@
   };
   MLEVELS.forEach(function (L, i) {
     var o = document.createElement('option');
-    o.value = i + 1; o.textContent = 'Level ' + (i + 1);
+    o.value = i + 1; o.textContent = 'المستوى ' + mNumAr(i + 1);
     $('mLvlSel').appendChild(o);
   });
-  function mRefreshLevelNames() { [].forEach.call($('mLvlSel').options, function (o, i) { o.textContent = 'Level ' + (i + 1) + ': ' + MLEVELS[i].t(); }); }
+  function mRefreshLevelNames() { [].forEach.call($('mLvlSel').options, function (o, i) { o.textContent = 'المستوى ' + mNumAr(i + 1) + ': ' + MLEVELS[i].t(); }); }
   $('mLvlSel').onchange = function () { S.mLevel = parseInt(this.value, 10); S.mDone = 0; save(); if (M.started) mNext(); renderHud(); };
   $('mDigitSel').onchange = function () {
     S.mDigits = this.value; save(); mRefreshLevelNames();
@@ -2322,7 +2351,7 @@
   }
   function stVoiceText() {
     var n = Object.keys(ST.files).length;
-    if (n) return 'Story voice: saved Egyptian audio (' + (ST.fileVoice || 'neural voice') + ', ' + n + ' files)';
+    if (n) return 'Storyteller: AI-generated voice (' + (ST.fileVoice || 'neural voice') + ')  ·  Quran: Sheikh Mahmoud Khalil Al-Husary';
     var v = stVoicePick();
     if (!v) return 'Story voice: no Arabic voice found on this device';
     return 'Story voice: ' + v.name + (/^ar[-_]eg/i.test(v.lang) ? ' (Egyptian)' : ' (' + v.lang + ', not Egyptian on this device)');
@@ -2724,6 +2753,86 @@
     }, function () { clearTimeout(t); st.textContent = '❌ Not reachable: the game uses the offline check'; });
   };
 
+  /* ----- warm-up checkpoint: "Siii – Saaa – Sooo" said right 3 times before training and game ----- */
+  var WARM = { need: 3, got: 0, fails: 0, last: null, done: false };
+  function warmSay(t) { popBubble($('warmBubble'), t); }
+  function warmPips() {
+    var p = $('warmPips'); p.innerHTML = '';
+    for (var i = 0; i < WARM.need; i++) {
+      var d = document.createElement('div');
+      d.className = 'pip' + (i < WARM.got ? ' on' : '');
+      d.textContent = i < WARM.got ? '⭐' : '';
+      p.appendChild(d);
+    }
+  }
+  function warmStart() {
+    WARM.got = 0; WARM.fails = 0; WARM.last = null; WARM.done = false;
+    $('speakModes').hidden = true;
+    $('trainCard').hidden = true; $('gameCard').hidden = true;
+    $('warmCard').hidden = false;
+    $('warmRate').hidden = true; $('warmGauge').hidden = true; $('warmOk').hidden = !S.alwaysOk;
+    $('warmNote').textContent = '';
+    warmPips();
+    warmSay('Tippe auf 🎤 und sag: Siii – Saaa – Sooo 🐍');
+  }
+  function warmUnlock() {
+    WARM.done = true;
+    $('warmCard').hidden = true;
+    $('speakModes').hidden = false;
+    setMode(curMode);
+  }
+  function warmGood() {
+    WARM.got++; WARM.fails = 0; warmPips();
+    $('warmOk').hidden = !S.alwaysOk;
+    if (WARM.got >= WARM.need) {
+      soundStar(); confetti(30);
+      warmSay('Super! 3-mal richtig 🎉 Jetzt geht es los!');
+      setTimeout(warmUnlock, 2200);
+    } else {
+      soundGood(); confetti(8);
+      warmSay('Richtig! 🌟 Noch ' + (WARM.need - WARM.got) + '-mal: Siii – Saaa – Sooo');
+    }
+  }
+  function warmBad(msg) {
+    WARM.fails++; soundTry();
+    warmSay(msg || 'Nochmal! Zähne zusammen, Zunge hinter die Zähne: Siii – Saaa – Sooo 🐍');
+    if (WARM.fails >= 2) $('warmOk').hidden = false;
+  }
+  $('warmHear').onclick = function () { speakDe('Siii. Saaa. Sooo.', 0.55); };
+  $('warmOk').onclick = function () { if (!WARM.done && WARM.got < WARM.need) { $('warmRate').hidden = true; warmGood(); } };
+  $('warmMic').onclick = function () {
+    if (WARM.done) return;
+    $('warmRate').hidden = true; $('warmGauge').hidden = true; WARM.last = null;
+    sRecord($('warmMic'), {
+      start: function () { warmSay('Ich höre zu... 👂'); $('warmNote').textContent = ''; },
+      result: function (a) {
+        a.score = sScore(a);
+        if (S.rateMode === 'parent') { // the parent decides; the rating also teaches the S-detector
+          WARM.last = a; $('warmNote').textContent = sInfo(a, false);
+          warmSay('Mama oder Papa bewertet 👂'); $('warmRate').hidden = false; return;
+        }
+        $('warmGauge').hidden = false; sMarker('warmMarker', a.score);
+        $('warmNote').textContent = sInfo(a, true) + (a.sib ? '  ·  ' + a.runs + ' S' : '');
+        if (!a.sib) warmBad('Ich habe kein klares S gehört 🐍 Nochmal: Siii – Saaa – Sooo');
+        else if (a.runs < 2) warmBad('Sag alle drei: Siii – Saaa – Sooo 🐍');
+        else if (a.score >= 6) warmGood();
+        else warmBad(feedback(a.score));
+      },
+      error: function (c) { deErr(c, warmSay, function (t) { $('warmNote').textContent = t; }); $('warmOk').hidden = false; },
+      none: function () { warmSay('Ich habe nichts gehört 🎤 Nochmal!'); }
+    });
+  };
+  makeRate($('warmRate'), function (v) {
+    $('warmRate').hidden = true;
+    if (WARM.last) {
+      sLearn(WARM.last, v);
+      $('warmGauge').hidden = false; sMarker('warmMarker', WARM.last.score);
+      $('warmNote').textContent = sInfo(WARM.last, true) + '  ·  Eltern: ' + (v >= 10 ? '😀' : v >= 7 ? '🙂' : '😕');
+      WARM.last = null;
+    }
+    if (v >= 10) warmGood(); else warmBad(v >= 7 ? 'Fast! Noch einmal: Siii – Saaa – Sooo 🐍' : null);
+  });
+
   /* ----- page / mode switching ----- */
   var curMode = 'train';
   function stopAll() {
@@ -2739,6 +2848,7 @@
     curMode = m;
     $('modeTrain').classList.toggle('on', m === 'train');
     $('modeGame').classList.toggle('on', m === 'game');
+    $('warmCard').hidden = true;
     $('trainCard').hidden = m !== 'train';
     $('gameCard').hidden = m !== 'game';
     if (m === 'train') tRender(); else gStartScreen();
@@ -2757,7 +2867,7 @@
     $('tabSpeak').classList.toggle('on', v === 'speak');
     $('tabStory').classList.toggle('on', v === 'story');
     renderHud();
-    if (v === 'speak') setMode(curMode);
+    if (v === 'speak') { if (S.warmOn !== false) warmStart(); else setMode(curMode); }
     if (v === 'write') wEnter();
     if (v === 'math') mEnter();
     if (v === 'story') stEnter();
