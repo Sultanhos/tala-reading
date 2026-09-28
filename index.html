@@ -87,7 +87,7 @@
   .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .pill { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px; border: 3px solid var(--line);
     border-radius: 999px; font-weight: 700; font-size: 20px; box-shadow: 0 4px 0 var(--line); }
-  .level { background: var(--grape); color: #fff; }
+  .level { background: var(--grape); color: #fff; font-family: 'Noto Naskh Arabic', 'Fredoka', system-ui, sans-serif; unicode-bidi: isolate; }
   .starsPill { background: var(--sun); color: var(--line); font-size: 24px; padding: 5px 18px; }
   .starsPill.bump { animation: bump .6s ease; }
   @keyframes bump { 30% { transform: scale(1.35) rotate(-4deg); } 60% { transform: scale(.95); } }
@@ -346,7 +346,7 @@
 
 <main class="app">
   <header class="top">
-    <div class="pill level" id="levelBadge">Lesson 3A</div>
+    <div class="pill level" id="levelBadge" dir="rtl" lang="ar">الدرس 3A</div>
     <div class="pill starsPill" id="starsPill" aria-live="polite">⭐ <span id="starCount">0</span></div>
     <button class="gear" id="parentBtn" aria-label="Parent settings">⚙️</button>
   </header>
@@ -562,7 +562,7 @@
 
 <!-- level up -->
 <div class="overlay" id="levelUp" hidden>
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="luTitle">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="luTitle" dir="rtl" lang="ar">
     <div class="bigStar">⭐</div>
     <h2 id="luTitle" class="ar">برافو! خلصتي الدرس</h2>
     <p class="ar" id="luAr">مَا شَاءَ اللَّه! نَجْمَةٌ جَدِيدَة</p>
@@ -710,6 +710,8 @@
   var LESSON_IDS = LESSONS.map(function (l) { return l[0]; });
   var LEVELS = LESSONS.map(function (l) { return l[1].map(function (w) { return [w, '']; }); });
   function wordsFor(level) { return LEVELS[level - 1]; }
+  // "الدرس 3A": the Latin lesson code kept together, so it shows correctly in right-to-left Arabic text
+  function lessonName(level) { return 'الدرس ⁦' + LESSON_IDS[level - 1] + '⁩'; }
 
   /* ---------- saved state ---------- */
   var KEY = 'arabic-reading-stars-v2';
@@ -812,7 +814,7 @@
     b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
   }
   function renderHud() {
-    $('levelBadge').textContent = view === 'speak' ? 'نطق' : view === 'write' ? 'كتابة ' + mNumAr(S.wLevel) : view === 'math' ? 'حساب ' + mNumAr(S.mLevel) : view === 'story' ? 'حكايات' : 'الدرس ' + LESSON_IDS[S.level - 1];
+    $('levelBadge').textContent = view === 'speak' ? 'نطق' : view === 'write' ? 'كتابة ' + mNumAr(S.wLevel) : view === 'math' ? 'حساب ' + mNumAr(S.mLevel) : view === 'story' ? 'حكايات' : lessonName(S.level);
     $('starCount').textContent = S.stars;
     var p = $('pips'); p.innerHTML = '';
     for (var i = 0; i < wordsFor(S.level).length; i++) {
@@ -959,10 +961,10 @@
   function showLevelUp(finished) {
     luMode = 'read';
     soundStar(); confetti(40);
-    $('luTitle').textContent = 'برافو! خلصتي الدرس ' + LESSON_IDS[finished - 1];
+    $('luTitle').textContent = 'برافو! خلصتي ' + lessonName(finished);
     $('luLonger').hidden = !wrapped;
     $('luLonger').textContent = 'خلصتي الكتاب كله! هنبدأ تاني من أول درس.';
-    $('luGo').textContent = 'الدرس ' + LESSON_IDS[S.level - 1] + ' ◀';
+    $('luGo').textContent = lessonName(S.level) + ' ◀';
     $('levelUp').hidden = false;
     var pill = $('starsPill');
     pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
@@ -988,7 +990,7 @@
   }
   function refreshPanel() {
     $('starIn').value = S.stars;
-    $('ppLevel').textContent = LESSON_IDS[S.level - 1];
+    $('ppLevel').textContent = '⁦' + LESSON_IDS[S.level - 1] + '⁩';
     $('lvlSel').value = String(S.level);
     $('nameIn').value = S.name;
     $('soundCb').checked = !!S.sound;
@@ -1010,7 +1012,7 @@
   }
   for (var l = 1; l <= LEVELS.length; l++) {
     var o = document.createElement('option');
-    o.value = l; o.textContent = 'الدرس ' + LESSON_IDS[l - 1];
+    o.value = l; o.textContent = lessonName(l);
     $('lvlSel').appendChild(o);
   }
   $('parentBtn').onclick = function () { refreshPanel(); $('parentPanel').hidden = false; };
