@@ -1,0 +1,6 @@
+# local working files (not published)
+recordings/
+audio/
+Story texts for ChatGPT/
+node_modules/
+*.tmp.wav
