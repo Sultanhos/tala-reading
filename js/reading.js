@@ -195,7 +195,7 @@ function refreshPanel() {
   $('starIn').value = S.stars;
   $('ppLevel').textContent = '⁦' + LESSON_IDS[S.level - 1] + '⁩';
   $('lvlSel').value = String(S.level);
-  $('nameIn').value = S.name;
+  kidsPanelRefresh();
   $('soundCb').checked = !!S.sound;
   $('okCb').checked = !!S.alwaysOk;
   $('triesSel').value = String(S.lispTries || 2);
@@ -218,7 +218,7 @@ for (var l = 1; l <= LEVELS.length; l++) {
   o.value = l; o.textContent = lessonName(l);
   $('lvlSel').appendChild(o);
 }
-$('parentBtn').onclick = function () { refreshPanel(); $('parentPanel').hidden = false; };
+$('parentBtn').onclick = function () { parentGate(function () { refreshPanel(); $('parentPanel').hidden = false; }); };
 $('ppClose').onclick = function () { $('parentPanel').hidden = true; };
 function setStars(n) { S.stars = Math.max(0, Math.min(9999, n | 0)); save(); renderHud(); refreshPanel(); }
 $('starMinus').onclick = function () { setStars(S.stars - 1); };
@@ -227,7 +227,6 @@ $('starIn').onchange = function () { setStars(parseInt(this.value, 10) || 0); };
 armed($('resetStars'), 'تصفير النجوم', function () { S.stars = 0; save(); renderHud(); refreshPanel(); });
 armed($('resetLevel'), 'الرجوع لأول درس', function () { S.level = 1; S.doneList = []; save(); buildQueue(); nextWord(); refreshPanel(); });
 $('lvlSel').onchange = function () { S.level = parseInt(this.value, 10); S.doneList = []; save(); buildQueue(); nextWord(); refreshPanel(); };
-$('nameIn').oninput = function () { S.name = this.value.trim() || 'تالا'; save(); };
 $('soundCb').onchange = function () { S.sound = this.checked; save(); };
 $('strictSel').onchange = function () { S.lenient = parseInt(this.value, 10); save(); };
 $('rateSel').onchange = function () { S.rateMode = this.value; save(); };

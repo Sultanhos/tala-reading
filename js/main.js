@@ -50,3 +50,4 @@ $('modeGame').onclick = function () { setMode('game'); };
 
 buildQueue();
 nextWord();
+kidsStart();

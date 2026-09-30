@@ -32,6 +32,7 @@
 
 <main class="app">
   <header class="top">
+    <button class="gear kid" id="kidBtn" aria-label="مين بيلعب؟">🐰</button>
     <div class="pill level" id="levelBadge" dir="rtl" lang="ar">الدرس 3A</div>
     <div class="pill starsPill" id="starsPill" aria-live="polite">⭐ <span id="starCount">0</span></div>
     <button class="gear" id="parentBtn" aria-label="Parent settings">⚙️</button>
@@ -301,10 +302,57 @@
   </div>
 </div>
 
+<!-- who is playing? -->
+<div class="overlay" id="kidsOv" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="kidsTitle" dir="rtl" lang="ar">
+    <h2 id="kidsTitle" class="ar">مين بيلعب؟</h2>
+    <div class="kids" id="kidsList"></div>
+    <button class="small" id="kidsAdd">➕ طفل جديد</button>
+  </div>
+</div>
+
+<!-- add / edit a child -->
+<div class="overlay" id="kidFormOv" hidden>
+  <div class="sheet parent" role="dialog" aria-modal="true" aria-labelledby="kfTitle" dir="rtl" lang="ar">
+    <h2 id="kfTitle">طفل جديد</h2>
+    <p class="hint" id="kfHello" hidden>أهلًا! اكتبوا بيانات الطفل اللي هيلعب. تقدروا تضيفوا إخواته بعدين من ⚙️.</p>
+    <div class="row"><label for="kfName">الاسم</label><input type="text" id="kfName" dir="rtl" lang="ar" maxlength="14" autocomplete="off"></div>
+    <div class="row"><label for="kfAge">السن</label><select id="kfAge"></select></div>
+    <div class="row"><span>ولد ولا بنت؟</span>
+      <span class="seg" id="kfGender"><button class="small" data-g="boy">👦 ولد</button><button class="small" data-g="girl">👧 بنت</button></span></div>
+    <div class="avatars" id="kfAv" role="radiogroup" aria-label="الصورة"></div>
+    <p class="note" id="kfErr"></p>
+    <div class="btnRow">
+      <button class="go" id="kfSave">حفظ</button>
+      <button class="small" id="kfCancel">إلغاء</button>
+    </div>
+    <div class="row" id="kfDelRow"><span class="hint">الحذف بيمسح كل نجومه وتقدمه.</span><button class="small" id="kfDel">حذف</button></div>
+  </div>
+</div>
+
+<!-- parents only: a sum a young child can't solve (app stores ask for this before settings) -->
+<div class="overlay" id="gateOv" hidden>
+  <div class="sheet parent" role="dialog" aria-modal="true" aria-labelledby="gateTitle" dir="rtl" lang="ar">
+    <h2 id="gateTitle">للكبار بس 🔒</h2>
+    <p class="hint" style="text-align:center">اكتبوا ناتج العملية دي:</p>
+    <p class="gateQ" id="gateQ" dir="rtl"></p>
+    <input type="text" id="gateIn" class="gateIn" inputmode="numeric" dir="ltr" autocomplete="off" aria-labelledby="gateQ">
+    <p class="note" id="gateErr"></p>
+    <div class="btnRow">
+      <button class="go" id="gateGo">دخول</button>
+      <button class="small" id="gateCancel">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 <!-- parent panel -->
 <div class="overlay" id="parentPanel" hidden>
   <div class="sheet parent" role="dialog" aria-modal="true" aria-labelledby="ppTitle" dir="rtl" lang="ar">
     <h2 id="ppTitle">إعدادات ولي الأمر</h2>
+    <div class="row"><b>الأطفال</b><button class="small" id="ppKidAdd">➕ طفل جديد</button></div>
+    <div class="kidRows" id="ppKids"></div>
+    <p class="hint" id="ppFor"></p>
+    <hr class="divider">
     <div class="row"><label for="starIn">النجوم اللي جمعتها</label>
       <span style="display:flex;gap:6px;align-items:center">
         <button class="small" id="starPlus" aria-label="نجمة زيادة">+</button>
@@ -318,8 +366,6 @@
     <hr class="divider">
     <div class="row"><label for="lvlSel">قراءة: الانتقال لدرس</label>
       <select id="lvlSel"></select></div>
-    <div class="row"><label for="nameIn">اسمها (للتشجيع)</label>
-      <input type="text" id="nameIn" dir="rtl" lang="ar" maxlength="14"></div>
     <div class="row"><label for="soundCb">الأصوات</label><input type="checkbox" id="soundCb"></div>
     <div class="row"><label for="strictSel">قراءة: قد إيه لازم تكون القراءة مطابقة</label>
       <select id="strictSel"><option value="0">عادي</option><option value="1">مرن</option><option value="2">مرن جدًا</option></select></div>
@@ -367,6 +413,7 @@
 </div>
 
 <script src="stories.js"></script>
+<script src="js/profiles.js"></script>
 <script src="js/app-state.js"></script>
 <script src="js/reading.js"></script>
 <script src="js/speech.js"></script>
@@ -374,6 +421,7 @@
 <script src="js/math.js"></script>
 <script src="js/story-player.js"></script>
 <script src="js/speech-warmup.js"></script>
+<script src="js/profiles-ui.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
