@@ -1,0 +1,21 @@
+{
+  "name": "tala-game",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Arabic reading, writing, math and speech practice for young children",
+  "type": "module",
+  "scripts": {
+    "bump": "node tools/build-app.mjs --bump",
+    "build": "node tools/build-app.mjs",
+    "android": "node tools/build-app.mjs && npx cap sync android && npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor-community/speech-recognition": "^7.0.1",
+    "@capacitor-community/text-to-speech": "^8.0.2",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2"
+  }
+}

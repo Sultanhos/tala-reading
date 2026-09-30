@@ -1,0 +1,8 @@
+{
+  "appId": "com.talagame.app",
+  "appName": "Tala",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  }
+}
