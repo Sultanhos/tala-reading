@@ -1,0 +1,74 @@
+[
+ {
+  "id": "kataba",
+  "file": "clips/kataba.wav",
+  "said": "كَتَبَ",
+  "expected": "كَتَبَ"
+ },
+ {
+  "id": "kutiba",
+  "file": "clips/kutiba.wav",
+  "said": "كُتِبَ",
+  "expected": "كَتَبَ"
+ },
+ {
+  "id": "darasa",
+  "file": "clips/darasa.wav",
+  "said": "دَرَسَ",
+  "expected": "دَرَسَ"
+ },
+ {
+  "id": "durisa",
+  "file": "clips/durisa.wav",
+  "said": "دُرِسَ",
+  "expected": "دَرَسَ"
+ },
+ {
+  "id": "dhahaba",
+  "file": "clips/dhahaba.wav",
+  "said": "ذَهَبَ",
+  "expected": "ذَهَبَ"
+ },
+ {
+  "id": "qaraa",
+  "file": "clips/qaraa.wav",
+  "said": "قَرَأَ",
+  "expected": "قَرَأَ"
+ },
+ {
+  "id": "rakaa",
+  "file": "clips/rakaa.wav",
+  "said": "رَكَعَ",
+  "expected": "رَكَعَ"
+ },
+ {
+  "id": "shakara",
+  "file": "clips/shakara.wav",
+  "said": "شَكَرَ",
+  "expected": "شَكَرَ"
+ },
+ {
+  "id": "hufiza",
+  "file": "clips/hufiza.wav",
+  "said": "حُفِظَ",
+  "expected": "حُفِظَ"
+ },
+ {
+  "id": "kitab",
+  "file": "clips/kitab.wav",
+  "said": "كِتَابٌ",
+  "expected": "كِتَابٌ"
+ },
+ {
+  "id": "qalam",
+  "file": "clips/qalam.wav",
+  "said": "قَلَمٌ",
+  "expected": "قَلَمٌ"
+ },
+ {
+  "id": "sentence",
+  "file": "clips/sentence.wav",
+  "said": "كَتَبَ الوَلَدُ الدَّرْسَ",
+  "expected": "كَتَبَ الوَلَدُ الدَّرْسَ"
+ }
+]

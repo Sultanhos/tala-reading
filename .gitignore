@@ -5,3 +5,4 @@ Story texts for ChatGPT/
 node_modules/
 *.tmp.wav
 .claude/
+tools/tashkeel-test/clips/

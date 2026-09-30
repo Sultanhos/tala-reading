@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tashkeel Test</title>
+<style>
+  :root { --ink: #2b2350; --bg: #fffaf0; --ok: #1fae6f; --bad: #e0474c; --muted: #6a5f8f; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Noto Naskh Arabic', system-ui, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 22px; }
+  #status { color: var(--muted); min-height: 1.5em; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  td, th { border-bottom: 1px solid #ddd; padding: 6px; text-align: start; vertical-align: top; }
+  .ar { font-size: 26px; }
+  .ok { color: var(--ok); font-weight: 700; } .bad { color: var(--bad); font-weight: 700; }
+  button { font: inherit; font-size: 17px; padding: 8px 16px; border-radius: 12px; border: 2px solid var(--ink); background: #fff; cursor: pointer; margin: 4px; }
+  input { font: inherit; font-size: 22px; padding: 4px 8px; width: 14em; }
+  .mark { background: #ffd6d6; border-radius: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>اختبار قراءة التشكيل (whisper-base-ar-quran, في المتصفح)</h1>
+  <p id="status">جاري التحميل…</p>
+  <button id="runAll" disabled>▶ اختبر كل المقاطع</button>
+  <div style="margin-top:10px">
+    <label>الكلمة المطلوبة: <input id="want" value="كَتَبَ"></label>
+    <button id="rec" disabled>🎤 سجّل (٣ ثواني)</button>
+  </div>
+  <table><thead><tr><th>المقطع</th><th>المطلوب</th><th>النموذج سمع</th><th>الحروف</th><th>التشكيل</th><th>الوقت</th></tr></thead><tbody id="rows"></tbody></table>
+</main>
+<script type="module">
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3';
+env.allowLocalModels = false;
+const $ = (id) => document.getElementById(id);
+const MODEL = 'YunusZJ/whisper-base-ar-quran-ONNX';
+window.__res = [];
+
+// split Arabic text into letters, each with its vowel marks
+const MARKS = /[ً-ْٰ]/;
+function units(t) {
+  const out = [];
+  for (const ch of String(t).replace(/ـ/g, '').normalize('NFC')) {
+    if (MARKS.test(ch)) { if (out.length) out[out.length - 1].m += ch; }
+    else if (/[ء-يٱ]/.test(ch)) out.push({ l: ch, m: '' });
+  }
+  const norm = (m) => [...m].sort().join('');
+  out.forEach((u) => { u.m = norm(u.m); u.base = u.l.replace(/[أإآٱ]/, 'ا'); });
+  return out;
+}
+// letters the same? then how many vowel marks match (the last letter's mark is free: she may stop on it)
+function compare(want, heard) {
+  const a = units(want), b = units(heard);
+  const la = a.map((u) => u.base).join(''), lb = b.map((u) => u.base).join('');
+  let at = lb.indexOf(la);
+  if (at < 0) return { letters: false, vowels: null, bad: [] };
+  let ok = 0, n = 0; const bad = [];
+  a.forEach((u, i) => {
+    if (i === a.length - 1) return;
+    n++;
+    if (u.m === b[at + i].m) ok++; else bad.push(i);
+  });
+  return { letters: true, vowels: n ? ok / n : 1, bad };
+}
+function show(want, heard, r) {
+  const a = units(want);
+  if (!r.letters) return '–';
+  return r.vowels === 1 ? '<span class="ok">✔ صح</span>' : '<span class="bad">✘ ' + r.bad.map((i) => a[i].l + a[i].m).join('، ') + '</span>';
+}
+
+let asr;
+async function toAudio(buf) {
+  const ctx = new AudioContext({ sampleRate: 16000 });
+  const ab = await ctx.decodeAudioData(buf);
+  ctx.close();
+  return ab.getChannelData(0);
+}
+async function run(label, audio, want, said) {
+  const t0 = performance.now();
+  const out = await asr(audio, { language: 'arabic', task: 'transcribe' });
+  const ms = Math.round(performance.now() - t0);
+  const heard = out.text.trim(), r = compare(want, heard);
+  window.__res.push({ label, said, want, heard, ...r, ms });
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${label}${said && said !== want ? '<br><small>قال: <span class="ar">' + said + '</span></small>' : ''}</td>
+    <td class="ar">${want}</td><td class="ar">${heard}</td>
+    <td>${r.letters ? '<span class="ok">✔</span>' : '<span class="bad">✘</span>'}</td><td>${show(want, heard, r)}</td><td>${ms} ms</td>`;
+  $('rows').appendChild(tr);
+}
+
+try {
+  const t0 = performance.now();
+  asr = await pipeline('automatic-speech-recognition', MODEL, {
+    dtype: { encoder_model: 'q4', decoder_model_merged: 'q4' },
+    device: new URLSearchParams(location.search).get('device') || 'wasm',
+    progress_callback: (p) => { if (p.status === 'progress') $('status').textContent = 'تحميل ' + p.file + ': ' + Math.round(p.progress) + '%'; }
+  });
+  $('status').textContent = 'النموذج جاهز (' + Math.round((performance.now() - t0) / 1000) + ' ث)';
+  window.__ready = true; window.__asr = asr; window.__toAudio = toAudio;
+  $('runAll').disabled = false; $('rec').disabled = false;
+} catch (e) { $('status').textContent = 'خطأ: ' + e.message; window.__err = String(e && e.stack || e); }
+
+/* ----- scoring mode: the word on screen is known, so compare it with its wrong-vowel variants ----- */
+const V = ['َ', 'ِ', 'ُ', 'ْ']; // fatha, kasra, damma, sukun
+function variants(word) {
+  const u = [];
+  for (const ch of word.normalize('NFC')) { if (MARKS.test(ch) && u.length) u[u.length - 1].m += ch; else u.push({ l: ch, m: '' }); }
+  const pos = [];
+  u.forEach((x, i) => { if (i < u.length - 1 && /[ء-ي]/.test(x.l) && V.some((v) => x.m.includes(v))) pos.push(i); });
+  const use = pos.slice(0, 3), out = new Set();
+  const rec = (k, cur) => {
+    if (k === use.length) { out.add(cur.map((x) => x.l + x.m).join('')); return; }
+    for (const v of V) {
+      const c = cur.map((x) => ({ ...x })), x = c[use[k]];
+      x.m = (x.m.includes('ّ') ? 'ّ' : '') + v;
+      rec(k + 1, c);
+    }
+  };
+  rec(0, u);
+  out.add(word.normalize('NFC'));
+  return [...out];
+}
+let T;
+async function scoreAll(audio, cands) {
+  T = T || await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3');
+  const tok = asr.tokenizer, feats = await asr.processor(audio);
+  const sp = ['<|startoftranscript|>', '<|ar|>', '<|transcribe|>', '<|notimestamps|>'].map((t) => tok.model.tokens_to_ids.get(t));
+  const eot = tok.model.tokens_to_ids.get('<|endoftext|>');
+  const res = [];
+  // listen once: run the encoder a single time and reuse what it heard for every candidate
+  const t0 = performance.now();
+  const encOut = await asr.model.sessions['model'].run({ input_features: feats.input_features.ort_tensor });
+  const enc = new T.Tensor(encOut.last_hidden_state);
+  window.__encMs = Math.round(performance.now() - t0);
+  // all candidates in one batch: each row = one candidate, padded at the end (padding can't change earlier positions)
+  const all = cands.map((c) => { const txt = tok.encode(c, { add_special_tokens: false }); return { c, ids: [...sp, ...txt, eot], n: txt.length + 1 }; });
+  const Lmax = Math.max(...all.map((x) => x.ids.length)) - 1, N = all.length;
+  const inp = new BigInt64Array(N * Lmax).fill(BigInt(eot));
+  all.forEach((x, r) => x.ids.slice(0, -1).forEach((id, t) => { inp[r * Lmax + t] = BigInt(id); }));
+  // Whisper always listens to a 30 s window (1500 frames, 50 per second); keep only the part with her voice + 1 s
+  const H = enc.dims[2], F = window.__noCrop ? enc.dims[1] : Math.min(enc.dims[1], Math.ceil(audio.length / 16000 * 50) + 50);
+  const ed = enc.data.subarray(0, F * H), encN = new Float32Array(ed.length * N);
+  for (let r = 0; r < N; r++) encN.set(ed, r * ed.length);
+  const t1 = performance.now();
+  const out = await asr.model({ encoder_outputs: new T.Tensor('float32', encN, [N, F, H]),
+    decoder_input_ids: new T.Tensor('int64', inp, [N, Lmax]) });
+  const L = out.logits, V2 = L.dims[2], data = L.data;
+  window.__decMs = Math.round(performance.now() - t1);
+  all.forEach((x, r) => {
+    let lp = 0;
+    for (let t = sp.length - 1; t < x.ids.length - 1; t++) { // position t predicts ids[t + 1]
+      const row = data.subarray((r * Lmax + t) * V2, (r * Lmax + t + 1) * V2);
+      let mx = -Infinity; for (let j = 0; j < V2; j++) if (row[j] > mx) mx = row[j];
+      let s = 0; for (let j = 0; j < V2; j++) s += Math.exp(row[j] - mx);
+      lp += row[x.ids[t + 1]] - mx - Math.log(s);
+    }
+    res.push({ c: x.c, lp, n: x.n });
+  });
+  return res.sort((a, b) => b.lp - a.lp);
+}
+window.__scoreAll = scoreAll; window.__variants = variants;
+window.__scoreRun = async () => {
+  const list = await (await fetch('list.json')).json();
+  window.__score = [];
+  for (const c of list) {
+    if (c.id === 'sentence') continue;
+    const audio = await toAudio(await (await fetch(c.file)).arrayBuffer());
+    const t0 = performance.now(), cands = variants(c.expected), r = await scoreAll(audio, cands);
+    const exp = r.find((x) => x.c === c.expected.normalize('NFC'));
+    window.__score.push({ id: c.id, said: c.said, best: r[0].c, hit: r[0].c === c.said.normalize('NFC'),
+      top3: r.slice(0, 3).map((x) => x.c + ' ' + x.lp.toFixed(1)).join(' | '), expLp: exp.lp.toFixed(1), n: cands.length, ms: Math.round(performance.now() - t0) });
+  }
+  window.__scoreDone = true;
+};
+
+$('runAll').onclick = async () => {
+  $('runAll').disabled = true;
+  const list = await (await fetch('list.json')).json();
+  for (const c of list) {
+    const audio = await toAudio(await (await fetch(c.file)).arrayBuffer());
+    await run(c.id, audio, c.expected, c.said);
+  }
+  window.__done = true;
+  $('runAll').disabled = false;
+};
+$('rec').onclick = async () => {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const mr = new MediaRecorder(stream), parts = [];
+  mr.ondataavailable = (e) => parts.push(e.data);
+  mr.onstop = async () => {
+    stream.getTracks().forEach((t) => t.stop());
+    $('status').textContent = 'بيحلل…';
+    const audio = await toAudio(await new Blob(parts).arrayBuffer());
+    await run('🎤', audio, $('want').value.trim(), '');
+    $('status').textContent = 'جاهز';
+  };
+  mr.start(); $('status').textContent = 'بيسجل… اقرا الكلمة';
+  setTimeout(() => mr.stop(), 3000);
+};
+</script>
+</body>
+</html>
