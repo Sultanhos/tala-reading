@@ -17,7 +17,7 @@ function say(text) {
   b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
 }
 function renderHud() {
-  $('levelBadge').textContent = view === 'speak' ? 'نطق' : view === 'write' ? 'كتابة ' + mNumAr(S.wLevel) : view === 'math' ? 'حساب ' + mNumAr(S.mLevel) : view === 'story' ? 'حكايات' : lessonName(S.level);
+  $('levelBadge').textContent = view === 'speak' ? 'نطق' : view === 'write' ? 'كتابة ' + mNumAr(S.wLevel) : view === 'math' ? 'حساب ' + mNumAr(S.mLevel) : view === 'story' ? 'حكايات' : view === 'quran' ? 'جزء عم' : lessonName(S.level);
   $('starCount').textContent = S.stars;
   var p = $('pips'); p.innerHTML = '';
   for (var i = 0; i < wordsFor(S.level).length; i++) {

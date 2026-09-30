@@ -249,6 +249,37 @@ body {
 .rsW { transition: color .3s; }
 .rsW.ok { color: #1fae6f; }
 #rsCard .btnRow { gap: 10px; }
+/* ---------- 🕌 Juz 'Amma ---------- */
+#viewQuran .card { font-family: 'Noto Naskh Arabic', 'Fredoka', system-ui, sans-serif; }
+.qHead { font-family: 'Amiri Quran', 'Amiri', 'Noto Naskh Arabic', serif; font-size: 28px; font-weight: 700; color: var(--grape); }
+.qSurahs { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.qSurah { display: flex; align-items: center; gap: 8px; border: 3px solid var(--line); border-radius: 18px; background: var(--paper); color: var(--card-ink);
+  padding: 8px 10px; font-family: 'Noto Naskh Arabic', serif; font-weight: 700; font-size: 18px; cursor: pointer; box-shadow: 0 4px 0 var(--line); text-align: start; }
+.qSurah:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.qSurah.started { background: #fff8d9; }
+.qSurah.done { background: #c9f5df; }
+.qSurah .qN { min-width: 30px; height: 30px; border-radius: 50%; background: #e9e2ff; display: grid; place-items: center; font-size: 14px; }
+.qSurah .qT { flex: 1; }
+.qDots { display: flex; gap: 3px; }
+.qDots i { width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--line); }
+.qDots i.on { background: var(--mint); }
+.qCredit { font-size: 12px; color: var(--muted); text-align: center; margin: 4px 0 0; line-height: 1.6; }
+.qCredit a { color: inherit; }
+.qTop { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.qName { font-family: 'Amiri Quran', 'Amiri', 'Noto Naskh Arabic', serif; font-size: 26px; color: var(--grape); }
+.qSteps { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.qStep { border: 2px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--card-ink); padding: 4px 10px;
+  font-family: 'Noto Naskh Arabic', serif; font-weight: 700; font-size: 14px; cursor: pointer; }
+.qStep.on { background: var(--sun); }
+.qStep.done:not(.on) { background: #c9f5df; }
+.qStep:disabled { opacity: .45; cursor: default; }
+.qBox { min-height: 190px; gap: 6px; padding: 12px; }
+.qBasmala { font-family: 'Amiri Quran', 'Amiri', serif; font-size: 20px; color: var(--muted); }
+.qAyah { font-family: 'Amiri Quran', 'Amiri', 'Noto Naskh Arabic', serif; font-size: clamp(26px, 7.5vw, 36px); line-height: 2.2; text-align: center; color: var(--card-ink); direction: rtl; }
+.qW { transition: color .3s; }
+.qW.ok { color: #1fae6f; }
+.qW.hid { color: transparent; background: #ece6ff; border-radius: 8px; }
+.qEnd { font-size: .8em; color: var(--grape); }
 .dEmpty { text-align: center; font-family: 'Noto Naskh Arabic', system-ui, sans-serif; margin: 16px 0; }
 
 .confetti { position: fixed; top: -40px; z-index: 20; pointer-events: none; animation: fall linear forwards; }

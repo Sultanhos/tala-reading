@@ -3,7 +3,7 @@
 
 var AREA_INFO = {
   read: ['📖', 'قراءة', '#7b5cff'], write: ['✍️', 'كتابة', '#ff6b6b'], math: ['🔢', 'حساب', '#2fcf8b'],
-  speak: ['🐍', 'نطق', '#ffb547'], story: ['📚', 'حكايات', '#6bb8ff']
+  speak: ['🐍', 'نطق', '#ffb547'], quran: ['🕌', 'قرآن', '#26a69a'], story: ['📚', 'حكايات', '#6bb8ff']
 };
 var dashKid = null;
 
@@ -44,6 +44,7 @@ function dashLevel(d, area) {
   if (area === 'read') return lessonName(Math.min(LEVELS.length, Math.max(1, d.level | 0 || 1)));
   if (area === 'write') return 'المستوى ' + mNumAr(Math.min(WLEVELS.length, Math.max(1, d.wLevel | 0 || 1)));
   if (area === 'math') return MLEVELS[Math.min(MLEVELS.length, Math.max(1, d.mLevel | 0 || 1)) - 1].t();
+  if (area === 'quran') { var q = Object.keys(d.quran || {}).filter(function (n) { return d.quran[n].step >= 4; }).length; return q ? 'حفظ ' + mNumAr(q) + ' سورة' : ''; }
   if (area === 'speak') return d.lisp && d.lisp.rounds ? 'أحسن نتيجة: ' + mNumAr(d.lisp.best) + ' من ٥٠' : '';
   return '';
 }
@@ -120,7 +121,7 @@ function dashRender() {
 
   // each area: level now, minutes, right / wrong this week
   body.appendChild(mEl('h3', '', 'كل جزء'));
-  ['read', 'write', 'math', 'speak'].forEach(function (a) {
+  ['read', 'write', 'math', 'speak', 'quran'].forEach(function (a) {
     var v = wk.area[a] || [0, 0, 0, 0], row = mEl('div', 'dArea');
     row.appendChild(mEl('span', 'av', AREA_INFO[a][0]));
     var mid = mEl('div', 'nm');

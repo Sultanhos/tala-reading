@@ -2,7 +2,7 @@
 // letters and math levels that are still hard. Kept in the child's own saved progress (S.log, S.weak).
 'use strict';
 
-var AREAS = ['read', 'write', 'math', 'speak', 'story'];
+var AREAS = ['read', 'write', 'math', 'speak', 'quran', 'story'];
 var LOG_KEEP_DAYS = 120, WEAK_KEEP = 150;
 
 function dayKey(d) {

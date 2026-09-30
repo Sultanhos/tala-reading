@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Fredoka:wght@500;700&family=Noto+Naskh+Arabic:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=202609302231">
+<link rel="stylesheet" href="css/app.css?v=202609302244">
 </head>
 <body>
 
@@ -38,11 +38,12 @@
     <button class="gear" id="parentBtn" aria-label="Parent settings">⚙️</button>
   </header>
 
-  <nav class="tabs" id="tabs">
+  <nav class="tabs five" id="tabs">
     <button class="tab on" id="tabRead"><span class="ti">📖</span>قراءة</button>
     <button class="tab" id="tabWrite"><span class="ti">✍️</span>كتابة</button>
     <button class="tab" id="tabMath"><span class="ti">🔢</span>حساب</button>
     <button class="tab" id="tabSpeak"><span class="ti">🐍</span>نطق</button>
+    <button class="tab" id="tabQuran"><span class="ti">🕌</span>قرآن</button>
     <button class="tab" id="tabStory" hidden><span class="ti">📚</span>حكايات</button>
   </nav>
 
@@ -93,6 +94,34 @@
     <p class="note" id="note"></p>
     <button class="parentOk" id="parentOk" hidden>✔ ولي الأمر: قرأت صح</button>
   </section>
+  </div>
+
+  <div class="view" id="viewQuran" hidden dir="rtl" lang="ar">
+    <section class="card" id="qList">
+      <div class="qHead">جُزْءُ عَمَّ</div>
+      <div class="qSurahs" id="qSurahs"></div>
+      <p class="qCredit">نص القرآن: <a href="https://tanzil.net" target="_blank" rel="noopener">Tanzil.net</a> (بدون أي تغيير) · التلاوة: الشيخ محمود خليل الحصري (المعلم) من <a href="https://everyayah.com" target="_blank" rel="noopener">everyayah.com</a></p>
+    </section>
+    <section class="card" id="qPlay" hidden>
+      <div class="qTop"><b class="qName" id="qName"></b><button class="small" id="qBack">السور ◀</button></div>
+      <div class="qSteps" id="qSteps"></div>
+      <div class="pips" id="qPips"></div>
+      <div class="wordBox qBox">
+        <div class="qBasmala" id="qBasmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+        <div class="qAyah" id="qAyah"></div>
+      </div>
+      <div class="controls" dir="ltr">
+        <button class="btn hear" id="qHear" aria-label="اسمع الآية">🔊</button>
+        <button class="btn mic" id="qMic" aria-label="سمّع الآية">🎤</button>
+        <button class="btn skip" id="qNext" aria-label="الآية التالية">⏭️</button>
+      </div>
+      <div class="talk" dir="ltr">
+        <div class="owl" aria-hidden="true">🦉</div>
+        <div class="bubble" id="qBubble" aria-live="polite"></div>
+      </div>
+      <p class="note" id="qNote"></p>
+      <button class="parentOk" id="qOk" hidden>✔ ولي الأمر: قرأت صح</button>
+    </section>
   </div>
 
   <div class="view" id="viewWrite" hidden>
@@ -453,22 +482,24 @@
   </div>
 </div>
 
-<script src="stories.js?v=202609302231"></script>
-<script src="js/native.js?v=202609302231"></script>
-<script src="js/profiles.js?v=202609302231"></script>
-<script src="js/app-state.js?v=202609302231"></script>
-<script src="js/progress.js?v=202609302231"></script>
-<script src="js/reading.js?v=202609302231"></script>
-<script src="js/speech-text.js?v=202609302231"></script>
-<script src="js/speech.js?v=202609302231"></script>
-<script src="js/writing.js?v=202609302231"></script>
-<script src="js/math.js?v=202609302231"></script>
-<script src="js/story-player.js?v=202609302231"></script>
-<script src="js/speech-warmup.js?v=202609302231"></script>
-<script src="js/profiles-ui.js?v=202609302231"></script>
-<script src="js/dashboard.js?v=202609302231"></script>
-<script src="js/ai-report.js?v=202609302231"></script>
-<script src="js/read-story.js?v=202609302231"></script>
-<script src="js/main.js?v=202609302231"></script>
+<script src="stories.js?v=202609302244"></script>
+<script src="js/native.js?v=202609302244"></script>
+<script src="js/profiles.js?v=202609302244"></script>
+<script src="js/app-state.js?v=202609302244"></script>
+<script src="js/progress.js?v=202609302244"></script>
+<script src="js/reading.js?v=202609302244"></script>
+<script src="js/speech-text.js?v=202609302244"></script>
+<script src="js/speech.js?v=202609302244"></script>
+<script src="js/writing.js?v=202609302244"></script>
+<script src="js/math.js?v=202609302244"></script>
+<script src="js/story-player.js?v=202609302244"></script>
+<script src="js/speech-warmup.js?v=202609302244"></script>
+<script src="js/profiles-ui.js?v=202609302244"></script>
+<script src="js/dashboard.js?v=202609302244"></script>
+<script src="js/ai-report.js?v=202609302244"></script>
+<script src="js/read-story.js?v=202609302244"></script>
+<script src="js/quran-juz-amma.js?v=202609302244"></script>
+<script src="js/quran.js?v=202609302244"></script>
+<script src="js/main.js?v=202609302244"></script>
 </body>
 </html>
