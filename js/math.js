@@ -84,6 +84,7 @@ function mMake(L) {
                    q.say = 'عَلَى الشَّجَرَةِ ' + NUMW[a] + '، طَارَ مِنْهَا ' + NUMW[b] + '. كَمْ بَقِيَ؟'; }
     q.bubble = 'اِسْتَمِعِي وَاحْسُبِي 🤔';
   }
+  q.say = gx(q.say); q.story = gx(q.story);
   q.hasPics = !!(q.toks || q.sp) && L.pics !== 'always';
   return q;
 }
@@ -191,9 +192,9 @@ function mSuccess() {
 function mLevelUp(fin, wrap) {
   luMode = 'math';
   soundStar(); confetti(40);
-  $('luTitle').textContent = 'برافو! خلصتي مستوى الحساب ' + mNumAr(fin);
+  $('luTitle').textContent = gx('برافو! خلصتي مستوى الحساب ' + mNumAr(fin));
   $('luLonger').hidden = !wrap;
-  $('luLonger').textContent = 'خلصتي كل مستويات الحساب! هنبدأ تاني من أول مستوى.';
+  $('luLonger').textContent = gx('خلصتي كل مستويات الحساب! هنبدأ تاني من أول مستوى.');
   $('luGo').textContent = 'المستوى ' + mNumAr(S.mLevel) + ' ◀';
   $('levelUp').hidden = false;
   var pill = $('starsPill');

@@ -530,9 +530,9 @@ function wSuccess() {
 function wLevelUp(fin, wrap) {
   luMode = 'write';
   soundStar(); confetti(40);
-  $('luTitle').textContent = 'برافو! خلصتي مستوى الكتابة ' + mNumAr(fin);
+  $('luTitle').textContent = gx('برافو! خلصتي مستوى الكتابة ' + mNumAr(fin));
   $('luLonger').hidden = !wrap;
-  $('luLonger').textContent = 'بقيتي تكتبي كل الحروف! هنبدأ تاني من أول مستوى.';
+  $('luLonger').textContent = gx('بقيتي تكتبي كل الحروف! هنبدأ تاني من أول مستوى.');
   $('luGo').textContent = 'المستوى ' + mNumAr(S.wLevel) + ' ◀';
   $('levelUp').hidden = false;
   var pill = $('starsPill');

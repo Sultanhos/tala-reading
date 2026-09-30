@@ -13,7 +13,7 @@ var REWARDS = ['🌟', '🎉', '🦄', '🐣', '🌈', '🍭', '🎈', '🐬'];
 var PRAISE = ['أَحْسَنْتِ', 'مُمْتَاز', 'رَائِع', 'بَرَافُو', 'مَا شَاءَ اللَّه'];
 
 function say(text) {
-  var b = $('bubble'); b.textContent = text;
+  var b = $('bubble'); b.textContent = gx(text);
   b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
 }
 function renderHud() {
@@ -166,9 +166,9 @@ var luMode = 'read';
 function showLevelUp(finished) {
   luMode = 'read';
   soundStar(); confetti(40);
-  $('luTitle').textContent = 'برافو! خلصتي ' + lessonName(finished);
+  $('luTitle').textContent = gx('برافو! خلصتي ' + lessonName(finished));
   $('luLonger').hidden = !wrapped;
-  $('luLonger').textContent = 'خلصتي الكتاب كله! هنبدأ تاني من أول درس.';
+  $('luLonger').textContent = gx('خلصتي الكتاب كله! هنبدأ تاني من أول درس.');
   $('luGo').textContent = lessonName(S.level) + ' ◀';
   $('levelUp').hidden = false;
   var pill = $('starsPill');

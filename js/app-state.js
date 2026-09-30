@@ -114,4 +114,26 @@ function confetti(n) {
 function mNumAr(n) { return String(n).replace(/\d/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[d]; }); }
 function mNum(n) { return S.mDigits === 'en' ? String(n) : String(n).replace(/\d/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'[d]; }); }
 function mEl(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
-function popBubble(el, text) { el.textContent = text; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+function popBubble(el, text) { el.textContent = gx(text); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+
+/* ---------- talking to a boy or a girl: the texts are written for a girl; for a boy these words change ---------- */
+var BOY_WORDS = [ // phrases first: before «ال» the boy's command ends in kasra (اِقْرَأِ الكَلِمَة)
+  ['اِقْرَئِي الكَلِمَة', 'اِقْرَأِ الكَلِمَة'], ['اُكْتُبِي الحَرْفَ', 'اُكْتُبِ الحَرْفَ'], ['أَكْمِلِي الحَرْفَ', 'أَكْمِلِ الحَرْفَ'],
+  ['قَارِنِي الصُّوَرَ', 'قَارِنِ الصُّوَرَ'],
+  ['أَحْسَنْتِ', 'أَحْسَنْتَ'], ['اِقْرَئِي', 'اِقْرَأْ'], ['اِسْتَمِعِي', 'اِسْتَمِعْ'], ['حَاوِلِي', 'حَاوِلْ'], ['أَسْمَعُكِ', 'أَسْمَعُكَ'],
+  ['وَاكْتُبِي', 'وَاكْتُبْ'], ['اُكْتُبِي', 'اُكْتُبْ'], ['عُدِّي', 'عُدَّ'], ['أَكْمِلِي', 'أَكْمِلْ'], ['بِإِصْبَعِكِ', 'بِإِصْبَعِكَ'],
+  ['قَارِنِي', 'قَارِنْ'], ['وَاحْسُبِي', 'وَاحْسُبْ'], ['اِحْسُبِي', 'اِحْسُبْ'],
+  ['وَأَعْطَتْهَا', 'وَأَعْطَتْهُ'], ['مَعَهَا', 'مَعَهُ'], ['أَكَلَتْ', 'أَكَلَ'], // math picture stories about the child
+  ['خلصتي', 'خلصت'], ['بقيتي تكتبي', 'بقيت تكتب'], ['إنتي فاكرة', 'إنت فاكر'], ['قرأت صح', 'قرأ صح'], ['كتبت صح', 'كتب صح'], ['قالتها صح', 'قالها صح'], ['جمعتها', 'جمعها']
+];
+function gx(s) {
+  if (s == null || pCur().gender !== 'boy') return s;
+  s = String(s);
+  for (var i = 0; i < BOY_WORDS.length; i++) s = s.split(BOY_WORDS[i][0]).join(BOY_WORDS[i][1]);
+  return s;
+}
+function gxPage() { // the fixed texts in the page, once at start
+  if (pCur().gender !== 'boy') return;
+  var it = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), n;
+  while ((n = it.nextNode())) { var t = gx(n.nodeValue); if (t !== n.nodeValue) n.nodeValue = t; }
+}

@@ -144,7 +144,7 @@ $('gateCancel').onclick = function () { $('gateOv').hidden = true; gateNext = nu
 /* ----- start ----- */
 function kidsHud() { var c = pCur(); $('kidBtn').textContent = c.avatar; $('kidBtn').setAttribute('aria-label', 'مين بيلعب؟ دلوقتي: ' + c.name); }
 function kidsStart() {
-  kidsHud();
+  kidsHud(); gxPage();
   var picked = false;
   try { picked = !!sessionStorage.getItem('tala-picked'); } catch (e) {}
   if (pCur().setup) kidForm(pCur(), { setup: true });
