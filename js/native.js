@@ -19,8 +19,17 @@ if (IS_APP) (function () {
     this._aborted = false;
   }
   AppRecognition.prototype.start = function () {
-    var self = this;
+    var self = this, done = false, watchdog;
     function fire(name, ev) { if (typeof self[name] === 'function') self[name](ev || {}); }
+    // every start ends exactly once (result or error, then end), even if the phone's recognizer never answers
+    function finish(err, matches) {
+      if (done) return;
+      done = true; clearTimeout(watchdog);
+      if (err) fire('onerror', { error: err });
+      else fire('onresult', { results: [matches.map(function (t) { return { transcript: t, confidence: 0 }; })] });
+      fire('onend');
+    }
+    this._finish = finish;
     function errorCode(e) {
       var m = String((e && (e.message || e.code)) || e || '');
       if (/permission|denied|not.?allowed/i.test(m)) return 'not-allowed';
@@ -31,19 +40,28 @@ if (IS_APP) (function () {
     }
     REC.requestPermissions().then(function (st) {
       if (st && st.speechRecognition && st.speechRecognition !== 'granted') throw new Error('permission denied');
+      if (done) return {};
       fire('onstart');
+      watchdog = setTimeout(function () { try { REC.stop(); } catch (e) {} finish('no-speech'); }, 12000);
       return REC.start({ language: self.lang, maxResults: self.maxAlternatives || 5, partialResults: false, popup: false });
     }).then(function (r) {
-      if (self._aborted) return;
       var m = (r && r.matches) || [];
-      if (!m.length) { fire('onerror', { error: 'no-speech' }); return; }
-      fire('onresult', { results: [m.map(function (t) { return { transcript: t, confidence: 0 }; })] });
+      finish(self._aborted ? 'aborted' : m.length ? null : 'no-speech', m);
     }).catch(function (e) {
-      fire('onerror', { error: errorCode(e) });
-    }).then(function () { fire('onend'); });
+      finish(errorCode(e));
+    });
   };
-  AppRecognition.prototype.stop = function () { try { REC.stop(); } catch (e) {} };
-  AppRecognition.prototype.abort = function () { this._aborted = true; try { REC.stop(); } catch (e) {} };
+  // stop: the recognizer should still return what it heard; if it doesn't within 3 s, end anyway
+  AppRecognition.prototype.stop = function () {
+    var f = this._finish;
+    try { REC.stop(); } catch (e) {}
+    if (f) setTimeout(function () { f('no-speech'); }, 3000);
+  };
+  AppRecognition.prototype.abort = function () {
+    this._aborted = true;
+    try { REC.stop(); } catch (e) {}
+    if (this._finish) this._finish('aborted');
+  };
   window.SpeechRecognition = AppRecognition;
   window.webkitSpeechRecognition = AppRecognition;
 
