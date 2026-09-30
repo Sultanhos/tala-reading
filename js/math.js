@@ -161,6 +161,7 @@ function mPick(v, btn) {
   if (v === M.q.ans) { btn.classList.add('ok'); mSuccess(); return; }
   btn.classList.add('no'); btn.disabled = true;
   M.fails++; soundTry();
+  track('math', String(S.mLevel), false);
   if (M.fails >= 1 && M.q.hasPics && !M.hint) { M.hint = true; mDraw(); mSay('عُدِّي الصُّوَرَ 👀'); }
   else mSay(M.fails >= 2 ? (M.q.hintSay || 'اِسْتَمِعِي مَرَّةً أُخْرَى 🔊') : 'حَاوِلِي مَرَّةً أُخْرَى 💪');
   if (M.fails >= 2) $('mHear').classList.add('callout');
@@ -173,10 +174,11 @@ function mSuccess() {
   $('mCard').className = 'card good';
   mSay(PRAISE[Math.floor(Math.random() * PRAISE.length)] + ' يَا ' + S.name + '! 🎉');
   soundGood(); confetti(10);
+  track('math', String(S.mLevel), true);
   S.mDone++;
   if (S.mDone >= MQ) {
     var fin = S.mLevel, wrap = fin >= MLEVELS.length;
-    S.stars++; S.mDone = 0; S.mLevel = wrap ? 1 : fin + 1;
+    S.stars++; S.mDone = 0; S.mLevel = wrap ? 1 : fin + 1; trackStar('math');
     save();
     mPips(); $('mPips').querySelectorAll('.pip').forEach(function (p) { p.className = 'pip on'; p.textContent = '⭐'; });
     M.timer = setTimeout(function () { mLevelUp(fin, wrap); }, 1500);

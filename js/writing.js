@@ -471,6 +471,7 @@ function wCheck() {
 }
 function wFail(r) {
   W.fails++;
+  track('write', W.ch, false);
   soundTry();
   var T = r.T, name = WINFO[W.ch][0];
   function back(p) { return { x: (p.x - T.bx) / T.ax, y: (p.y - T.by) / T.ay }; }
@@ -511,10 +512,11 @@ function wSuccess() {
   $('wParentOk').hidden = true;
   wSay(PRAISE[Math.floor(Math.random() * PRAISE.length)] + ' يَا ' + S.name + '! 🎉');
   soundGood(); confetti(14);
+  track('write', W.ch, true);
   if (S.wDone.indexOf(W.item) < 0) S.wDone.push(W.item);
   if (S.wDone.length >= wItems().length) {
     var fin = S.wLevel, wrap = fin >= WLEVELS.length;
-    S.stars++; S.wDone = [];
+    S.stars++; S.wDone = []; trackStar('write');
     S.wLevel = wrap ? 1 : fin + 1;
     W.queue = []; W.qi = 0;
     save();

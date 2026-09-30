@@ -307,6 +307,7 @@ function tRated(v) {
     $('tNote').textContent = sInfo(tLast, true) + '  ·  Eltern: ' + (v >= 10 ? '😀' : v >= 7 ? '🙂' : '😕');
     tLast = null;
   }
+  track('speak', null, v >= 10);
   if (v >= 10) tMarkDone();
   else { soundTry(); tSay(v >= 7 ? 'Fast! Noch einmal: ' + tRound[tIdx][0] + ' 🐍' : 'Nochmal! Zunge hinter die Zähne 🐍'); }
 }
@@ -319,6 +320,7 @@ $('tMic').onclick = function () {
       a.score = sScore(a);
       if (S.rateMode === 'parent') { tLast = a; $('tNote').textContent = sInfo(a, false); tAskParent(); return; }
       tShowPhone(a); $('tNote').textContent = sInfo(a, true);
+      track('speak', null, a.score >= 7);
       if (a.score >= 7) tMarkDone();
       else { soundTry(); tSay(a.sib ? feedback(a.score) : 'Ich habe kein klares S gehört 🐍 Zunge hinter die Zähne!'); }
     },
@@ -390,7 +392,7 @@ function gFinish() {
   var star = total > 40;
   S.lisp = S.lisp || { best: 0, rounds: 0 };
   S.lisp.rounds++; S.lisp.best = Math.max(S.lisp.best, total);
-  if (star) S.stars++;
+  if (star) { S.stars++; trackStar('speak'); }
   save(); renderHud();
   $('ldTotal').textContent = total;
   $('ldList').textContent = G.scores.join('  ·  ');
@@ -413,6 +415,7 @@ $('gRetry').onclick = function () {
 $('gNext').onclick = function () {
   stopAll();
   G.scores.push(Math.max(0, G.cur));
+  track('speak', null, G.cur >= 7);
   if (G.i === 4) { gPips(); gFinish(); } else { G.i++; gLoad(); }
 };
 $('gMic').onclick = function () {

@@ -78,10 +78,11 @@ function success() {
   $('note').textContent = '';
   say(PRAISE[Math.floor(Math.random() * PRAISE.length)] + ' يَا ' + S.name + '! 🎉');
   soundGood(); confetti(14);
+  track('read', cur[0], true);
   if (S.doneList.indexOf(cur[0]) < 0) S.doneList.push(cur[0]);
   if (S.doneList.length >= wordsFor(S.level).length) {
     var finished = S.level;
-    S.stars++; S.doneList = [];
+    S.stars++; S.doneList = []; trackStar('read');
     wrapped = finished >= LEVELS.length;
     S.level = wrapped ? 1 : finished + 1;
     save();
@@ -95,6 +96,7 @@ function success() {
 
 function tryAgain(msg) {
   fails++;
+  track('read', cur[0], false);
   soundTry();
   if (fails >= 3) {
     say('اِسْتَمِعِي أَوَّلاً 🔊');

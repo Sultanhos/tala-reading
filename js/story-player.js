@@ -311,7 +311,7 @@ function stJudge(alts) {
 }
 function stRight(fb) {
   ST.res[ST.qi] = 1; ST.got++;
-  S.stars++; save(); renderHud();
+  S.stars++; track('story', null, true); trackStar('story'); save(); renderHud();
   var pill = $('starsPill'); pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
   soundGood(); confetti(12); stPips();
   $('stOk').hidden = true; $('stNo').hidden = true; $('stMic').disabled = true;
@@ -322,7 +322,7 @@ function stRight(fb) {
 }
 function stWrong(fb) {
   var q = ST.s.q[ST.qi];
-  ST.tries++; soundTry();
+  ST.tries++; soundTry(); track('story', null, false);
   $('stOk').hidden = false; $('stNo').hidden = true;
   if (ST.tries < 2) {
     var key = 'ui:try' + ST.tries;

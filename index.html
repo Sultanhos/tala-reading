@@ -345,10 +345,22 @@
   </div>
 </div>
 
+<!-- parent report -->
+<div class="overlay" id="dashOv" hidden>
+  <div class="sheet parent dash" role="dialog" aria-modal="true" aria-labelledby="dashTitle" dir="rtl" lang="ar">
+    <h2 id="dashTitle">تقرير التقدم</h2>
+    <div class="btnRow" id="dashKids"></div>
+    <div id="dashBody"></div>
+    <p class="hint">آخر ٧ أيام. الوقت بيتحسب بس والطفل بيلعب فعلًا. البيانات محفوظة على الجهاز ده بس.</p>
+    <div style="text-align:center"><button class="go" id="dashClose">تم</button></div>
+  </div>
+</div>
+
 <!-- parent panel -->
 <div class="overlay" id="parentPanel" hidden>
   <div class="sheet parent" role="dialog" aria-modal="true" aria-labelledby="ppTitle" dir="rtl" lang="ar">
     <h2 id="ppTitle">إعدادات ولي الأمر</h2>
+    <div class="btnRow"><button class="go" id="ppDash">📊 تقرير التقدم</button></div>
     <div class="row"><b>الأطفال</b><button class="small" id="ppKidAdd">➕ طفل جديد</button></div>
     <div class="kidRows" id="ppKids"></div>
     <p class="hint" id="ppFor"></p>
@@ -415,6 +427,7 @@
 <script src="stories.js"></script>
 <script src="js/profiles.js"></script>
 <script src="js/app-state.js"></script>
+<script src="js/progress.js"></script>
 <script src="js/reading.js"></script>
 <script src="js/speech.js"></script>
 <script src="js/writing.js"></script>
@@ -422,6 +435,7 @@
 <script src="js/story-player.js"></script>
 <script src="js/speech-warmup.js"></script>
 <script src="js/profiles-ui.js"></script>
+<script src="js/dashboard.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
