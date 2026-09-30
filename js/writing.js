@@ -2,15 +2,47 @@
 'use strict';
 
 /* ================= Schreiben: letter writing, checked on the device ================= */
-// letters grouped by shape family; each letter is written twice per level (trace, then alone)
-var WLEVELS = [['ا','ب','ت','ث'], ['ج','ح','خ'], ['د','ذ','ر','ز'], ['س','ش','ص','ض'], ['ط','ظ','ع','غ'], ['ف','ق','ك','ل'], ['م','ن','ه','و','ي']];
+// letters grouped by shape family; each letter is written twice per level (trace, then alone).
+// Levels 8+: letter forms — 'ب>' means ب at the start, in the middle and at the end of a word (بـ ـبـ ـب)
+var WLEVELS = [['ا','ب','ت','ث'], ['ج','ح','خ'], ['د','ذ','ر','ز'], ['س','ش','ص','ض'], ['ط','ظ','ع','غ'], ['ف','ق','ك','ل'], ['م','ن','ه','و','ي'],
+  ['ب>','ت>'], ['ث>','ن>'], ['ي>','ف>'], ['ق>','ج>'], ['ح>','خ>'], ['س>','ش>'], ['ص>','ض>'], ['ط>','ظ>'], ['ع>','غ>'], ['ك>','ل>'], ['م>','ه>'],
+  ['ا>','د>','ذ>','ر>','ز>','و>']];
 var WINFO = { 'ا':['أَلِف','أَرْنَب','🐰'], 'ب':['بَاء','بَطَّة','🦆'], 'ت':['تَاء','تُفَّاحَة','🍎'], 'ث':['ثَاء','ثَعْلَب','🦊'],
   'ج':['جِيم','جَمَل','🐫'], 'ح':['حَاء','حِصَان','🐴'], 'خ':['خَاء','خَرُوف','🐑'], 'د':['دَال','دُبّ','🐻'], 'ذ':['ذَال','ذُرَة','🌽'],
   'ر':['رَاء','رَادْيُو','📻'], 'ز':['زَاي','زَرَافَة','🦒'], 'س':['سِين','سَمَكَة','🐟'], 'ش':['شِين','شَمْس','☀️'], 'ص':['صَاد','صَقْر','🦅'],
   'ض':['ضَاد','ضِفْدَع','🐸'], 'ط':['طَاء','طَائِرَة','✈️'], 'ظ':['ظَاء','ظَرْف','✉️'], 'ع':['عَيْن','عِنَب','🍇'], 'غ':['غَيْن','غَيْمَة','☁️'],
   'ف':['فَاء','فِيل','🐘'], 'ق':['قَاف','قِطَّة','🐱'], 'ك':['كَاف','كَلْب','🐶'], 'ل':['لَام','لَيْمُون','🍋'], 'م':['مِيم','مَوْز','🍌'],
   'ن':['نُون','نَحْلَة','🐝'], 'ه':['هَاء','هَدِيَّة','🎁'], 'و':['وَاو','وَرْدَة','🌹'], 'ي':['يَاء','يَد','✋'] };
-var WALL = [].concat.apply([], WLEVELS);
+var WALL = [].concat.apply([], WLEVELS.slice(0, 7)); // the 28 letters
+S.wLevel = Math.min(WLEVELS.length, S.wLevel);
+// letters that never join the next letter have only the end form (ـا)
+var WNOJOIN = 'اأإآدذرزوة';
+var WFORM_NAME = { i: 'فِي أَوَّلِ الكَلِمَةِ', m: 'فِي وَسَطِ الكَلِمَةِ', f: 'فِي آخِرِ الكَلِمَةِ' };
+function wForms(ch) { return WNOJOIN.indexOf(ch) > -1 ? ['f'] : ['i', 'm', 'f']; }
+// the letter as it is written in that place, with the joining line (ـ) that the child writes too
+function wFormText(ch, f) { var T = '\u0640'; return f === 'i' ? ch + T : f === 'm' ? T + ch + T : f === 'f' ? T + ch : ch; }
+// a word from the lessons (or the letter's picture word) with the letter in that place -> [before, letter, after, emoji]
+var WWORDS = null;
+function wExample(ch, f) {
+  if (!WWORDS) {
+    WWORDS = [];
+    WALL.forEach(function (c) { WWORDS.push([WINFO[c][1], WINFO[c][2]]); });
+    LESSONS.forEach(function (L) { L[1].forEach(function (w) { WWORDS.push([w, '']); }); });
+  }
+  for (var i = 0; i < WWORDS.length; i++) {
+    var w = WWORDS[i][0], u = [];
+    for (var k = 0; k < w.length; k++) { if (/[\u064B-\u0652\u0670]/.test(w[k]) && u.length) u[u.length - 1].t += w[k]; else u.push({ l: w[k], t: w[k] }); }
+    for (var j = 0; j < u.length; j++) {
+      if (u[j].l !== ch) continue;
+      var joinsBefore = j > 0 && WNOJOIN.indexOf(u[j - 1].l) < 0, last = j === u.length - 1;
+      var form = WNOJOIN.indexOf(ch) > -1 ? (joinsBefore ? 'f' : '') : last ? (joinsBefore ? 'f' : '') : (joinsBefore ? 'm' : 'i');
+      if (form !== f) continue;
+      var t = function (a, b) { return u.slice(a, b).map(function (x) { return x.t; }).join(''); };
+      return [t(0, j), u[j].t, t(j + 1), WWORDS[i][1]];
+    }
+  }
+  return null;
+}
 var WDOTS = { 'ب':1, 'ت':2, 'ث':3, 'ج':1, 'خ':1, 'ذ':1, 'ز':1, 'ش':3, 'ض':1, 'ظ':1, 'غ':1, 'ف':1, 'ق':2, 'ن':1, 'ي':2 };
 var WFONT = '"Noto Naskh Arabic", "Amiri", "Traditional Arabic", serif';
 // per strictness: tolerance factor, min share of ink on the letter, min share of the letter drawn, min share of each part
@@ -21,9 +53,18 @@ var W = { queue: [], qi: 0, item: null, ch: null, mode: 'trace', strokes: [], cu
 function wLetters() { return WLEVELS[S.wLevel - 1]; }
 function wItems() {
   var l = wLetters(), a = [];
-  l.forEach(function (c) { a.push(c + '#0'); });
-  l.forEach(function (c) { a.push(c + '#1'); });
+  [0, 1].forEach(function (pass) {
+    l.forEach(function (c) {
+      if (c.slice(-1) !== '>') { a.push(c + '#' + pass); return; }
+      var ch = c.slice(0, -1);
+      wForms(ch).forEach(function (f) { a.push(ch + '>' + f + '#' + pass); });
+    });
+  });
   return a;
+}
+function wLevelName(n) {
+  var L = WLEVELS[n - 1], forms = L[0].slice(-1) === '>';
+  return 'المستوى ' + mNumAr(n) + ':  ' + (forms ? 'أشكال ' + L.map(function (c) { return c.slice(0, -1); }).join(' ') : L.join(' '));
 }
 function wBuild() {
   var items = wItems();
@@ -150,7 +191,7 @@ function wGlyph(ch) {
   });
   // the dots of a letter form one group with a known count (dots may melt together when drawn small);
   // other small marks (the little sign inside ك) count as one mark each
-  var groups = [], nd = WDOTS[ch] || 0;
+  var base = ch.replace(/\u0640/g, ''), groups = [], nd = WDOTS[base] || 0;
   comps.forEach(function (c, id) {
     if (!c.dot) return;
     var gi = nd && groups.length ? 0 : groups.length;
@@ -173,7 +214,7 @@ function wGlyph(ch) {
   comps.forEach(function (c, id) { if (!c.dot && !c.ignore && !hasPt[id]) body.push({ x: c.cx, y: c.cy, c: id }); });
   var bodyS = body;
   if (body.length > 260) { var step = body.length / 260; bodyS = []; for (i = 0; i < 260; i++) bodyS.push(body[Math.floor(i * step)]); }
-  var g = { ch: ch, fs: fs, ox: ox, oy: oy, cell: cell, gw: GW, gh: GH, dt: dt, near: near, comps: comps, groups: groups, body: body, bodyS: bodyS,
+  var g = { ch: ch, base: base, fs: fs, ox: ox, oy: oy, cell: cell, gw: GW, gh: GH, dt: dt, near: near, comps: comps, groups: groups, body: body, bodyS: bodyS,
             size: size, u: u, cx: B.w / 2, cy: B.h / 2, x0: ox + (x0 - 300) * k, y0: oy + (y0 - 380) * k, x1: ox + (x1 + 1 - 300) * k, y1: oy + (y1 + 1 - 380) * k };
   W.glyphs[ch] = g;
   return g;
@@ -308,8 +349,8 @@ function wAssess(g, ink, lenient) {
 function wLookalike(r, ink) {
   var best = null, bestC = Infinity, lenient = S.wLenient == null ? 1 : S.wLenient, ratio = [0.9, 0.8, 0.7][lenient] || 0.8;
   WALL.forEach(function (ch) {
-    if (ch === W.ch) return;
-    var r2 = wAssess(wGlyph(ch), ink, lenient);
+    if (ch === W.ch || (W.form && wForms(ch).indexOf(W.form) < 0)) return;
+    var r2 = wAssess(wGlyph(wFormText(ch, W.form)), ink, lenient);
     if (r2.pass && (!r || r2.cost < r.cost * ratio) && r2.cost < bestC) { bestC = r2.cost; best = ch; }
   });
   return best;
@@ -332,7 +373,7 @@ function wLayout() {
   W.box = { w: w, h: h };
   W.glyphs = {}; W.marks = null;
   W.pen = Math.max(8, Math.min(18, Math.min(w, h) * 0.042));
-  if (W.ch) { W.g = wGlyph(W.ch); wDrawGuide(); wDrawInk(); }
+  if (W.ch) { W.g = wGlyph(W.txt); wDrawGuide(); wDrawInk(); }
   return true;
 }
 function wDrawGuide(reveal) {
@@ -347,7 +388,7 @@ function wDrawGuide(reveal) {
     c.save();
     if (reveal != null) { // demo: the letter appears in writing direction
       c.beginPath();
-      if (g.ch === 'ا') c.rect(0, 0, B.w, g.y0 + (g.y1 - g.y0) * reveal);
+      if (g.base === 'ا') c.rect(0, 0, B.w, g.y0 + (g.y1 - g.y0) * reveal);
       else c.rect(g.x1 - (g.x1 - g.x0) * reveal, 0, B.w, B.h);
       c.clip();
     }
@@ -425,7 +466,8 @@ function wNext() {
   clearTimeout(W.timer); wStopDemo();
   if (W.qi >= W.queue.length) wBuild();
   W.item = W.queue[W.qi++];
-  W.ch = W.item.split('#')[0]; W.mode = wModeFor(W.item);
+  var key = W.item.split('#')[0].split('>');
+  W.ch = key[0]; W.form = key[1] || ''; W.txt = wFormText(W.ch, W.form); W.mode = wModeFor(W.item);
   W.strokes = []; W.cur = null; W.pid = null; W.locked = false; W.fails = 0; W.help = false; W.marks = null;
   var info = WINFO[W.ch];
   $('wCard').className = 'card';
@@ -435,16 +477,23 @@ function wNext() {
   $('wNote').textContent = '';
   $('wParentOk').hidden = !S.alwaysOk;
   $('wModel').hidden = W.mode === 'trace';
-  $('wModel').textContent = W.mode === 'memory' ? '❓' : W.ch;
-  var wd = $('wWord'); wd.innerHTML = '';
+  $('wModel').textContent = W.mode === 'memory' ? '❓' : W.txt;
+  var wd = $('wWord'), ex = W.form ? wExample(W.ch, W.form) : null, emo = info[2];
+  wd.innerHTML = '';
   if (W.mode !== 'memory') {
-    var m = info[1].match(/^.[ً-ْ]*/)[0], a = document.createElement('span'), b = document.createElement('span');
-    a.className = 'first'; a.textContent = m; b.textContent = info[1].slice(m.length);
-    var t = document.createElement('span'); t.appendChild(a); t.appendChild(b); wd.appendChild(t);
+    // the picture word with its first letter marked, or for a letter form a word with the letter in that place
+    if (!ex) { var m = info[1].match(/^.[ً-ْ]*/)[0]; ex = W.form ? null : ['', m, info[1].slice(m.length), info[2]]; }
+    if (ex) {
+      var t = document.createElement('span');
+      [[ex[0], ''], [ex[1], 'first'], [ex[2], '']].forEach(function (p) { if (!p[0]) return; var sp = document.createElement('span'); sp.className = p[1]; sp.textContent = p[0]; t.appendChild(sp); });
+      wd.appendChild(t);
+      emo = ex[3];
+    }
   }
-  var em = document.createElement('span'); em.className = 'em'; em.textContent = info[2]; wd.appendChild(em);
-  if (wLayout()) { W.g = wGlyph(W.ch); wDrawGuide(); wDrawInk(); }
-  wSay(W.mode === 'memory' ? 'اِسْتَمِعِي وَاكْتُبِي 🔊' : (W.mode === 'trace' ? 'اُكْتُبِي فَوْقَ الحَرْفِ: ' : 'اُكْتُبِي: ') + info[0] + ' ✏️');
+  if (emo) { var em = document.createElement('span'); em.className = 'em'; em.textContent = emo; wd.appendChild(em); }
+  if (wLayout()) { W.g = wGlyph(W.txt); wDrawGuide(); wDrawInk(); }
+  var where = W.form ? ' ' + WFORM_NAME[W.form] : '';
+  wSay(W.mode === 'memory' ? 'اِسْتَمِعِي وَاكْتُبِي 🔊' : (W.mode === 'trace' ? 'اُكْتُبِي فَوْقَ الحَرْفِ: ' : 'اُكْتُبِي: ') + info[0] + where + ' ✏️');
   wPips(); renderHud();
   if (W.mode === 'memory') setTimeout(wSpeak, 300);
 }
@@ -452,7 +501,8 @@ function wSpeak() {
   if (!window.speechSynthesis || !W.ch) return;
   try {
     window.speechSynthesis.cancel();
-    var info = WINFO[W.ch], u = new SpeechSynthesisUtterance(W.mode === 'memory' ? info[0] : info[0] + '، ' + info[1]);
+    var info = WINFO[W.ch], where = W.form ? ' ' + WFORM_NAME[W.form] : '';
+    var u = new SpeechSynthesisUtterance(W.mode === 'memory' ? info[0] + where : info[0] + where + '، ' + info[1]);
     u.lang = 'ar-SA'; u.rate = 0.6;
     window.speechSynthesis.speak(u);
     $('wHear').classList.remove('callout');
@@ -471,7 +521,7 @@ function wCheck() {
 }
 function wFail(r) {
   W.fails++;
-  track('write', W.ch, false);
+  track('write', W.txt, false);
   soundTry();
   var T = r.T, name = WINFO[W.ch][0];
   function back(p) { return { x: (p.x - T.bx) / T.ax, y: (p.y - T.by) / T.ay }; }
@@ -512,7 +562,7 @@ function wSuccess() {
   $('wParentOk').hidden = true;
   wSay(PRAISE[Math.floor(Math.random() * PRAISE.length)] + ' يَا ' + S.name + '! 🎉');
   soundGood(); confetti(14);
-  track('write', W.ch, true);
+  track('write', W.txt, true);
   if (S.wDone.indexOf(W.item) < 0) S.wDone.push(W.item);
   if (S.wDone.length >= wItems().length) {
     var fin = S.wLevel, wrap = fin >= WLEVELS.length;
@@ -555,7 +605,7 @@ function wDemo() {
   function step(now) {
     var k = Math.min(1, (now - t0) / dur);
     wDrawGuide(k);
-    if (g.ch === 'ا') { pen.style.left = g.cx + 'px'; pen.style.top = (g.y0 + (g.y1 - g.y0) * k) + 'px'; }
+    if (g.base === 'ا') { pen.style.left = g.cx + 'px'; pen.style.top = (g.y0 + (g.y1 - g.y0) * k) + 'px'; }
     else { pen.style.left = (g.x1 - (g.x1 - g.x0) * k) + 'px'; pen.style.top = g.oy + 'px'; }
     if (k < 1) W.demo = requestAnimationFrame(step);
     else { W.demo = 0; setTimeout(function () { if (!W.demo) { pen.hidden = true; if (!W.help && W.mode !== 'trace') W.help = true; wDrawGuide(); } }, 500); }
@@ -589,7 +639,7 @@ if (window.ResizeObserver) new ResizeObserver(function () { if (view === 'write'
 else window.addEventListener('resize', function () { if (view === 'write' && W.started) wLayout(); });
 for (var wl = 1; wl <= WLEVELS.length; wl++) {
   var wo = document.createElement('option');
-  wo.value = wl; wo.textContent = 'المستوى ' + mNumAr(wl) + ':  ' + WLEVELS[wl - 1].join(' ');
+  wo.value = wl; wo.textContent = wLevelName(wl);
   $('wLvlSel').appendChild(wo);
 }
 $('wLvlSel').onchange = function () { S.wLevel = parseInt(this.value, 10); S.wDone = []; save(); W.queue = []; W.qi = 0; if (W.started) { wBuild(); wNext(); } else wPips(); renderHud(); };

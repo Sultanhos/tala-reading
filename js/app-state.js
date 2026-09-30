@@ -42,7 +42,7 @@ S.level = Math.min(LEVELS.length, Math.max(1, S.level | 0));
 if (!Array.isArray(S.doneList)) S.doneList = [];
 S.doneList = S.doneList.filter(function (w) { return wordsFor(S.level).some(function (pair) { return pair[0] === w; }); });
 if (S.doneList.length >= wordsFor(S.level).length) S.doneList = [];
-S.wLevel = Math.min(7, Math.max(1, S.wLevel | 0));
+S.wLevel = Math.max(1, S.wLevel | 0); // upper limit set in js/writing.js
 if (!Array.isArray(S.wDone)) S.wDone = [];
 if (!Array.isArray(S.sEx)) S.sEx = [];
 if (!Array.isArray(S.sHist)) S.sHist = [];
