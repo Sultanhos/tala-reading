@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Fredoka:wght@500;700&family=Noto+Naskh+Arabic:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=202609301636">
+<link rel="stylesheet" href="css/app.css?v=202609302210">
 </head>
 <body>
 
@@ -168,8 +168,8 @@
   <div class="view" id="viewSpeak" hidden>
     <!-- warm-up: every time Sprechen is opened -->
     <section class="card" id="warmCard" hidden>
-      <div class="tip"><div class="tipDe">Aufwärmen! Sag 3-mal schön: 🐍</div><div class="tipEn">تمرين البداية: تقول «Siii – Saaa – Sooo» صح ٣ مرات، وبعدها يتفتح التدريب واللعبة.</div></div>
-      <div class="wordBox compact"><div class="deWord" id="warmWord" style="font-size:min(46px, 10.5vw);white-space:nowrap">Siii – Saaa – Sooo</div><div class="pic2">🐍</div></div>
+      <div class="tip"><div class="tipDe" id="warmTipKid"></div><div class="tipEn" id="warmTipParent"></div></div>
+      <div class="wordBox compact"><div class="deWord" id="warmWord" style="font-size:min(46px, 10.5vw);white-space:nowrap"></div><div class="pic2">🐍</div></div>
       <div class="pips gpips" id="warmPips"></div>
       <div class="controls">
         <button class="btn hear" id="warmHear" aria-label="Hear it">🔊</button>
@@ -181,13 +181,13 @@
         <div class="bubble de" id="warmBubble" aria-live="polite"></div>
       </div>
       <p class="note" id="warmNote"></p>
-      <div class="rate" id="warmRate" hidden><div class="rateTxt">Eltern: War das S richtig? Taste kurz gedrückt halten</div><div class="rateBtns"></div></div>
+      <div class="rate" id="warmRate" hidden><div class="rateTxt" dir="rtl">الأهل: السين كانت صح؟ اضغطوا على الزرار شوية</div><div class="rateBtns"></div></div>
       <button class="parentOk" id="warmOk" hidden>✔ ولي الأمر: قالتها صح</button>
     </section>
 
     <div class="modes" id="speakModes">
-      <button class="mode on" id="modeTrain">🏋️ Training</button>
-      <button class="mode" id="modeGame">🎮 Spiel</button>
+      <button class="mode on" id="modeTrain"></button>
+      <button class="mode" id="modeGame"></button>
     </div>
 
     <!-- training -->
@@ -208,7 +208,7 @@
       </div>
       <div class="gauge" id="tGauge" hidden aria-hidden="true"><span class="start">😕</span><span class="marker" id="tMarker">🐍</span><span class="goal">🏆</span></div>
       <p class="note" id="tNote"></p>
-      <div class="rate" id="tRate" hidden><div class="rateTxt">Eltern: Wie klang der S-/Z-Laut? Taste kurz gedrückt halten</div><div class="rateBtns"></div></div>
+      <div class="rate" id="tRate" hidden><div class="rateTxt" dir="rtl">الأهل: صوت السين كان عامل إزاي؟ اضغطوا على الزرار شوية</div><div class="rateBtns"></div></div>
       <div class="pips" id="tPips"></div>
     </section>
 
@@ -217,7 +217,7 @@
       <div id="gStart">
         <div class="bigEmoji">🐍</div>
         <p class="startTxt" id="gBest"></p>
-        <div class="btnRow" style="margin-top:14px"><button class="go mini" id="gGo">Los geht's! ▶</button></div>
+        <div class="btnRow" style="margin-top:14px"><button class="go mini" id="gGo"></button></div>
       </div>
       <div id="gPlay" hidden style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px">
         <div class="pips gpips" id="gPips"></div>
@@ -237,9 +237,9 @@
           <div class="bubble de" id="gBubble" aria-live="polite"></div>
         </div>
         <p class="note" id="gNote"></p>
-        <div class="rate" id="gRate" hidden><div class="rateTxt">Eltern: Wie klang der S-/Z-Laut? Taste kurz gedrückt halten</div><div class="rateBtns"></div></div>
+        <div class="rate" id="gRate" hidden><div class="rateTxt" dir="rtl">الأهل: صوت السين كان عامل إزاي؟ اضغطوا على الزرار شوية</div><div class="rateBtns"></div></div>
         <div class="btnRow">
-          <button class="go mini" id="gRetry" hidden>🔁 Nochmal</button>
+          <button class="go mini" id="gRetry" hidden></button>
           <button class="go mini" id="gNext" hidden>Weiter ➡️</button>
         </div>
       </div>
@@ -262,12 +262,12 @@
 <div class="overlay" id="lispDone" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ldTitle">
     <div class="bigStar" id="ldEmoji">🐍</div>
-    <h2 id="ldTitle">Ergebnis</h2>
+    <h2 id="ldTitle"></h2>
     <p class="scoreBox"><span id="ldTotal">0</span><small> / 50</small></p>
     <p id="ldList"></p>
     <p id="ldMsg" style="font-weight:700"></p>
-    <button class="go" id="ldAgain">Nochmal spielen 🔁</button>
-    <div style="margin-top:12px"><button class="small" id="ldTrain">🏋️ Zum Training</button></div>
+    <button class="go" id="ldAgain"></button>
+    <div style="margin-top:12px"><button class="small" id="ldTrain"></button></div>
   </div>
 </div>
 
@@ -400,9 +400,11 @@
     <div class="row"><label for="mDigitSel">شكل الأرقام</label>
       <select id="mDigitSel"><option value="ar">١ ٢ ٣ (عربي)</option><option value="en">1 2 3</option></select></div>
     <hr class="divider">
-    <div class="row"><label for="warmCb">نطق: تمرين البداية «Siii – Saaa – Sooo» صح ٣ مرات</label><input type="checkbox" id="warmCb"></div>
-    <div class="row"><label for="rateSel">نطق: مين يقيّم صوت S / Z</label>
-      <select id="rateSel"><option value="parent">الأهل (😀🙂😕) – والتليفون بيتعلم</option><option value="phone">التليفون (كاشف حرف S)</option></select></div>
+    <div class="row"><label for="warmCb">نطق: تمرين البداية (سِي – سَا – سُو) صح ٣ مرات</label><input type="checkbox" id="warmCb"></div>
+    <div class="row"><label for="speakLangSel">نطق: لغة التمرين</label>
+      <select id="speakLangSel"><option value="ar">عربي (س ز ص)</option><option value="de">ألماني (S / Z)</option></select></div>
+    <div class="row"><label for="rateSel">نطق: مين يقيّم صوت السين</label>
+      <select id="rateSel"><option value="parent">الأهل (😀🙂😕) – والتليفون بيتعلم</option><option value="phone">التليفون (كاشف السين)</option></select></div>
     <div class="row"><span id="sDetInfo" style="font-size:14px;line-height:1.6"></span>
       <button class="small" id="sDetReset">مسح ما تعلمه الكاشف</button></div>
     <div class="row"><label for="triesSel">نطق: عدد المحاولات لكل سؤال في اللعبة</label>
@@ -419,24 +421,25 @@
     <p class="hint">قراءة: التعرف على الصوت بيتأكد إن الكلمة الصحيحة اتقالت، لكنه مش بيسمع التشكيل بدقة. اسمعوا معاها واستخدموا زر ✔ لو مش موافقين. بيشتغل أحسن على كروم أو إيدج أو سفاري مع السماح بالميكروفون.</p>
     <p class="hint">كتابة: التصحيح بيتم على الجهاز نفسه. بيطابق خطوطها مع شكل الحرف، ويتأكد إن كل أجزاء الحرف موجودة، وإن النقط كاملة وفي مكانها (الشَرطة أو علامة ^ بدل نقطتين أو تلاتة مقبولة)، ومفيش خطوط زيادة. ولو اللي كتبته شبه حرف تاني أكتر، البومة بتقول أنهي حرف. مش بيراجع ترتيب الخطوط أو اتجاهها. ولو شايفين إنها كتبت صح، استخدموا زر ✔ بعد محاولتين.</p>
     <p class="hint">حساب: بيمشي على منهج أولى ابتدائي: العد لحد ١٠، العدد الناقص، أكبر وأصغر، الجمع لحد ٥ و١٠، الطرح في حدود ١٠، العد والأعداد لحد ٢٠، الجمع والطرح لحد ٢٠، ومسائل بالصور. ١٠ إجابات صح بتخلص المستوى وتدي نجمة. البومة بتقرا كل سؤال، وبعد الإجابة الغلط بتظهر صور للعد.</p>
-    <p class="hint">نطق (تدريب على حرفي S وZ في الألماني): التليفون بيسجل الكلمة ويقيس صوت الصفير نفسه: ارتفاعه وحدّته وقوته مقارنة بباقي الكلام. حرف S الواضح صفير قوي وحاد وعالي؛ ولما اللسان يكون بين الأسنان بيبقى ضعيف ومفلطح، ولما الهوا يطلع من الجناب بيبقى أوطى. كل تقييم منكم بـ 😀 أو 😕 التليفون بيحفظه كمثال لنطقها الصح أو الغلط، فبيتحسن مع الوقت. قيّموا الأول من غير ما تشوفوا تقدير التليفون، وبعدها بيظهر «📱 Handy: x / 10» عشان تشوفوا هو متفق معاكم ولا لأ. ولما يتفق أغلب الوقت تقدروا تختاروا «التليفون». في أول كل مرة تفتح «نطق» لازم تقول «Siii – Saaa – Sooo» صح ٣ مرات قبل التدريب واللعبة. استخدموا أوضة هادية، والتليفون على بعد كف من بقها. ده مش تشخيص؛ أخصائي التخاطب (Logopäde) هو اللي يقيّم اللثغة.</p>
+    <p class="hint">نطق (تدريب على السين: س وز وص بالعربي، أو S وZ بالألماني؛ اللغة بتختاروها لكل طفل فوق): التليفون بيسجل الكلمة ويقيس صوت الصفير نفسه: ارتفاعه وحدّته وقوته مقارنة بباقي الكلام. السين الواضحة صفير قوي وحاد وعالي؛ ولما اللسان يكون بين الأسنان (اللثغة) بتبقى ضعيفة ومفلطحة، ولما الهوا يطلع من الجناب بتبقى أوطى. كل تقييم منكم بـ 😀 أو 😕 التليفون بيحفظه كمثال لنطق الطفل الصح أو الغلط، فبيتحسن مع الوقت. قيّموا الأول من غير ما تشوفوا تقدير التليفون، وبعدها بيظهر «📱 التليفون: x / 10» عشان تشوفوا هو متفق معاكم ولا لأ. ولما يتفق أغلب الوقت تقدروا تختاروا «التليفون». في أول كل مرة يتفتح «نطق» لازم الطفل يقول «سِي – سَا – سُو» صح ٣ مرات قبل التدريب واللعبة. استخدموا أوضة هادية، والتليفون على بعد كف من البق. ده مش تشخيص؛ أخصائي التخاطب هو اللي يقيّم اللثغة.</p>
     <div style="text-align:center"><button class="go" id="ppClose">تم</button></div>
   </div>
 </div>
 
-<script src="stories.js?v=202609301636"></script>
-<script src="js/native.js?v=202609301636"></script>
-<script src="js/profiles.js?v=202609301636"></script>
-<script src="js/app-state.js?v=202609301636"></script>
-<script src="js/progress.js?v=202609301636"></script>
-<script src="js/reading.js?v=202609301636"></script>
-<script src="js/speech.js?v=202609301636"></script>
-<script src="js/writing.js?v=202609301636"></script>
-<script src="js/math.js?v=202609301636"></script>
-<script src="js/story-player.js?v=202609301636"></script>
-<script src="js/speech-warmup.js?v=202609301636"></script>
-<script src="js/profiles-ui.js?v=202609301636"></script>
-<script src="js/dashboard.js?v=202609301636"></script>
-<script src="js/main.js?v=202609301636"></script>
+<script src="stories.js?v=202609302210"></script>
+<script src="js/native.js?v=202609302210"></script>
+<script src="js/profiles.js?v=202609302210"></script>
+<script src="js/app-state.js?v=202609302210"></script>
+<script src="js/progress.js?v=202609302210"></script>
+<script src="js/reading.js?v=202609302210"></script>
+<script src="js/speech-text.js?v=202609302210"></script>
+<script src="js/speech.js?v=202609302210"></script>
+<script src="js/writing.js?v=202609302210"></script>
+<script src="js/math.js?v=202609302210"></script>
+<script src="js/story-player.js?v=202609302210"></script>
+<script src="js/speech-warmup.js?v=202609302210"></script>
+<script src="js/profiles-ui.js?v=202609302210"></script>
+<script src="js/dashboard.js?v=202609302210"></script>
+<script src="js/main.js?v=202609302210"></script>
 </body>
 </html>

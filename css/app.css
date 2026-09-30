@@ -269,12 +269,21 @@ body {
 .chip.ok { background: #c9f5df; }
 .bubble.de { font-family: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif; direction: ltr; font-size: 19px; font-weight: 600; }
 .gpips .pip { width: 36px; height: 36px; font-size: 16px; font-weight: 700; }
-.scoreBox { font-size: 46px; font-weight: 700; color: var(--grape); margin: 0; line-height: 1; }
+.scoreBox { direction: ltr; unicode-bidi: isolate; font-size: 46px; font-weight: 700; color: var(--grape); margin: 0; line-height: 1; }
 .scoreBox small { font-size: 22px; color: var(--muted); }
 .btnRow { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 .go.mini { font-size: 18px; padding: 9px 20px; margin-top: 0; }
 .bigEmoji { font-size: 84px; line-height: 1; text-align: center; }
 .startTxt { font-family: 'Fredoka', system-ui, sans-serif; font-weight: 600; font-size: 19px; text-align: center; margin: 6px 0 0; }
+/* نطق in Arabic: Arabic font and right-to-left for the texts only (owl, buttons and gauge keep their places) */
+.spAr .tipDe, .spAr .deWord, .spAr .deQ, .spAr .bubble.de, .spAr .startTxt, .spAr .qNum, .spAr .mode, .spAr .go.mini {
+  font-family: 'Noto Naskh Arabic', 'Amiri', serif; direction: rtl; }
+.spAr .modes, .spAr .pips { direction: rtl; }
+.spAr .bubble.de { font-size: 21px; font-weight: 700; line-height: 1.6; }
+.spAr .deWord { font-size: min(64px, 14vw); line-height: 1.6; }
+.spAr .deQ { line-height: 1.8; }
+.spAr .tipDe { line-height: 1.7; }
+#lispDone .sheet[dir=rtl] h2, #lispDone .sheet[dir=rtl] p, #lispDone .sheet[dir=rtl] button { font-family: 'Noto Naskh Arabic', 'Fredoka', sans-serif; }
 
 .modes { flex-wrap: wrap; }
 .modes .mode { font-size: 16px; padding: 8px 13px; }

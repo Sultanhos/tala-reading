@@ -1,67 +1,17 @@
-// نطق: German S / Z training and game with the on-device S detector.
+// نطق: S practice (Arabic س ز ص or German S / Z): training and game with the on-device S detector.
 'use strict';
 
-/* ================= Sprechen: S / Z training + game (German) ================= */
-// S and Z words mixed together: [text, picture, needed words (each with accepted spellings)]
-var POOL = [
-  ['Sonne','☀️',[['sonne']]], ['Sand','🏖️',[['sand']]], ['Suppe','🍲',[['suppe']]], ['Seife','🧼',[['seife']]],
-  ['Sofa','🛋️',[['sofa']]], ['Salat','🥗',[['salat']]], ['Socke','🧦',[['socke']]], ['Wasser','💧',[['wasser']]],
-  ['Tasse','☕',[['tasse']]], ['Haus','🏠',[['haus']]], ['Maus','🐭',[['maus']]], ['Eis','🍦',[['eis']]],
-  ['Bus','🚌',[['bus']]], ['Glas','🥛',[['glas']]], ['Nase','👃',[['nase']]], ['Hase','🐰',[['hase']]],
-  ['Zahn','🦷',[['zahn','zahne']]], ['Zebra','🦓',[['zebra']]], ['Zug','🚂',[['zug']]], ['Zitrone','🍋',[['zitrone']]],
-  ['Zelt','⛺',[['zelt']]], ['Zucker','🍬',[['zucker']]], ['Katze','🐱',[['katze']]], ['Kerze','🕯️',[['kerze']]],
-  ['Herz','❤️',[['herz']]], ['Pilz','🍄',[['pilz']]], ['Zirkus','🎪',[['zirkus','circus']]], ['Cent','🪙',[['cent','zent','sent']]],
-  ['Ziege','🐐',[['ziege']]], ['Zwiebel','🧅',[['zwiebel']]], ['Blitz','⚡',[['blitz']]], ['Salz','🧂',[['salz']]],
-  ['Sonne und Sand','☀️ 🏖️',[['sonne'],['sand']]],
-  ['Zwei Zebras','2️⃣ 🦓',[['zwei','2'],['zebras','zebra']]],
-  ['Sieben Zitronen','7️⃣ 🍋',[['sieben','7'],['zitronen','zitrone']]],
-  ['Zucker und Salz','🍬 🧂',[['zucker'],['salz']]],
-  ['Die Maus im Haus','🐭 🏠',[['maus'],['haus']]],
-  ['Eis im Sand','🍦 🏖️',[['eis'],['sand']]],
-  ['Zehn Zähne','🔟 🦷',[['zehn','10'],['zahne','zahn']]],
-  ['Der Zug fährt zum Zoo','🚂',[['zug'],['zoo']]],
-  ['Die Katze sitzt auf dem Sofa','🐱 🛋️',[['katze'],['sitzt'],['sofa']]],
-  ['Wasser und Seife','💧 🧼',[['wasser'],['seife']]]
-];
-// one question is picked per level (5 levels per round); needs = words she has to say
-var QBANK = [
-  [ {q:'Was strahlt am Himmel und macht warm?', needs:[['sonne']], p:'☀️'},
-    {q:'Welches Tier hat schwarze und weiße Streifen?', needs:[['zebra']], p:'🦓'},
-    {q:'Woraus baut man am Strand eine Burg?', needs:[['sand']], p:'🏖️'},
-    {q:'Was hast du im Mund und putzt du jeden Abend?', needs:[['zahn','zahne']], p:'🦷'} ],
-  [ {q:'Was ist nass und man kann darin schwimmen?', needs:[['wasser']], p:'💧'},
-    {q:'Welches kleine Tier frisst gern Käse?', needs:[['maus']], p:'🐭'},
-    {q:'Womit fährt man mit vielen Leuten in die Stadt?', needs:[['bus']], p:'🚌'},
-    {q:'Was ist kalt und süß und schmeckt im Sommer?', needs:[['eis']], p:'🍦'} ],
-  [ {q:'Welches Tier sagt miau?', needs:[['katze','kater']], p:'🐱'},
-    {q:'Was ist gelb und schmeckt sauer?', needs:[['zitrone']], p:'🍋'},
-    {q:'Was fährt auf Schienen und macht tuut tuut?', needs:[['zug']], p:'🚂'},
-    {q:'Was brennt auf dem Geburtstagskuchen?', needs:[['kerze']], p:'🕯️'} ],
-  [ {q:'Was ist weiß und süß und kommt in den Tee?', needs:[['zucker']], p:'🍬'},
-    {q:'Was streut man auf die Pommes? Es ist weiß und salzig.', needs:[['salz']], p:'🧂'},
-    {q:'Was siehst du? Sag beide Wörter!', needs:[['sonne'],['sand']], p:'☀️ 🏖️', show:true},
-    {q:'Was siehst du? Sag beide Wörter!', needs:[['maus'],['haus']], p:'🐭 🏠', show:true},
-    {q:'Was siehst du? Sag beide Wörter!', needs:[['zitrone'],['zucker']], p:'🍋 🍬', show:true} ],
-  [ {q:'Zähle von sechs bis acht.', needs:[['sechs','6'],['sieben','7']], p:'6️⃣ 7️⃣ 8️⃣'},
-    {q:'Zähle von eins bis drei.', needs:[['eins','1'],['zwei','2']], p:'1️⃣ 2️⃣ 3️⃣'},
-    {q:'Sag nach: Sieben Zebras sitzen im Sand.', needs:[['sieben','7'],['zebras','zebra'],['sitzen','sitzt'],['sand']], p:'7️⃣ 🦓 🏖️'},
-    {q:'Sag nach: Zwei Katzen sitzen auf dem Sofa.', needs:[['zwei','2'],['katzen','katze'],['sitzen','sitzt'],['sofa']], p:'2️⃣ 🐱 🛋️'} ]
-];
+/* ================= نطق: S / Z practice (Arabic or German, see js/speech-text.js) ================= */
 
 function clamp01(x) { return Math.max(0, Math.min(1, x)); }
-function feedback(n) {
-  if (n >= 9) return 'Super, ganz klar gesprochen! 🌟';
-  if (n >= 7) return 'Sehr gut! 👏';
-  if (n >= 4) return 'Gut! Noch einmal mit der Schlangen-Zunge 🐍';
-  return 'Fast! Zähne zusammen, Zunge hinter die Zähne 🐍';
-}
+function feedback(n) { return sp('fb')[n >= 9 ? 3 : n >= 7 ? 2 : n >= 4 ? 1 : 0]; }
 
-function speakDe(text, rate) {
+function speakPractice(text, rate) {
   if (!window.speechSynthesis) return;
   try {
     window.speechSynthesis.cancel();
-    var u = new SpeechSynthesisUtterance(text);
-    u.lang = 'de-DE'; u.rate = rate || 0.85; u.pitch = 1.1;
+    var u = new SpeechSynthesisUtterance(gx(text));
+    u.lang = sp('tts'); u.rate = rate || 0.85; u.pitch = 1.1;
     window.speechSynthesis.speak(u);
   } catch (e) {}
 }
@@ -226,8 +176,8 @@ function sLearn(a, v) {
 }
 function sInfo(a, withScore) {
   if (!a) return '';
-  var t = a.sib ? 'S-Höhe ' + (a.feat[0] / 1000).toFixed(1) + ' kHz  ·  S-Stärke ' + Math.round(a.feat[3]) + ' dB' : 'Kein klares S gefunden';
-  if (withScore) t = '📱 Handy: ' + a.score + ' / 10  ·  ' + t;
+  var t = a.sib ? 'ارتفاع الصفير ' + (a.feat[0] / 1000).toFixed(1) + ' kHz  ·  قوته ' + Math.round(a.feat[3]) + ' dB' : 'مفيش صفير واضح';
+  if (withScore) t = '📱 التليفون: ' + a.score + ' / 10  ·  ' + t;
   if (a.lowRate) t += '  ·  ميكروفون ضعيف الجودة';
   return t;
 }
@@ -241,22 +191,21 @@ function sStatus() {
 }
 function deErr(code, say, note) {
   if (code === 'not-allowed' || code === 'service-not-allowed') {
-    say('Das Mikrofon ist aus 🔇');
+    say(sp('micOff'));
     note('الميكروفون مقفول. افتحوا اللعبة من عنوانها مباشرة واسمحوا بالميكروفون.');
   } else if (code === 'unsupported') {
-    say('Hier geht das Mikrofon nicht 🔇');
+    say(sp('micNone'));
     note('هذا المتصفح لا يستطيع التسجيل من الميكروفون. استخدموا كروم أو إيدج أو سفاري.');
   } else if (code !== 'aborted') {
-    say('Nochmal versuchen 🎤');
+    say(sp('tryAgain'));
   }
 }
 function sMarker(id, score) { $(id).style.left = (6 + clamp01(score / 10) * 88) + '%'; }
 
 /* ----- training (S and Z mixed) ----- */
-var TIP_DE = 'Zähne fast zusammen, Zunge hinter die Zähne: ssss 🐍  ·  bei Z: tssss 🦓';
-var TIP_EN = 'الأسنان شبه مقفولة، وطرف اللسان يفضل ورا الأسنان (مش بينها). S = صفير رفيع ومستمر. Z = «ت» سريعة وبعدها الصفير.';
 var tRound = [], tIdx = 0, tDone = {};
 function tNewRound() {
+  var POOL = spL().pool;
   var singles = shuffle(POOL.filter(function (x) { return x[0].indexOf(' ') < 0; })).slice(0, 7);
   var phrases = shuffle(POOL.filter(function (x) { return x[0].indexOf(' ') > -1; })).slice(0, 3);
   tRound = shuffle(singles.concat(phrases)); tIdx = 0; tDone = {};
@@ -276,27 +225,27 @@ function tRender() {
   if (!tRound.length) tNewRound();
   var w = tRound[tIdx];
   $('tWord').textContent = w[0];
-  $('tWord').style.fontSize = w[0].length > 9 ? 'min(44px, 9.5vw)' : '';
+  $('tWord').style.fontSize = norm(w[0]).length > 9 ? 'min(44px, 9.5vw)' : '';
   $('tPic').textContent = w[1];
-  $('tTipDe').textContent = TIP_DE;
-  $('tTipEn').textContent = TIP_EN;
+  $('tTipDe').textContent = gx(sp('tipKid'));
+  $('tTipEn').textContent = sp('tipParent');
   $('tNote').textContent = '';
   $('tRate').hidden = true; $('tGauge').hidden = true; tLast = null;
-  tSay('Hör zu und sag nach: ' + w[0] + ' 🎤');
+  tSay(sp('sayAfter', w[0]));
   tPips();
 }
-$('tHear').onclick = function () { if (tRound.length) speakDe(tRound[tIdx][0], 0.7); };
+$('tHear').onclick = function () { if (tRound.length) speakPractice(tRound[tIdx][0], 0.7); };
 $('tNext').onclick = function () {
   stopAll();
   if (tAllDone()) tNewRound();
   else { do { tIdx = (tIdx + 1) % tRound.length; } while (tDone[tIdx]); }
   tRender();
-  speakDe(tRound[tIdx][0], 0.7);
+  speakPractice(tRound[tIdx][0], 0.7);
 };
 function tMarkDone() {
   tDone[tIdx] = true; soundGood(); tPips();
-  if (tAllDone()) { tSay('Alle Wörter geschafft! 🎉 Tippe auf ➡️ für neue Wörter.'); soundStar(); confetti(30); }
-  else { tSay('Toll gemacht! 🌟'); confetti(8); }
+  if (tAllDone()) { tSay(sp('allDone')); soundStar(); confetti(30); }
+  else { tSay(sp('wellDone')); confetti(8); }
 }
 var tLast = null;
 function tShowPhone(a) { $('tGauge').hidden = false; sMarker('tMarker', a.score); }
@@ -304,28 +253,28 @@ function tRated(v) {
   $('tRate').hidden = true;
   if (tLast) { // the parent rated without seeing the phone's guess; now show it and learn from the rating
     sLearn(tLast, v); tShowPhone(tLast);
-    $('tNote').textContent = sInfo(tLast, true) + '  ·  Eltern: ' + (v >= 10 ? '😀' : v >= 7 ? '🙂' : '😕');
+    $('tNote').textContent = sInfo(tLast, true) + '  ·  الأهل: ' + (v >= 10 ? '😀' : v >= 7 ? '🙂' : '😕');
     tLast = null;
   }
   track('speak', null, v >= 10);
   if (v >= 10) tMarkDone();
-  else { soundTry(); tSay(v >= 7 ? 'Fast! Noch einmal: ' + tRound[tIdx][0] + ' 🐍' : 'Nochmal! Zunge hinter die Zähne 🐍'); }
+  else { soundTry(); tSay(v >= 7 ? sp('almost', tRound[tIdx][0]) : sp('again')); }
 }
-function tAskParent() { tSay('Mama oder Papa bewertet 👂'); $('tRate').hidden = false; }
+function tAskParent() { tSay(sp('parentRates')); $('tRate').hidden = false; }
 $('tMic').onclick = function () {
   $('tRate').hidden = true; $('tGauge').hidden = true; tLast = null;
   sRecord($('tMic'), {
-    start: function () { tSay('Ich höre zu... sag: ' + tRound[tIdx][0] + ' 👂'); $('tNote').textContent = ''; },
+    start: function () { tSay(sp('listenFor', tRound[tIdx][0])); $('tNote').textContent = ''; },
     result: function (a) {
       a.score = sScore(a);
       if (S.rateMode === 'parent') { tLast = a; $('tNote').textContent = sInfo(a, false); tAskParent(); return; }
       tShowPhone(a); $('tNote').textContent = sInfo(a, true);
       track('speak', null, a.score >= 7);
       if (a.score >= 7) tMarkDone();
-      else { soundTry(); tSay(a.sib ? feedback(a.score) : 'Ich habe kein klares S gehört 🐍 Zunge hinter die Zähne!'); }
+      else { soundTry(); tSay(a.sib ? feedback(a.score) : sp('noS')); }
     },
     error: function (c) { deErr(c, tSay, function (t) { $('tNote').textContent = t; }); },
-    none: function () { tSay('Ich habe nichts gehört 🎤 Nochmal!'); }
+    none: function () { tSay(sp('nothing')); }
   });
 };
 
@@ -344,24 +293,24 @@ function gPips() {
 function gStartScreen() {
   $('gStart').hidden = false; $('gPlay').hidden = true;
   var L = S.lisp || { best: 0, rounds: 0 };
-  $('gBest').textContent = L.rounds ? 'Bestes Ergebnis: ' + L.best + ' / 50' : 'Ich stelle dir 5 Fragen. Antworte schön klar!';
+  $('gBest').textContent = gx(L.rounds ? sp('best', L.best) : sp('intro'));
 }
 function gBegin() {
-  G.qs = QBANK.map(function (lvl) { return lvl[Math.floor(Math.random() * lvl.length)]; });
+  G.qs = spL().qbank.map(function (lvl) { return lvl[Math.floor(Math.random() * lvl.length)]; });
   G.i = 0; G.scores = [];
   $('gStart').hidden = true; $('gPlay').hidden = false;
   gLoad();
 }
 function gLoad() {
   G.q = G.qs[G.i]; G.tries = 0; G.cur = -1;
-  $('gNum').textContent = 'Frage ' + (G.i + 1) + ' von 5';
-  $('gQ').textContent = G.q.q;
+  $('gNum').textContent = sp('qNum', G.i + 1);
+  $('gQ').textContent = gx(G.q.q);
   $('gPic').textContent = G.q.show ? G.q.p : '';
   $('gScore').hidden = true; $('gRate').hidden = true; $('gRetry').hidden = true; $('gNext').hidden = true;
   $('gMic').disabled = false; $('gNote').textContent = '';
-  gSay('Hör zu und antworte! 🎤');
+  gSay(sp('listenAnswer'));
   gPips();
-  speakDe(G.q.q);
+  speakPractice(G.q.q);
 }
 // an attempt was made: in "parent" mode the parent rates the S / Z sound, otherwise the S-detector's score counts
 function gAttempt(a) {
@@ -370,14 +319,14 @@ function gAttempt(a) {
     $('gMic').disabled = true;
     $('gNote').textContent = sInfo(a, false);
     $('gRate').hidden = false;
-    gSay('Mama oder Papa bewertet 👂');
+    gSay(sp('parentRates'));
   } else gScoreDone(a.score, false);
 }
 function gScoreDone(score, byParent) {
   G.cur = Math.max(G.cur, score);
   $('gRate').hidden = true;
   $('gScoreNum').textContent = score; $('gScore').hidden = false;
-  $('gNote').textContent = sInfo(G.last, true) + (byParent ? '  ·  Bewertung der Eltern' : '') + (G.tries > 1 ? '  ·  Zählt: ' + G.cur + ' / 10' : '');
+  $('gNote').textContent = sInfo(G.last, true) + (byParent ? '  ·  تقييم الأهل' : '') + (G.tries > 1 ? '  ·  المحسوب: ' + G.cur + ' / 10' : '');
   gSay(feedback(score));
   if (score >= 7) soundGood(); else soundTry();
   if (score >= 9) confetti(10);
@@ -385,7 +334,7 @@ function gScoreDone(score, byParent) {
   $('gRetry').hidden = !canRetry;
   $('gMic').disabled = !canRetry;
   $('gNext').hidden = false;
-  $('gNext').textContent = G.i === 4 ? 'Ergebnis ▶' : 'Weiter ➡️';
+  $('gNext').textContent = G.i === 4 ? sp('resultBtn') : sp('nextBtn');
 }
 function gFinish() {
   var total = G.scores.reduce(function (a, b) { return a + b; }, 0);
@@ -397,7 +346,7 @@ function gFinish() {
   $('ldTotal').textContent = total;
   $('ldList').textContent = G.scores.join('  ·  ');
   $('ldEmoji').textContent = star ? '⭐' : '🐍';
-  $('ldMsg').textContent = star ? 'Du hast einen Stern verdient! ⭐' : 'Fast geschafft! Für einen Stern brauchst du mehr als 40 Punkte. Übe noch ein bisschen 🐍';
+  $('ldMsg').textContent = gx(star ? sp('star') : sp('noStar'));
   if (star) {
     soundStar(); confetti(40);
     var pill = $('starsPill'); pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump');
@@ -405,12 +354,12 @@ function gFinish() {
   $('lispDone').hidden = false;
 }
 $('gGo').onclick = gBegin;
-$('gHear').onclick = function () { if (G.q) speakDe(G.q.q); };
+$('gHear').onclick = function () { if (G.q) speakPractice(G.q.q); };
 $('gHint').onclick = function () { if (G.q) { $('gPic').textContent = G.q.p; } };
 $('gRetry').onclick = function () {
   $('gScore').hidden = true; $('gRate').hidden = true; $('gRetry').hidden = true; $('gNext').hidden = true;
   $('gMic').disabled = false; $('gNote').textContent = '';
-  gSay('Nochmal! Zunge hinter die Zähne 🐍');
+  gSay(sp('again'));
 };
 $('gNext').onclick = function () {
   stopAll();
@@ -420,10 +369,10 @@ $('gNext').onclick = function () {
 };
 $('gMic').onclick = function () {
   sRecord($('gMic'), {
-    start: function () { gSay('Ich höre zu... 👂'); $('gNote').textContent = ''; },
+    start: function () { gSay(sp('listening')); $('gNote').textContent = ''; },
     result: function (a) { a.score = sScore(a); gAttempt(a); },
     error: function (c) { deErr(c, gSay, function (t) { $('gNote').textContent = t; }); },
-    none: function () { gSay('Ich habe nichts gehört 🎤 Nochmal!'); }
+    none: function () { gSay(sp('nothing')); }
   });
 };
 $('ldAgain').onclick = function () { $('lispDone').hidden = true; gStartScreen(); };
@@ -440,7 +389,7 @@ function holdable(btn, ms, cb) {
 }
 function makeRate(box, cb) {
   var wrap = box.querySelector('.rateBtns');
-  [['😀', 'klar', 10], ['🙂', 'fast', 7], ['😕', 'noch nicht', 3]].forEach(function (o) {
+  [['😀', 'واضح', 10], ['🙂', 'قريب', 7], ['😕', 'لسه', 3]].forEach(function (o) {
     var b = document.createElement('button');
     b.type = 'button'; b.className = 'rateBtn';
     b.innerHTML = '<span class="fill"></span><span class="em">' + o[0] + '</span><span class="lb">' + o[1] + '</span>';

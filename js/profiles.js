@@ -24,9 +24,11 @@ if (!P.list.length) {
       if (v1.stars) oldRaw = JSON.stringify({ stars: v1.stars });
     }
     if (oldRaw) {
-      first.name = (JSON.parse(oldRaw) || {}).name || 'تالا';
+      var old = JSON.parse(oldRaw) || {};
+      first.name = old.name || 'تالا';
       first.setup = false;
-      localStorage.setItem(childKey(first.id), oldRaw); // the old key stays as a backup
+      if (!old.speakLang) old.speakLang = 'de'; // she practised the German S so far; new children start in Arabic
+      localStorage.setItem(childKey(first.id), JSON.stringify(old)); // the old key stays as a backup
     }
   } catch (e) {}
   P = { list: [first], cur: first.id };

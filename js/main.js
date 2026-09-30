@@ -48,6 +48,7 @@ $('tabSpeak').onclick = function () { showView('speak'); };
 $('modeTrain').onclick = function () { setMode('train'); };
 $('modeGame').onclick = function () { setMode('game'); };
 
+spApply();
 buildQueue();
 nextWord();
 kidsStart();

@@ -202,6 +202,7 @@ function refreshPanel() {
   $('okCb').checked = !!S.alwaysOk;
   $('triesSel').value = String(S.lispTries || 2);
   $('rateSel').value = S.rateMode || 'parent';
+  $('speakLangSel').value = S.speakLang === 'de' ? 'de' : 'ar';
   $('sDetInfo').textContent = sStatus();
   $('strictSel').value = String(S.lenient == null ? 1 : S.lenient);
   $('wLvlSel').value = String(S.wLevel);
@@ -232,6 +233,7 @@ $('lvlSel').onchange = function () { S.level = parseInt(this.value, 10); S.doneL
 $('soundCb').onchange = function () { S.sound = this.checked; save(); };
 $('strictSel').onchange = function () { S.lenient = parseInt(this.value, 10); save(); };
 $('rateSel').onchange = function () { S.rateMode = this.value; save(); };
+$('speakLangSel').onchange = function () { spSetLang(this.value); };
 $('warmCb').onchange = function () { S.warmOn = this.checked; save(); };
 armed($('sDetReset'), 'مسح ما تعلمه الكاشف', function () { S.sEx = []; S.sHist = []; save(); refreshPanel(); });
 $('triesSel').onchange = function () { S.lispTries = parseInt(this.value, 10); save(); };

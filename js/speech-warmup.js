@@ -1,4 +1,4 @@
-// نطق warm-up: "Siii – Saaa – Sooo" x3 before training and game.
+// نطق warm-up: "سِي – سَا – سُو" (or German "Siii – Saaa – Sooo") x3 before training and game.
 'use strict';
 
 /* ----- warm-up checkpoint: "Siii – Saaa – Sooo" said right 3 times before training and game ----- */
@@ -21,7 +21,7 @@ function warmStart() {
   $('warmRate').hidden = true; $('warmGauge').hidden = true; $('warmOk').hidden = !S.alwaysOk;
   $('warmNote').textContent = '';
   warmPips();
-  warmSay('Tippe auf 🎤 und sag: Siii – Saaa – Sooo 🐍');
+  warmSay(sp('warmTap'));
 }
 function warmUnlock() {
   WARM.done = true;
@@ -34,40 +34,40 @@ function warmGood() {
   $('warmOk').hidden = !S.alwaysOk;
   if (WARM.got >= WARM.need) {
     soundStar(); confetti(30);
-    warmSay('Super! 3-mal richtig 🎉 Jetzt geht es los!');
+    warmSay(sp('warmDone'));
     setTimeout(warmUnlock, 2200);
   } else {
     soundGood(); confetti(8);
-    warmSay('Richtig! 🌟 Noch ' + (WARM.need - WARM.got) + '-mal: Siii – Saaa – Sooo');
+    warmSay(sp('warmRight', WARM.need - WARM.got));
   }
 }
 function warmBad(msg) {
   WARM.fails++; soundTry();
-  warmSay(msg || 'Nochmal! Zähne zusammen, Zunge hinter die Zähne: Siii – Saaa – Sooo 🐍');
+  warmSay(msg || sp('warmBad'));
   if (WARM.fails >= 2) $('warmOk').hidden = false;
 }
-$('warmHear').onclick = function () { speakDe('Siii. Saaa. Sooo.', 0.55); };
+$('warmHear').onclick = function () { speakPractice(sp('warmTts'), 0.55); };
 $('warmOk').onclick = function () { if (!WARM.done && WARM.got < WARM.need) { $('warmRate').hidden = true; warmGood(); } };
 $('warmMic').onclick = function () {
   if (WARM.done) return;
   $('warmRate').hidden = true; $('warmGauge').hidden = true; WARM.last = null;
   sRecord($('warmMic'), {
-    start: function () { warmSay('Ich höre zu... 👂'); $('warmNote').textContent = ''; },
+    start: function () { warmSay(sp('listening')); $('warmNote').textContent = ''; },
     result: function (a) {
       a.score = sScore(a);
       if (S.rateMode === 'parent') { // the parent decides; the rating also teaches the S-detector
         WARM.last = a; $('warmNote').textContent = sInfo(a, false);
-        warmSay('Mama oder Papa bewertet 👂'); $('warmRate').hidden = false; return;
+        warmSay(sp('parentRates')); $('warmRate').hidden = false; return;
       }
       $('warmGauge').hidden = false; sMarker('warmMarker', a.score);
-      $('warmNote').textContent = sInfo(a, true) + (a.sib ? '  ·  ' + a.runs + ' S' : '');
-      if (!a.sib) warmBad('Ich habe kein klares S gehört 🐍 Nochmal: Siii – Saaa – Sooo');
-      else if (a.runs < 2) warmBad('Sag alle drei: Siii – Saaa – Sooo 🐍');
+      $('warmNote').textContent = sInfo(a, true) + (a.sib ? '  ·  ' + a.runs + ' ×' : '');
+      if (!a.sib) warmBad(sp('warmNoS'));
+      else if (a.runs < 2) warmBad(sp('warmRuns'));
       else if (a.score >= 6) warmGood();
       else warmBad(feedback(a.score));
     },
     error: function (c) { deErr(c, warmSay, function (t) { $('warmNote').textContent = t; }); $('warmOk').hidden = false; },
-    none: function () { warmSay('Ich habe nichts gehört 🎤 Nochmal!'); }
+    none: function () { warmSay(sp('nothing')); }
   });
 };
 makeRate($('warmRate'), function (v) {
@@ -75,8 +75,8 @@ makeRate($('warmRate'), function (v) {
   if (WARM.last) {
     sLearn(WARM.last, v);
     $('warmGauge').hidden = false; sMarker('warmMarker', WARM.last.score);
-    $('warmNote').textContent = sInfo(WARM.last, true) + '  ·  Eltern: ' + (v >= 10 ? '😀' : v >= 7 ? '🙂' : '😕');
+    $('warmNote').textContent = sInfo(WARM.last, true) + '  ·  الأهل: ' + (v >= 10 ? '😀' : v >= 7 ? '🙂' : '😕');
     WARM.last = null;
   }
-  if (v >= 10) warmGood(); else warmBad(v >= 7 ? 'Fast! Noch einmal: Siii – Saaa – Sooo 🐍' : null);
+  if (v >= 10) warmGood(); else warmBad(v >= 7 ? sp('warmAlmost') : null);
 });
