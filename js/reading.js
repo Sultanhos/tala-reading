@@ -215,6 +215,7 @@ function refreshPanel() {
   $('stVoiceInfo').textContent = stVoiceText();
   $('wHelpSel').value = S.wHelp || 'auto';
   $('wStrictSel').value = String(S.wLenient == null ? 1 : S.wLenient);
+  $('wOrderSel').value = S.wOrder || 'hint';
 }
 for (var l = 1; l <= LEVELS.length; l++) {
   var o = document.createElement('option');

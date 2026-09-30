@@ -378,7 +378,27 @@ function wAssess(g, ink, lenient) {
   else if (manyG.length) reason = 'many';
   else if (cov < P[2] || !partsOk) reason = 'shape';
   else if (prec < P[1] || extra.length) reason = 'messy';
-  return { pass: !reason, reason: reason, cov: cov, prec: prec, T: T, cost: T.cost, miss: miss, missG: missG, manyG: manyG, extra: extra };
+  return { pass: !reason, reason: reason, cov: cov, prec: prec, T: T, cost: T.cost, miss: miss, missG: missG, manyG: manyG, extra: extra, isMark: isMark };
+}
+
+/* ----- stroke order: the two rules children learn first ----- */
+// 1) the letter first, then its dots   2) the main line runs from right to left (ا and ل from the top down)
+var WDOWN = 'اأإآل', WRTL = 'بتثفقنيسشصضرزدذو';
+var WORDER_TIP = { dots: 'الحَرْفُ أَوَّلًا، ثُمَّ النُّقَطُ 🙂', rtl: 'نَكْتُبُ مِنَ اليَمِينِ إِلَى اليَسَارِ ⬅️', down: 'نَكْتُبُ مِنْ فَوْقُ إِلَى تَحْتُ ⬇️' };
+function wOrder(r, ink) {
+  if (W.word) return null; // in a word each letter gets its dots right away
+  var firstMark = -1, lastBody = -1, main = null;
+  ink.strokes.forEach(function (st, si) {
+    if (r.isMark[si]) { if (firstMark < 0) firstMark = si; return; }
+    lastBody = si;
+    if (!main || st.size > main.size) main = st;
+  });
+  if (firstMark > -1 && firstMark < lastBody) return 'dots';
+  if (!main || main.pts.length < 3) return null;
+  var p0 = main.pts[0], p1 = main.pts[main.pts.length - 1];
+  if (!W.form && WDOWN.indexOf(W.ch) > -1) return p1.y - p0.y < -main.size * 0.4 ? 'down' : null; // a final ـا is written upwards
+  if (WRTL.indexOf(W.ch) > -1 && p1.x - p0.x > main.size * 0.25) return 'rtl';
+  return null;
 }
 
 // does her writing match another letter clearly better?
@@ -556,7 +576,12 @@ function wCheck() {
   if (r.pass) { var o = wLookalike(r, ink); if (o) { r.pass = false; r.reason = 'like'; r.like = o; } }
   else if (r.reason === 'shape' || r.reason === 'messy') { r.like = wLookalike(null, ink); if (r.like) r.reason = 'like'; }
   if (r.cov != null) $('wNote').textContent = 'الحرف مكتمل ' + Math.round(r.cov * 100) + '٪  ·  على الحرف ' + Math.round(r.prec * 100) + '٪' + (g.groups.length ? '  ·  النقاط ' + (r.missG.length || r.manyG.length ? '✘' : '✔') : '');
-  if (r.pass) { wSuccess(); return; }
+  if (r.pass) {
+    var ord = S.wOrder === 'off' ? null : wOrder(r, ink);
+    if (ord && S.wOrder === 'strict') { r.pass = false; r.reason = 'order'; r.order = ord; wFail(r); return; }
+    wSuccess(ord);
+    return;
+  }
   wFail(r);
 }
 function wFail(r) {
@@ -582,7 +607,8 @@ function wFail(r) {
     many: 'نُقَاطٌ كَثِيرَة! عُدِّي النُّقَاط 😊',
     shape: 'أَكْمِلِي الحَرْفَ ✏️',
     messy: W.mode === 'trace' ? 'اُكْتُبِي عَلَى الحَرْفِ ✏️' : 'حَاوِلِي مَرَّةً أُخْرَى 💪',
-    like: r.like ? 'هَذَا يُشْبِهُ «' + WINFO[r.like][0] + '» 😊 اُكْتُبِي «' + name + '»' : ''
+    like: r.like ? 'هَذَا يُشْبِهُ «' + WINFO[r.like][0] + '» 😊 اُكْتُبِي «' + name + '»' : '',
+    order: r.order ? 'تَقْرِيبًا! ' + WORDER_TIP[r.order] : ''
   }[r.reason] || 'حَاوِلِي مَرَّةً أُخْرَى 💪';
   wSay(wWordy(msg));
   if (W.fails >= 2) {
@@ -591,7 +617,7 @@ function wFail(r) {
   }
   if (W.fails >= 3) $('wHear').classList.add('callout');
 }
-function wSuccess() {
+function wSuccess(order) { // order: a stroke-order tip to give with the praise
   if (W.locked) return;
   W.locked = true; W.marks = null; wStopDemo();
   wDrawInk('#1fae6f');
@@ -600,7 +626,8 @@ function wSuccess() {
   $('wReward').classList.add('show');
   $('wCheck').disabled = true; $('wUndo').disabled = true; $('wClear').disabled = true;
   $('wParentOk').hidden = true;
-  wSay(PRAISE[Math.floor(Math.random() * PRAISE.length)] + ' يَا ' + S.name + '! 🎉');
+  var praise = PRAISE[Math.floor(Math.random() * PRAISE.length)] + ' يَا ' + S.name + '! 🎉';
+  wSay(order ? praise + ' وَتَذَكَّرِي: ' + WORDER_TIP[order] : praise);
   soundGood(); confetti(14);
   track('write', W.txt, true);
   if (S.wDone.indexOf(W.item) < 0) S.wDone.push(W.item);
@@ -613,7 +640,7 @@ function wSuccess() {
     W.timer = setTimeout(function () { wLevelUp(fin, wrap); }, 1500);
   } else {
     save();
-    W.timer = setTimeout(wNext, 2300);
+    W.timer = setTimeout(wNext, order ? 3800 : 2300);
   }
   wPips(); renderHud();
 }
@@ -685,3 +712,4 @@ for (var wl = 1; wl <= WLEVELS.length; wl++) {
 $('wLvlSel').onchange = function () { S.wLevel = parseInt(this.value, 10); S.wDone = []; save(); W.queue = []; W.qi = 0; if (W.started) { wBuild(); wNext(); } else wPips(); renderHud(); };
 $('wHelpSel').onchange = function () { S.wHelp = this.value; save(); if (W.started && !W.locked) { W.mode = wModeFor(W.item); W.qi--; wNext(); } };
 $('wStrictSel').onchange = function () { S.wLenient = parseInt(this.value, 10); save(); };
+$('wOrderSel').onchange = function () { S.wOrder = this.value; save(); };

@@ -31,7 +31,7 @@ function lessonName(level) { return 'الدرس ⁦' + LESSON_IDS[level - 1] + '
 
 /* ---------- saved state ---------- */
 var KEY = childKey(P.cur); // each child has their own progress (js/profiles.js)
-var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1, doneList: [], lispTries: 2, lisp: { best: 0, rounds: 0 }, rateMode: 'parent', wLevel: 1, wDone: [], wHelp: 'auto', wLenient: 1, sEx: [], sHist: [], mLevel: 1, mDone: 0, mDigits: 'ar', stBest: {}, stJudge: 'https://tala-judge.onrender.com', warmOn: true, log: {}, weak: {}, speakLang: 'ar', aiReport: null };
+var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1, doneList: [], lispTries: 2, lisp: { best: 0, rounds: 0 }, rateMode: 'parent', wLevel: 1, wDone: [], wHelp: 'auto', wLenient: 1, sEx: [], sHist: [], mLevel: 1, mDone: 0, mDigits: 'ar', stBest: {}, stJudge: 'https://tala-judge.onrender.com', warmOn: true, log: {}, weak: {}, speakLang: 'ar', aiReport: null, wOrder: 'hint' };
 try {
   var saved = JSON.parse(localStorage.getItem(KEY) || '{}');
   for (var k in saved) if (k in S) S[k] = saved[k];
@@ -123,7 +123,7 @@ var BOY_WORDS = [ // phrases first: before «ال» the boy's command ends in ka
   // نطق lines
   ['قُولِي', 'قُلْ'], ['أَسْنَانُكِ', 'أَسْنَانُكَ'], ['لِسَانُكِ', 'لِسَانُكَ'], ['أَنْهَيْتِ', 'أَنْهَيْتَ'], ['اِضْغَطِي', 'اِضْغَطْ'],
   ['سَأَسْأَلُكِ', 'سَأَسْأَلُكَ'], ['أَجِيبِي', 'أَجِبْ'], ['حَصَلْتِ', 'حَصَلْتَ'], ['تَحْتَاجِينَ', 'تَحْتَاجُ'], ['تَدَرَّبِي', 'تَدَرَّبْ'],
-  ['اِلْعَبِي', 'اِلْعَبْ'], ['تَرَيْنَ', 'تَرَى'],
+  ['اِلْعَبِي', 'اِلْعَبْ'], ['تَذَكَّرِي', 'تَذَكَّرْ'], ['تَرَيْنَ', 'تَرَى'],
   ['أَحْسَنْتِ', 'أَحْسَنْتَ'], ['اِقْرَئِي', 'اِقْرَأْ'], ['اِسْتَمِعِي', 'اِسْتَمِعْ'], ['حَاوِلِي', 'حَاوِلْ'], ['أَسْمَعُكِ', 'أَسْمَعُكَ'],
   ['وَاكْتُبِي', 'وَاكْتُبْ'], ['اُكْتُبِي', 'اُكْتُبْ'], ['عُدِّي', 'عُدَّ'], ['أَكْمِلِي', 'أَكْمِلْ'], ['بِإِصْبَعِكِ', 'بِإِصْبَعِكَ'],
   ['قَارِنِي', 'قَارِنْ'], ['وَاحْسُبِي', 'وَاحْسُبْ'], ['اِحْسُبِي', 'اِحْسُبْ'],
