@@ -57,17 +57,17 @@ function mMake(L) {
     var big = Math.random() < 0.5;
     q.opts = [a, b]; q.ans = big ? Math.max(a, b) : Math.min(a, b);
     q.bubble = big ? 'أَيُّهُمَا أَكْبَرُ؟ 🐘' : 'أَيُّهُمَا أَصْغَرُ؟ 🐭';
-    q.say = (big ? 'أَيُّهُمَا أَكْبَرُ؟ ' : 'أَيُّهُمَا أَصْغَرُ؟ ') + NUMW[a] + ' أَمْ ' + NUMW[b] + '؟';
+    q.say = (big ? 'أَيُّهُمَا أَكْبَرُ؟ ' : 'أَيُّهُمَا أَصْغَرُ؟ ') + NUMW[a] + '، أَمْ، ' + NUMW[b] + '؟';
     q.hintSay = 'قَارِنِي الصُّوَرَ 👀';
   } else if (L.k === 'add') {
     var sum = mRand(L.max > 10 ? 11 : 2, L.max);
     b = L.max > 10 ? mRand(2, Math.min(9, sum - 1)) : mRand(1, sum - 1); a = sum - b;
     q.toks = [{ n: a, p: [a, 0] }, { op: '+' }, { n: b, p: [b, 0] }, { op: '=' }, { q: 1 }];
-    q.ans = sum; q.bubble = 'اِحْسُبِي 🤔'; q.say = NUMW[a] + ' زَائِد ' + NUMW[b] + '، يُسَاوِي كَمْ؟';
+    q.ans = sum; q.bubble = 'اِحْسُبِي 🤔'; q.say = NUMW[a] + '، زَائِد، ' + NUMW[b] + '، يُسَاوِي كَمْ؟';
   } else if (L.k === 'sub') {
     a = mRand(L.max > 10 ? 11 : 2, L.max); b = mRand(1, L.max > 10 ? Math.min(9, a) : a);
     q.toks = [{ n: a, p: [a, b] }, { op: '−' }, { n: b }, { op: '=' }, { q: 1 }];
-    q.ans = a - b; q.bubble = 'اِحْسُبِي 🤔'; q.say = NUMW[a] + ' نَاقِص ' + NUMW[b] + '، يُسَاوِي كَمْ؟';
+    q.ans = a - b; q.bubble = 'اِحْسُبِي 🤔'; q.say = NUMW[a] + '، نَاقِص، ' + NUMW[b] + '، يُسَاوِي كَمْ؟';
   } else { // picture stories
     var t = mRand(0, 3), add = t % 2 === 0, food = t < 2, name = S.name || 'تالا';
     q.emo = food ? ['🍎', '🍓', '🍬', '🍪', '🍌'][mRand(0, 4)] : ['🐦', '🐤', '🦋', '🐞'][mRand(0, 3)];
