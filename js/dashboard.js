@@ -137,6 +137,8 @@ function dashRender() {
     body.appendChild(row);
   });
 
+  aiSection(body, k, d); // ✨ weekly report (js/ai-report.js)
+
   // what is still hard
   body.appendChild(mEl('h3', '', (girl ? 'محتاجة' : 'محتاج') + ' تمرين أكتر في'));
   var anyWeak = false;

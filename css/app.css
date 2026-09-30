@@ -227,6 +227,19 @@ body {
   padding: 2px 12px; font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; font-size: 22px; }
 .chip.txt { font-size: 15px; }
 .chip small { font-family: 'Fredoka', system-ui, sans-serif; font-weight: 500; font-size: 11px; color: var(--muted); }
+.aiBox { margin-top: 18px; padding: 12px 14px; border: 3px solid var(--line); border-radius: 20px; background: #f3efff;
+  font-family: 'Noto Naskh Arabic', 'Fredoka', system-ui, sans-serif; font-size: 15px; line-height: 1.7; }
+.aiBox h3 { margin-top: 0; }
+.sheet .aiBox p { font-size: 15px; margin: 6px 0; }
+.sheet .aiBox .aiHead { font-weight: 700; font-size: 17px; }
+.aiBox .aiT { display: block; margin-top: 10px; }
+.aiBox ul { margin: 4px 0; padding-inline-start: 20px; }
+.aiAct { background: var(--paper); border: 2px solid var(--line); border-radius: 14px; padding: 6px 10px; margin: 6px 0; }
+.sheet .aiAct p { margin: 2px 0 0; }
+.sheet .aiBox .aiKid { background: #fff3b8; border-radius: 12px; padding: 6px 10px; font-weight: 700; }
+.sheet .aiBox .aiWait { text-align: center; font-weight: 700; }
+.aiBox .btnRow { margin: 10px 0 4px; }
+.aiFoot { display: block; color: var(--muted); font-size: 12px; margin-top: 6px; }
 .dEmpty { text-align: center; font-family: 'Noto Naskh Arabic', system-ui, sans-serif; margin: 16px 0; }
 
 .confetti { position: fixed; top: -40px; z-index: 20; pointer-events: none; animation: fall linear forwards; }
