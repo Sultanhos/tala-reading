@@ -4,3 +4,4 @@ audio/
 Story texts for ChatGPT/
 node_modules/
 *.tmp.wav
+.claude/
