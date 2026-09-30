@@ -6,7 +6,22 @@
 // Levels 8+: letter forms — 'ب>' means ب at the start, in the middle and at the end of a word (بـ ـبـ ـب)
 var WLEVELS = [['ا','ب','ت','ث'], ['ج','ح','خ'], ['د','ذ','ر','ز'], ['س','ش','ص','ض'], ['ط','ظ','ع','غ'], ['ف','ق','ك','ل'], ['م','ن','ه','و','ي'],
   ['ب>','ت>'], ['ث>','ن>'], ['ي>','ف>'], ['ق>','ج>'], ['ح>','خ>'], ['س>','ش>'], ['ص>','ض>'], ['ط>','ظ>'], ['ع>','غ>'], ['ك>','ل>'], ['م>','ه>'],
-  ['ا>','د>','ذ>','ر>','ز>','و>']];
+  ['ا>','د>','ذ>','ر>','ز>','و>'],
+  // levels 20+: short words ('=' marks a word), written without vowel marks
+  ['=دب','=باب','=بيت','=توت'], ['=قمر','=شمس','=تمر','=موز'], ['=قلم','=كلب','=جمل','=فيل'], ['=عنب','=خبز','=لبن','=نحل'],
+  ['=ولد','=بنت','=أسد','=فأر'], ['=بحر','=سمك','=زيت','=نمر']];
+// the words to write: shown with vowel marks and a picture
+var WWORD = { 'دب': ['دُبّ', '🐻'], 'باب': ['بَاب', '🚪'], 'بيت': ['بَيْت', '🏠'], 'توت': ['تُوت', '🍓'], 'قمر': ['قَمَر', '🌙'], 'شمس': ['شَمْس', '☀️'],
+  'تمر': ['تَمْر', '🌴'], 'موز': ['مَوْز', '🍌'], 'قلم': ['قَلَم', '✏️'], 'كلب': ['كَلْب', '🐶'], 'جمل': ['جَمَل', '🐫'], 'فيل': ['فِيل', '🐘'],
+  'عنب': ['عِنَب', '🍇'], 'خبز': ['خُبْز', '🍞'], 'لبن': ['لَبَن', '🥛'], 'نحل': ['نَحْل', '🐝'], 'ولد': ['وَلَد', '👦'], 'بنت': ['بِنْت', '👧'],
+  'أسد': ['أَسَد', '🦁'], 'فأر': ['فَأْر', '🐭'], 'بحر': ['بَحْر', '🌊'], 'سمك': ['سَمَك', '🐟'], 'زيت': ['زَيْت', '🫒'], 'نمر': ['نَمِر', '🐯'] };
+// the same letter without its dots, to find which dots in a word belong to which letter
+var WDOTLESS = { 'ب': 'ٮ', 'ت': 'ٮ', 'ث': 'ٮ', 'ن': 'ٮ', 'ي': 'ٮ', 'ج': 'ح', 'خ': 'ح', 'ذ': 'د', 'ز': 'ر', 'ش': 'س', 'ض': 'ص', 'ظ': 'ط', 'غ': 'ع',
+  'ف': 'ڡ', 'ق': 'ٯ', 'ة': 'ه' };
+// the name, example word and picture for the current item (a letter, a letter form or a word)
+// for a word the snake says "the word" instead of "the letter"
+function wWordy(t) { return W.word ? t.replace(/الحَرْفَ/g, 'الكَلِمَةَ').replace(/الحَرْفِ/g, 'الكَلِمَةِ') : t; }
+function wInfo() { if (W.word) { var x = WWORD[W.ch] || [W.ch, '']; return [x[0], x[0], x[1]]; } return WINFO[W.ch]; }
 var WINFO = { 'ا':['أَلِف','أَرْنَب','🐰'], 'ب':['بَاء','بَطَّة','🦆'], 'ت':['تَاء','تُفَّاحَة','🍎'], 'ث':['ثَاء','ثَعْلَب','🦊'],
   'ج':['جِيم','جَمَل','🐫'], 'ح':['حَاء','حِصَان','🐴'], 'خ':['خَاء','خَرُوف','🐑'], 'د':['دَال','دُبّ','🐻'], 'ذ':['ذَال','ذُرَة','🌽'],
   'ر':['رَاء','رَادْيُو','📻'], 'ز':['زَاي','زَرَافَة','🦒'], 'س':['سِين','سَمَكَة','🐟'], 'ش':['شِين','شَمْس','☀️'], 'ص':['صَاد','صَقْر','🦅'],
@@ -55,7 +70,7 @@ function wItems() {
   var l = wLetters(), a = [];
   [0, 1].forEach(function (pass) {
     l.forEach(function (c) {
-      if (c.slice(-1) !== '>') { a.push(c + '#' + pass); return; }
+      if (c.slice(-1) !== '>') { a.push(c + '#' + pass); return; } // a letter, or a word ('=باب')
       var ch = c.slice(0, -1);
       wForms(ch).forEach(function (f) { a.push(ch + '>' + f + '#' + pass); });
     });
@@ -63,8 +78,9 @@ function wItems() {
   return a;
 }
 function wLevelName(n) {
-  var L = WLEVELS[n - 1], forms = L[0].slice(-1) === '>';
-  return 'المستوى ' + mNumAr(n) + ':  ' + (forms ? 'أشكال ' + L.map(function (c) { return c.slice(0, -1); }).join(' ') : L.join(' '));
+  var L = WLEVELS[n - 1], forms = L[0].slice(-1) === '>', words = L[0][0] === '=';
+  return 'المستوى ' + mNumAr(n) + ':  ' + (forms ? 'أشكال ' + L.map(function (c) { return c.slice(0, -1); }).join(' ') :
+    words ? 'كلمات ' + L.map(function (c) { return c.slice(1); }).join('، ') : L.join(' '));
 }
 function wBuild() {
   var items = wItems();
@@ -173,26 +189,46 @@ function wGlyph(ch) {
   var cell = Math.max(B.w, B.h) / 96, GW = Math.ceil(B.w / cell), GH = Math.ceil(B.h / cell), n = GW * GH;
   wGridCv.width = GW; wGridCv.height = GH;
   var gc = wGridCv.getContext('2d');
-  gc.setTransform(1 / cell, 0, 0, 1 / cell, 0, 0);
-  gc.font = '700 ' + fs + 'px ' + WFONT; gc.textAlign = 'center'; gc.textBaseline = 'alphabetic'; gc.fillStyle = '#000';
-  gc.fillText(ch, ox, oy);
-  var gd = gc.getImageData(0, 0, GW, GH).data, mask = new Uint8Array(n);
-  for (i = 0; i < n; i++) mask[i] = gd[i * 4 + 3] > 60 ? 1 : 0;
+  function render(text) {
+    gc.setTransform(1, 0, 0, 1, 0, 0); gc.clearRect(0, 0, GW, GH);
+    gc.setTransform(1 / cell, 0, 0, 1 / cell, 0, 0);
+    gc.font = '700 ' + fs + 'px ' + WFONT; gc.textAlign = 'center'; gc.textBaseline = 'alphabetic'; gc.fillStyle = '#000';
+    gc.fillText(text, ox, oy);
+    var gd = gc.getImageData(0, 0, GW, GH).data, m = new Uint8Array(n);
+    for (var q = 0; q < n; q++) m[q] = gd[q * 4 + 3] > 60 ? 1 : 0;
+    return m;
+  }
+  var mask = render(ch);
+  var letters = ch.replace(/[\u064B-\u0652\u0670\u0640]/g, '').split(''), isWord = letters.length > 1;
 
-  var size = Math.max(gw, gh) * k, u = size / 20, sizeC = size / cell;
+  // a word is wider than a letter: tolerances follow the size of one letter, not of the whole word
+  var size = Math.max(gw, gh) * k, u = isWord ? Math.max(fs * 0.04, m * 0.03) : size / 20, sizeC = size / cell; // a finger is as unsteady on a word as on a letter
   var cc = wComps(mask, GW, GH), comps = cc.comps, maxA = 0;
   comps.forEach(function (c) { if (c.area > maxA) maxA = c.area; });
   comps.forEach(function (c) {
     c.cx = (c.sx / c.area + 0.5) * cell; c.cy = (c.sy / c.area + 0.5) * cell;
     c.ignore = c.area < 3;
-    c.dot = !c.ignore && c.area < maxA * 0.25 && Math.max(c.x1 - c.x0, c.y1 - c.y0) + 1 < sizeC * 0.42;
+    c.dot = !c.ignore && c.area < maxA * 0.25 && Math.max(c.x1 - c.x0, c.y1 - c.y0) + 1 < (isWord ? fs * 0.34 / cell : sizeC * 0.42);
     c.diam = Math.max(c.x1 - c.x0, c.y1 - c.y0) * cell + cell;
     c.group = -1;
   });
   // the dots of a letter form one group with a known count (dots may melt together when drawn small);
   // other small marks (the little sign inside ك) count as one mark each
   var base = ch.replace(/\u0640/g, ''), groups = [], nd = WDOTS[base] || 0;
-  comps.forEach(function (c, id) {
+  if (isWord) {
+    // which dots belong to which letter: draw the word again with that letter dotless; what disappears are its dots
+    letters.forEach(function (L, idx) {
+      if (!WDOTS[L] || !WDOTLESS[L]) return;
+      var v = letters.slice(); v[idx] = (L === 'ي' || L === 'ن') && idx === letters.length - 1 ? (L === 'ي' ? 'ى' : 'ں') : WDOTLESS[L];
+      var vm = render(v.join('')), gone = {}, cnt = 0;
+      for (var q = 0; q < n; q++) if (mask[q] && !vm[q]) { var ci = cc.lab[q]; if (ci >= 0) { gone[ci] = (gone[ci] || 0) + 1; cnt++; } }
+      var ids = Object.keys(gone).map(Number).filter(function (id) { return comps[id].dot && gone[id] >= comps[id].area * 0.5; });
+      if (!ids.length || cnt > maxA) return; // the font drew it differently: those dots count one by one below
+      groups.push({ ids: ids, n: WDOTS[L] });
+      ids.forEach(function (id) { comps[id].group = groups.length - 1; });
+    });
+    comps.forEach(function (c, id) { if (c.dot && c.group < 0) { groups.push({ ids: [id], n: 1 }); c.group = groups.length - 1; } });
+  } else comps.forEach(function (c, id) {
     if (!c.dot) return;
     var gi = nd && groups.length ? 0 : groups.length;
     if (!groups[gi]) groups.push({ ids: [] });
@@ -202,7 +238,7 @@ function wGlyph(ch) {
     var sx = 0, sy = 0, sp = 0, dm = 0;
     gr.ids.forEach(function (a) { sx += comps[a].cx; sy += comps[a].cy; dm = Math.max(dm, comps[a].diam);
       gr.ids.forEach(function (b) { sp = Math.max(sp, Math.hypot(comps[a].cx - comps[b].cx, comps[a].cy - comps[b].cy)); }); });
-    gr.n = nd || 1; gr.cx = sx / gr.ids.length; gr.cy = sy / gr.ids.length; gr.spread = sp + dm;
+    gr.n = gr.n || nd || 1; gr.cx = sx / gr.ids.length; gr.cy = sy / gr.ids.length; gr.spread = sp + dm;
   });
   var near = Int16Array.from(cc.lab), dt = wChamfer(mask, GW, GH, near);
   var sk = wThin(mask, GW, GH), body = [], hasPt = {};
@@ -347,6 +383,7 @@ function wAssess(g, ink, lenient) {
 
 // does her writing match another letter clearly better?
 function wLookalike(r, ink) {
+  if (W.word) return null;
   var best = null, bestC = Infinity, lenient = S.wLenient == null ? 1 : S.wLenient, ratio = [0.9, 0.8, 0.7][lenient] || 0.8;
   WALL.forEach(function (ch) {
     if (ch === W.ch || (W.form && wForms(ch).indexOf(W.form) < 0)) return;
@@ -466,10 +503,13 @@ function wNext() {
   clearTimeout(W.timer); wStopDemo();
   if (W.qi >= W.queue.length) wBuild();
   W.item = W.queue[W.qi++];
-  var key = W.item.split('#')[0].split('>');
-  W.ch = key[0]; W.form = key[1] || ''; W.txt = wFormText(W.ch, W.form); W.mode = wModeFor(W.item);
+  var key = W.item.split('#')[0];
+  W.word = key[0] === '=';
+  if (W.word) { W.ch = key.slice(1); W.form = ''; W.txt = W.ch; }
+  else { key = key.split('>'); W.ch = key[0]; W.form = key[1] || ''; W.txt = wFormText(W.ch, W.form); }
+  W.mode = wModeFor(W.item);
   W.strokes = []; W.cur = null; W.pid = null; W.locked = false; W.fails = 0; W.help = false; W.marks = null;
-  var info = WINFO[W.ch];
+  var info = wInfo();
   $('wCard').className = 'card';
   $('wReward').classList.remove('show');
   $('wCheck').disabled = false; $('wUndo').disabled = false; $('wClear').disabled = false;
@@ -482,7 +522,7 @@ function wNext() {
   wd.innerHTML = '';
   if (W.mode !== 'memory') {
     // the picture word with its first letter marked, or for a letter form a word with the letter in that place
-    if (!ex) { var m = info[1].match(/^.[ً-ْ]*/)[0]; ex = W.form ? null : ['', m, info[1].slice(m.length), info[2]]; }
+    if (!ex) { var m = info[1].match(/^.[ً-ْ]*/)[0]; ex = W.form ? null : W.word ? ['', '', info[1], info[2]] : ['', m, info[1].slice(m.length), info[2]]; }
     if (ex) {
       var t = document.createElement('span');
       [[ex[0], ''], [ex[1], 'first'], [ex[2], '']].forEach(function (p) { if (!p[0]) return; var sp = document.createElement('span'); sp.className = p[1]; sp.textContent = p[0]; t.appendChild(sp); });
@@ -493,7 +533,7 @@ function wNext() {
   if (emo) { var em = document.createElement('span'); em.className = 'em'; em.textContent = emo; wd.appendChild(em); }
   if (wLayout()) { W.g = wGlyph(W.txt); wDrawGuide(); wDrawInk(); }
   var where = W.form ? ' ' + WFORM_NAME[W.form] : '';
-  wSay(W.mode === 'memory' ? 'اِسْتَمِعِي وَاكْتُبِي 🔊' : (W.mode === 'trace' ? 'اُكْتُبِي فَوْقَ الحَرْفِ: ' : 'اُكْتُبِي: ') + info[0] + where + ' ✏️');
+  wSay(W.mode === 'memory' ? 'اِسْتَمِعِي وَاكْتُبِي 🔊' : (W.mode === 'trace' ? (W.word ? 'اُكْتُبِي فَوْقَ الكَلِمَةِ: ' : 'اُكْتُبِي فَوْقَ الحَرْفِ: ') : 'اُكْتُبِي: ') + info[0] + where + ' ✏️');
   wPips(); renderHud();
   if (W.mode === 'memory') setTimeout(wSpeak, 300);
 }
@@ -501,8 +541,8 @@ function wSpeak() {
   if (!window.speechSynthesis || !W.ch) return;
   try {
     window.speechSynthesis.cancel();
-    var info = WINFO[W.ch], where = W.form ? ' ' + WFORM_NAME[W.form] : '';
-    var u = new SpeechSynthesisUtterance(W.mode === 'memory' ? info[0] + where : info[0] + where + '، ' + info[1]);
+    var info = wInfo(), where = W.form ? ' ' + WFORM_NAME[W.form] : '';
+    var u = new SpeechSynthesisUtterance(W.word || W.mode === 'memory' ? info[0] + where : info[0] + where + '، ' + info[1]);
     u.lang = 'ar-SA'; u.rate = 0.6;
     window.speechSynthesis.speak(u);
     $('wHear').classList.remove('callout');
@@ -511,7 +551,7 @@ function wSpeak() {
 function wCheck() {
   if (W.locked || !W.g) return;
   wStopDemo();
-  if (!W.strokes.length) { soundTry(); wSay('اُكْتُبِي الحَرْفَ أَوَّلاً ✏️'); return; }
+  if (!W.strokes.length) { soundTry(); wSay(wWordy('اُكْتُبِي الحَرْفَ أَوَّلاً ✏️')); return; }
   var lenient = S.wLenient == null ? 1 : S.wLenient, g = W.g, ink = wInkData(g), r = wAssess(g, ink, lenient);
   if (r.pass) { var o = wLookalike(r, ink); if (o) { r.pass = false; r.reason = 'like'; r.like = o; } }
   else if (r.reason === 'shape' || r.reason === 'messy') { r.like = wLookalike(null, ink); if (r.like) r.reason = 'like'; }
@@ -523,7 +563,7 @@ function wFail(r) {
   W.fails++;
   track('write', W.txt, false);
   soundTry();
-  var T = r.T, name = WINFO[W.ch][0];
+  var T = r.T, name = wInfo()[0];
   function back(p) { return { x: (p.x - T.bx) / T.ax, y: (p.y - T.by) / T.ay }; }
   W.marks = null;
   if (r.reason === 'dots' || r.reason === 'many') {
@@ -544,7 +584,7 @@ function wFail(r) {
     messy: W.mode === 'trace' ? 'اُكْتُبِي عَلَى الحَرْفِ ✏️' : 'حَاوِلِي مَرَّةً أُخْرَى 💪',
     like: r.like ? 'هَذَا يُشْبِهُ «' + WINFO[r.like][0] + '» 😊 اُكْتُبِي «' + name + '»' : ''
   }[r.reason] || 'حَاوِلِي مَرَّةً أُخْرَى 💪';
-  wSay(msg);
+  wSay(wWordy(msg));
   if (W.fails >= 2) {
     $('wParentOk').hidden = false;
     if (W.mode !== 'trace' && !W.help) { W.help = true; wDrawGuide(); }
