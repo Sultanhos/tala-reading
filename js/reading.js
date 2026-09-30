@@ -26,6 +26,7 @@ function renderHud() {
     d.textContent = i < S.doneList.length ? '⭐' : '';
     p.appendChild(d);
   }
+  rsSync(); // 📖 stories from lesson 4C on (js/read-story.js)
 }
 function buildQueue() {
   queue = shuffle(wordsFor(S.level).filter(function (pair) { return S.doneList.indexOf(pair[0]) < 0; }));

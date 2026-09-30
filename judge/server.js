@@ -1,6 +1,7 @@
 // Tala's AI helper, a Render web service called by the game:
 //   POST /judge   Claude checks whether a spoken answer to a story question is right
 //   POST /report  Claude writes the weekly report for the parents from the week's numbers (never the child's name)
+//   POST /story   Claude writes a short story made only of what the child can already read at their lesson
 // Needs the environment variable ANTHROPIC_API_KEY (set in the Render dashboard, never in code).
 import http from "node:http";
 import Anthropic from "@anthropic-ai/sdk";
@@ -141,7 +142,49 @@ async function report(input) {
     child_message: clip(out.child_message, 200),
   } };
 }
-const ROUTES = { "/judge": { run: judge, max: 60 }, "/report": { run: report, max: 10 } };
+// what a child can read at each lesson of the reading book (index 0 = 3A); the app checks every word again
+const STAGES = [
+  [0, "fatha on every letter"], [1, "kasra"], [2, "damma"], [4, "tanween fath (-ًا)"], [5, "tanween kasr"], [6, "tanween damm"],
+  [8, "sukun"], [13, "long a (ا after fatha, also ى at the end), and the article الْ before moon letters (الْقَمَرُ)"],
+  [14, "long i (ي after kasra)"], [15, "long u (و after damma)"], [16, "shadda, and the article before sun letters (الشَّمْسُ)"],
+];
+const STORY_SYSTEM = `You write a very short story for a young child who is learning to read Arabic with full vowel marks (tashkeel).
+The child can ONLY read what is listed under "can_read". Every letter of every word must carry its vowel mark (fatha, kasra, damma, sukun, tanween or shadda+vowel), except a long vowel letter, or the alif of الْ, when those are listed. Never use any mark or long vowel that is not listed. Words like فِي، إِلَى، عَلَى، هَذَا need long vowels: use them only when long vowels are listed.
+Use simple Modern Standard Arabic words a 6-year-old knows (family, animals, food, rain, playing, school); you may reuse words from "lesson_words" and put them into simple sentences. The story must make sense and be kind and happy.
+Write {name} wherever the child's name belongs (never a real name). If the rules allow the first person (it needs sukun: ذَهَبْتُ), prefer it so the story is about the child; otherwise tell it about a boy (وَلَدٌ) or a man (رَجُلٌ). Match the child's gender for any word that addresses or describes {name}.
+Write 4 to 6 sentences of 2 to 6 words each, ending with a full stop, and a title of 1 to 3 words that follows the same rules.`;
+const STORY_SCHEMA = {
+  type: "object",
+  properties: { title: { type: "string" }, sentences: { type: "array", items: { type: "string" } } },
+  required: ["title", "sentences"],
+  additionalProperties: false,
+};
+async function story(input) {
+  const level = Math.max(0, Math.min(40, num(input.level)));
+  const task = {
+    lesson: clip(input.lesson, 8),
+    child_gender: input.gender === "boy" ? "boy" : "girl",
+    can_read: STAGES.filter((x) => x[0] <= level).map((x) => x[1]),
+    lesson_words: (Array.isArray(input.words) ? input.words : []).slice(0, 60).map((w) => clip(w, 30)).filter(Boolean),
+  };
+  if (level < 6) return { status: 400, body: { error: "too early for sentences" } };
+  const response = await client.beta.messages.create({
+    model: MODEL,
+    max_tokens: 4096,
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+    output_config: { effort: "medium", format: { type: "json_schema", schema: STORY_SCHEMA } },
+    system: STORY_SYSTEM,
+    messages: [{ role: "user", content: JSON.stringify(task) }],
+  });
+  if (response.stop_reason === "refusal") return { status: 502, body: { error: "refused" } };
+  const out = JSON.parse(response.content.filter((b) => b.type === "text").map((b) => b.text).join(""));
+  return { status: 200, body: {
+    title: clip(out.title, 60),
+    sentences: (Array.isArray(out.sentences) ? out.sentences : []).slice(0, 6).map((x) => clip(x, 120)).filter(Boolean),
+  } };
+}
+const ROUTES = { "/judge": { run: judge, max: 60 }, "/report": { run: report, max: 10 }, "/story": { run: story, max: 20 } };
 
 http.createServer((req, res) => {
   const origin = req.headers.origin;

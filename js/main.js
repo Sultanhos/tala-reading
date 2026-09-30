@@ -7,6 +7,7 @@ function stopAll() {
   if (listening) { hadError = true; try { rec.abort(); } catch (e) {} }
   sRecStop(true);
   wStopDemo();
+  rsStop();
   if (ST.playing) ST.playing = false;
   stHush(); stMicStop();
   if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }

@@ -240,6 +240,15 @@ body {
 .sheet .aiBox .aiWait { text-align: center; font-weight: 700; }
 .aiBox .btnRow { margin: 10px 0 4px; }
 .aiFoot { display: block; color: var(--muted); font-size: 12px; margin-top: 6px; }
+/* ---------- 📖 stories to read ---------- */
+#readModes { direction: rtl; }
+#readModes .mode { font-family: 'Noto Naskh Arabic', 'Fredoka', system-ui, sans-serif; }
+.rsTitle { font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; font-size: 24px; color: var(--grape); text-align: center; }
+.rsLine { font-family: 'Noto Naskh Arabic', 'Amiri', serif; font-weight: 700; font-size: clamp(30px, 8.5vw, 44px); line-height: 1.9;
+  text-align: center; color: var(--card-ink); padding: 6px 10px; }
+.rsW { transition: color .3s; }
+.rsW.ok { color: #1fae6f; }
+#rsCard .btnRow { gap: 10px; }
 .dEmpty { text-align: center; font-family: 'Noto Naskh Arabic', system-ui, sans-serif; margin: 16px 0; }
 
 .confetti { position: fixed; top: -40px; z-index: 20; pointer-events: none; animation: fall linear forwards; }

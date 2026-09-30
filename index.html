@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Fredoka:wght@500;700&family=Noto+Naskh+Arabic:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=202609302226">
+<link rel="stylesheet" href="css/app.css?v=202609302231">
 </head>
 <body>
 
@@ -47,7 +47,32 @@
   </nav>
 
   <div class="view" id="viewRead">
+  <div class="modes" id="readModes" hidden dir="rtl">
+    <button class="mode on" id="rmWords">🔤 كَلِمَات</button>
+    <button class="mode" id="rmStory">📖 قِصَّة</button>
+  </div>
   <div class="pips" id="pips" aria-label="Progress in this level"></div>
+
+  <!-- a short story made only of what she can already read -->
+  <section class="card" id="rsCard" hidden>
+    <div class="rsTitle" id="rsTitle" lang="ar" dir="rtl"></div>
+    <div class="pips" id="rsPips" dir="rtl"></div>
+    <div class="wordBox"><div class="rsLine" id="rsLine" lang="ar" dir="rtl"></div></div>
+    <div class="controls">
+      <button class="btn hear" id="rsHear" aria-label="اسمع الجملة">🔊</button>
+      <button class="btn mic" id="rsMic" aria-label="اقرأ الجملة">🎤</button>
+      <button class="btn skip" id="rsSkip" aria-label="الجملة التالية">⏭️</button>
+    </div>
+    <div class="talk">
+      <div class="owl" aria-hidden="true">🦉</div>
+      <div class="bubble" id="rsBubble" aria-live="polite"></div>
+    </div>
+    <p class="note" id="rsNote"></p>
+    <div class="btnRow">
+      <button class="parentOk" id="rsOk" hidden>✔ ولي الأمر: قرأت صح</button>
+      <button class="small" id="rsNew">✨ قِصَّة جَدِيدَة</button>
+    </div>
+  </section>
 
   <section class="card" id="card">
     <div class="wordBox">
@@ -428,21 +453,22 @@
   </div>
 </div>
 
-<script src="stories.js?v=202609302226"></script>
-<script src="js/native.js?v=202609302226"></script>
-<script src="js/profiles.js?v=202609302226"></script>
-<script src="js/app-state.js?v=202609302226"></script>
-<script src="js/progress.js?v=202609302226"></script>
-<script src="js/reading.js?v=202609302226"></script>
-<script src="js/speech-text.js?v=202609302226"></script>
-<script src="js/speech.js?v=202609302226"></script>
-<script src="js/writing.js?v=202609302226"></script>
-<script src="js/math.js?v=202609302226"></script>
-<script src="js/story-player.js?v=202609302226"></script>
-<script src="js/speech-warmup.js?v=202609302226"></script>
-<script src="js/profiles-ui.js?v=202609302226"></script>
-<script src="js/dashboard.js?v=202609302226"></script>
-<script src="js/ai-report.js?v=202609302226"></script>
-<script src="js/main.js?v=202609302226"></script>
+<script src="stories.js?v=202609302231"></script>
+<script src="js/native.js?v=202609302231"></script>
+<script src="js/profiles.js?v=202609302231"></script>
+<script src="js/app-state.js?v=202609302231"></script>
+<script src="js/progress.js?v=202609302231"></script>
+<script src="js/reading.js?v=202609302231"></script>
+<script src="js/speech-text.js?v=202609302231"></script>
+<script src="js/speech.js?v=202609302231"></script>
+<script src="js/writing.js?v=202609302231"></script>
+<script src="js/math.js?v=202609302231"></script>
+<script src="js/story-player.js?v=202609302231"></script>
+<script src="js/speech-warmup.js?v=202609302231"></script>
+<script src="js/profiles-ui.js?v=202609302231"></script>
+<script src="js/dashboard.js?v=202609302231"></script>
+<script src="js/ai-report.js?v=202609302231"></script>
+<script src="js/read-story.js?v=202609302231"></script>
+<script src="js/main.js?v=202609302231"></script>
 </body>
 </html>
