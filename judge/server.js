@@ -2,6 +2,7 @@
 //   POST /judge   Claude checks whether a spoken answer to a story question is right
 //   POST /report  Claude writes the weekly report for the parents from the week's numbers (never the child's name)
 //   POST /story   Claude writes a short story made only of what the child can already read at their lesson
+//   POST /chat    Koko the parrot talks with the child (only when the parents switch it on; the text, never the name)
 // Needs the environment variable ANTHROPIC_API_KEY (set in the Render dashboard, never in code).
 import http from "node:http";
 import Anthropic from "@anthropic-ai/sdk";
@@ -184,7 +185,43 @@ async function story(input) {
     sentences: (Array.isArray(out.sentences) ? out.sentences : []).slice(0, 6).map((x) => clip(x, 120)).filter(Boolean),
   } };
 }
-const ROUTES = { "/judge": { run: judge, max: 60 }, "/report": { run: report, max: 10 }, "/story": { run: story, max: 20 } };
+const CHAT_SYSTEM = `You are Koko (كُوكُو), a cheerful parrot in an Arabic learning app, talking with one young child so the child practises speaking Arabic.
+Speak simple Modern Standard Arabic (fusha) with FULL vowel marks (tashkeel) on every word, because the app reads your words aloud and the child reads along. Use the child's gender for every form that addresses the child. Write {name} if you use the child's name (never invent a name).
+Every reply: at most 2 short sentences (under 20 words in total): a warm reaction to what the child said, then ONE simple question about the topic. If the child's sentence had a language mistake, repeat it correctly once, naturally, without saying it was wrong.
+The child's words come from speech recognition and may be broken or in dialect: if you cannot understand them, kindly ask the child to say it again. If the child answers with one word, praise it and invite a slightly longer answer.
+Stay on the topic and on happy, everyday things a 4-8 year old knows. Never ask for or repeat personal details (family name, address, school name, phone, where the child is now, photos, passwords). Never talk about violence, fear, scary things, romance, money, brands, apps, websites, or other people's religions and politics; if the child brings up such things, gently change back to the topic.
+If the child says they are hurt, sad, scared, alone, or that someone is hurting them: answer with kindness, tell them to talk to mama, baba or a trusted grown-up right now, ask nothing about details, and set done to true.
+"hints": two very short answers (1-5 words, with tashkeel, in the first person) the child could say to your question.
+Set "done" to true after about 6 exchanges, with a friendly goodbye instead of a question.`;
+const CHAT_SCHEMA = {
+  type: "object",
+  properties: { reply: { type: "string" }, hints: { type: "array", items: { type: "string" } }, done: { type: "boolean" } },
+  required: ["reply", "hints", "done"],
+  additionalProperties: false,
+};
+async function chat(input) {
+  const history = (Array.isArray(input.history) ? input.history : []).slice(-10)
+    .map((h) => ({ who: h && h.who === "kid" ? "child" : "koko", text: clip(h && h.text, 200) })).filter((h) => h.text);
+  if (!history.length || history[history.length - 1].who !== "child") return { status: 400, body: { error: "the child speaks last" } };
+  const task = { topic: clip(input.topic, 40), child: { age: num(input.age) || null, gender: input.gender === "boy" ? "boy" : "girl" }, conversation: history };
+  const response = await client.beta.messages.create({
+    model: MODEL,
+    max_tokens: 2048,
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+    output_config: { effort: "low", format: { type: "json_schema", schema: CHAT_SCHEMA } },
+    system: CHAT_SYSTEM,
+    messages: [{ role: "user", content: JSON.stringify(task) }],
+  });
+  if (response.stop_reason === "refusal") return { status: 502, body: { error: "refused" } };
+  const out = JSON.parse(response.content.filter((b) => b.type === "text").map((b) => b.text).join(""));
+  return { status: 200, body: {
+    reply: clip(out.reply, 300),
+    hints: (Array.isArray(out.hints) ? out.hints : []).slice(0, 2).map((x) => clip(x, 60)).filter(Boolean),
+    done: !!out.done,
+  } };
+}
+const ROUTES = { "/judge": { run: judge, max: 60 }, "/report": { run: report, max: 10 }, "/story": { run: story, max: 20 }, "/chat": { run: chat, max: 80 } };
 
 http.createServer((req, res) => {
   const origin = req.headers.origin;

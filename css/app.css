@@ -280,6 +280,24 @@ body {
 .qW.ok { color: #1fae6f; }
 .qW.hid { color: transparent; background: #ece6ff; border-radius: 8px; }
 .qEnd { font-size: .8em; color: var(--grape); }
+/* ---------- 🦜 Koko ---------- */
+#viewChat .card { font-family: 'Noto Naskh Arabic', 'Fredoka', system-ui, sans-serif; }
+.cTopics { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.cTopic { border: 2px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--card-ink); padding: 5px 11px;
+  font-family: 'Noto Naskh Arabic', serif; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 3px 0 var(--line); }
+.cTopic.on { background: var(--sun); }
+.cLog { width: 100%; min-height: 200px; max-height: 44vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+  background: var(--paper); border: 3px dashed var(--grape); border-radius: 22px; padding: 12px 10px; }
+.cRow { display: flex; align-items: flex-end; gap: 8px; }
+.cRow.cKid { justify-content: flex-end; }
+.cAv { font-size: 30px; line-height: 1; flex: none; }
+.cMsg { max-width: 78%; border: 2px solid var(--line); border-radius: 18px; padding: 7px 12px; font-size: 19px; line-height: 1.8; font-weight: 700; }
+.cRow.cKoko .cMsg { background: #e7f8ef; border-bottom-right-radius: 4px; }
+.cRow.cKid .cMsg { background: #fff3b8; border-bottom-left-radius: 4px; }
+.cHints { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; min-height: 10px; }
+.cHintT { font-size: 13px; color: var(--muted); }
+.cHint { border: 2px dashed var(--grape); border-radius: 14px; background: #f3efff; color: var(--card-ink); padding: 4px 10px;
+  font-family: 'Noto Naskh Arabic', serif; font-size: 16px; font-weight: 700; cursor: pointer; }
 .dEmpty { text-align: center; font-family: 'Noto Naskh Arabic', system-ui, sans-serif; margin: 16px 0; }
 
 .confetti { position: fixed; top: -40px; z-index: 20; pointer-events: none; animation: fall linear forwards; }
@@ -359,6 +377,8 @@ body {
 /* ---------- Schreiben (letter writing) ---------- */
 .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; direction: rtl; }
 .tabs.five { grid-template-columns: repeat(5, 1fr); }
+.tabs.six { grid-template-columns: repeat(6, 1fr); gap: 5px; }
+.tabs.six .tab { padding-left: 1px; padding-right: 1px; font-size: 14px; }
 .tab { font-family: 'Noto Naskh Arabic', 'Fredoka', system-ui, sans-serif; font-size: 16px; padding: 6px 4px 7px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.15; min-width: 0; }
 .tab .ti { font-size: 22px; line-height: 1.1; }
 @media (max-width: 400px) { .tabs { gap: 6px; } .tab { font-size: 14px; padding: 6px 2px 7px; } .tab .ti { font-size: 20px; } }

@@ -3,7 +3,7 @@
 
 var AREA_INFO = {
   read: ['📖', 'قراءة', '#7b5cff'], write: ['✍️', 'كتابة', '#ff6b6b'], math: ['🔢', 'حساب', '#2fcf8b'],
-  speak: ['🐍', 'نطق', '#ffb547'], quran: ['🕌', 'قرآن', '#26a69a'], story: ['📚', 'حكايات', '#6bb8ff']
+  speak: ['🐍', 'نطق', '#ffb547'], quran: ['🕌', 'قرآن', '#26a69a'], chat: ['🦜', 'كلام مع كوكو', '#ff8fb1'], story: ['📚', 'حكايات', '#6bb8ff']
 };
 var dashKid = null;
 
@@ -121,7 +121,7 @@ function dashRender() {
 
   // each area: level now, minutes, right / wrong this week
   body.appendChild(mEl('h3', '', 'كل جزء'));
-  ['read', 'write', 'math', 'speak', 'quran'].forEach(function (a) {
+  ['read', 'write', 'math', 'speak', 'quran', 'chat'].forEach(function (a) {
     var v = wk.area[a] || [0, 0, 0, 0], row = mEl('div', 'dArea');
     row.appendChild(mEl('span', 'av', AREA_INFO[a][0]));
     var mid = mEl('div', 'nm');

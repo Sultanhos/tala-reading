@@ -9,6 +9,7 @@ function stopAll() {
   wStopDemo();
   rsStop();
   qStop();
+  cStop();
   if (ST.playing) ST.playing = false;
   stHush(); stMicStop();
   if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
@@ -32,21 +33,25 @@ function showView(v) {
   $('viewSpeak').hidden = v !== 'speak';
   $('viewStory').hidden = v !== 'story';
   $('viewQuran').hidden = v !== 'quran';
+  $('viewChat').hidden = v !== 'chat';
   $('tabRead').classList.toggle('on', v === 'read');
   $('tabWrite').classList.toggle('on', v === 'write');
   $('tabMath').classList.toggle('on', v === 'math');
   $('tabSpeak').classList.toggle('on', v === 'speak');
   $('tabStory').classList.toggle('on', v === 'story');
   $('tabQuran').classList.toggle('on', v === 'quran');
+  $('tabChat').classList.toggle('on', v === 'chat');
   renderHud();
   if (v === 'speak') { if (S.warmOn !== false) warmStart(); else setMode(curMode); }
   if (v === 'write') wEnter();
   if (v === 'math') mEnter();
   if (v === 'story') stEnter();
   if (v === 'quran') qEnter();
+  if (v === 'chat') cEnter();
 }
 $('tabStory').onclick = function () { showView('story'); };
 $('tabQuran').onclick = function () { showView('quran'); };
+$('tabChat').onclick = function () { showView('chat'); };
 $('tabMath').onclick = function () { showView('math'); };
 $('tabWrite').onclick = function () { showView('write'); };
 $('tabRead').onclick = function () { showView('read'); };

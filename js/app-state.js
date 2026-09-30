@@ -31,7 +31,7 @@ function lessonName(level) { return 'الدرس ⁦' + LESSON_IDS[level - 1] + '
 
 /* ---------- saved state ---------- */
 var KEY = childKey(P.cur); // each child has their own progress (js/profiles.js)
-var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1, doneList: [], lispTries: 2, lisp: { best: 0, rounds: 0 }, rateMode: 'parent', wLevel: 1, wDone: [], wHelp: 'auto', wLenient: 1, sEx: [], sHist: [], mLevel: 1, mDone: 0, mDigits: 'ar', stBest: {}, stJudge: 'https://tala-judge.onrender.com', warmOn: true, log: {}, weak: {}, speakLang: 'ar', aiReport: null, wOrder: 'hint', rsDone: [], quran: {} };
+var S = { stars: 0, level: 1, done: 0, name: 'تالا', sound: true, alwaysOk: false, picBefore: false, lenient: 1, doneList: [], lispTries: 2, lisp: { best: 0, rounds: 0 }, rateMode: 'parent', wLevel: 1, wDone: [], wHelp: 'auto', wLenient: 1, sEx: [], sHist: [], mLevel: 1, mDone: 0, mDigits: 'ar', stBest: {}, stJudge: 'https://tala-judge.onrender.com', warmOn: true, log: {}, weak: {}, speakLang: 'ar', aiReport: null, wOrder: 'hint', rsDone: [], quran: {}, chatAI: false };
 try {
   var saved = JSON.parse(localStorage.getItem(KEY) || '{}');
   for (var k in saved) if (k in S) S[k] = saved[k];
@@ -119,7 +119,13 @@ function popBubble(el, text) { el.textContent = gx(text); el.classList.remove('p
 /* ---------- talking to a boy or a girl: the texts are written for a girl; for a boy these words change ---------- */
 var BOY_WORDS = [ // phrases first: before «ال» the boy's command ends in kasra (اِقْرَأِ الكَلِمَة)
   ['اِقْرَئِي الكَلِمَة', 'اِقْرَأِ الكَلِمَة'], ['اِقْرَئِي القِصَّةَ', 'اِقْرَأِ القِصَّةَ'], ['اِقْرَئِي الكَلِمَاتِ', 'اِقْرَأِ الكَلِمَاتِ'],
-  ['قَرَأْتِ', 'قَرَأْتَ'], ['اِقْرَئِي الآيَةَ', 'اِقْرَأِ الآيَةَ'], ['سَمِّعِي', 'سَمِّعْ'], ['حَفِظْتِ', 'حَفِظْتَ'], ['اُكْتُبِي الحَرْفَ', 'اُكْتُبِ الحَرْفَ'], ['أَكْمِلِي الحَرْفَ', 'أَكْمِلِ الحَرْفَ'],
+  ['قَرَأْتِ', 'قَرَأْتَ'], ['اِقْرَئِي الآيَةَ', 'اِقْرَأِ الآيَةَ'], ['سَمِّعِي', 'سَمِّعْ'], ['حَفِظْتِ', 'حَفِظْتَ'],
+  // Koko
+  ['تَفْعَلِي', 'تَفْعَلَ'], ['تَرْسُمِي', 'تَرْسُمَ'], ['تَقُولِي', 'تَقُولَ'], ['لَكِ القِصَصَ', 'لَكَ القِصَصَ'], ['قُولِيهَا', 'قُلْهَا'],
+  ['حَيَوَانُكِ', 'حَيَوَانُكَ'], ['عِنْدَكِ', 'عِنْدَكَ'], ['لَوْنُكِ', 'لَوْنُكَ'], ['مَلَابِسِكِ', 'مَلَابِسِكَ'], ['أَكْلُكِ', 'أَكْلُكَ'],
+  ['أَكَلْتِ', 'أَكَلْتَ'], ['تُحِبِّينَ', 'تُحِبُّ'], ['تَشْرَبِينَ', 'تَشْرَبُ'], ['تَلْعَبِينَ', 'تَلْعَبُ'], ['عَائِلَتِكِ', 'عَائِلَتِكَ'],
+  ['حَالُكِ', 'حَالُكَ'], ['فَعَلْتِ', 'فَعَلْتَ'], ['لُعْبَتُكِ', 'لُعْبَتُكَ'], ['تَنَامِينَ', 'تَنَامُ'], ['اِخْتَارِي', 'اِخْتَرْ'],
+  ['مَعَكِ', 'مَعَكَ'], ['أَسْمَعْكِ', 'أَسْمَعْكَ'], ['يَوْمِكِ', 'يَوْمِكَ'], ['تَكَلَّمِي', 'تَكَلَّمْ'], ['يُمْكِنُكِ', 'يُمْكِنُكَ'], ['اُكْتُبِي الحَرْفَ', 'اُكْتُبِ الحَرْفَ'], ['أَكْمِلِي الحَرْفَ', 'أَكْمِلِ الحَرْفَ'],
   ['قَارِنِي الصُّوَرَ', 'قَارِنِ الصُّوَرَ'], ['اُكْتُبِي الكَلِمَةَ', 'اُكْتُبِ الكَلِمَةَ'], ['أَكْمِلِي الكَلِمَةَ', 'أَكْمِلِ الكَلِمَةَ'], ['قُولِي الكَلِمَتَيْنِ', 'قُلِ الكَلِمَتَيْنِ'], ['قُولِي الثَّلَاثَةَ', 'قُلِ الثَّلَاثَةَ'],
   // نطق lines
   ['قُولِي', 'قُلْ'], ['أَسْنَانُكِ', 'أَسْنَانُكَ'], ['لِسَانُكِ', 'لِسَانُكَ'], ['أَنْهَيْتِ', 'أَنْهَيْتَ'], ['اِضْغَطِي', 'اِضْغَطْ'],
