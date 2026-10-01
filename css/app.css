@@ -299,6 +299,24 @@ body {
 .cHintT { font-size: 13px; color: var(--muted); }
 .cHint { border: 2px dashed var(--grape); border-radius: 14px; background: #f3efff; color: var(--card-ink); padding: 4px 10px;
   font-family: 'Noto Naskh Arabic', serif; font-size: 16px; font-weight: 700; cursor: pointer; }
+/* ---------- 📷 homework helper ---------- */
+#hwOv { z-index: 12; }
+#hwModes .on { background: var(--sun); }
+.hwPick { display: inline-block; cursor: pointer; }
+.hwPreview { display: block; max-width: 100%; max-height: 300px; margin: 10px auto; border: 3px solid var(--line); border-radius: 14px; }
+#hwResult { font-family: 'Noto Naskh Arabic', 'Fredoka', system-ui, sans-serif; }
+.hwSubj { display: inline-block; background: #e9e2ff; border: 2px solid var(--line); border-radius: 999px; padding: 2px 12px; font-weight: 700; font-size: 14px; }
+.sheet .hwSum { font-size: 16px; font-weight: 700; margin: 8px 0; line-height: 1.7; }
+.hwScore { font-size: 22px; font-weight: 700; color: #1fae6f; margin: 4px 0 8px; }
+.hwItem { border: 3px solid var(--line); border-radius: 16px; background: var(--paper); padding: 8px 10px; margin: 8px 0; font-size: 15px; line-height: 1.7; }
+.hwItem.ok { background: #e7f8ef; } .hwItem.bad { background: #ffe9e9; }
+.hwHead { display: flex; gap: 8px; align-items: flex-start; font-weight: 700; }
+.hwMark { font-size: 20px; line-height: 1.3; flex: none; }
+.hwItem.ok .hwMark { color: #1fae6f; } .hwItem.bad .hwMark { color: var(--coral); }
+.hwLine { margin-top: 2px; }
+.hwTask, .hwLine span { unicode-bidi: isolate; }
+.hwRight { color: #157a4e; }
+.hwTip { margin-top: 4px; color: var(--muted); }
 .dEmpty { text-align: center; font-family: 'Noto Naskh Arabic', system-ui, sans-serif; margin: 16px 0; }
 
 .confetti { position: fixed; top: -40px; z-index: 20; pointer-events: none; animation: fall linear forwards; }

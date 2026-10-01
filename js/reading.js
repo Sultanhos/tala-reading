@@ -204,7 +204,7 @@ function refreshPanel() {
   $('triesSel').value = String(S.lispTries || 2);
   $('rateSel').value = S.rateMode || 'parent';
   $('speakLangSel').value = S.speakLang === 'de' ? 'de' : 'ar';
-  $('chatAiCb').checked = !!S.chatAI;
+  $('chatAiCb').checked = S.kokoAI !== false;
   $('sDetInfo').textContent = sStatus();
   $('strictSel').value = String(S.lenient == null ? 1 : S.lenient);
   $('wLvlSel').value = String(S.wLevel);
@@ -237,7 +237,7 @@ $('soundCb').onchange = function () { S.sound = this.checked; save(); };
 $('strictSel').onchange = function () { S.lenient = parseInt(this.value, 10); save(); };
 $('rateSel').onchange = function () { S.rateMode = this.value; save(); };
 $('speakLangSel').onchange = function () { spSetLang(this.value); };
-$('chatAiCb').onchange = function () { S.chatAI = this.checked; save(); };
+$('chatAiCb').onchange = function () { S.kokoAI = this.checked; save(); };
 $('warmCb').onchange = function () { S.warmOn = this.checked; save(); };
 armed($('sDetReset'), 'مسح ما تعلمه الكاشف', function () { S.sEx = []; S.sHist = []; save(); refreshPanel(); });
 $('triesSel').onchange = function () { S.lispTries = parseInt(this.value, 10); save(); };

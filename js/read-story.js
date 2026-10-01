@@ -96,7 +96,7 @@ function rsNew() {
   function use(st) { if (done) return; done = true; RS.loading = false; RS.story = st; RS.i = 0; rsShow(); }
   if (!base) { use(rsLocal()); return; }
   var ctl = window.AbortController ? new AbortController() : null;
-  var timer = setTimeout(function () { if (ctl) ctl.abort(); use(rsLocal()); }, 25000);
+  var timer = setTimeout(function () { if (ctl) ctl.abort(); use(rsLocal()); }, 50000); // a new story takes the AI 20-30 seconds
   fetch(base + '/story', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl ? ctl.signal : undefined,
     body: JSON.stringify({ level: S.level - 1, lesson: LESSON_IDS[S.level - 1], gender: pCur().gender === 'boy' ? 'boy' : 'girl',
       words: [].concat.apply([], LESSONS.slice(0, S.level).map(function (L) { return L[1]; })).slice(-60) }) })

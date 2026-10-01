@@ -190,7 +190,8 @@ function cSpeak(t) {
   try {
     window.speechSynthesis.cancel();
     var u = new SpeechSynthesisUtterance(gx(t).replace(/[\u{1F300}-\u{1FAFF}☀-➿️‍]/gu, '').split('{name}').join(S.name));
-    u.lang = 'ar-SA'; u.rate = 0.8; u.pitch = 1.3; // a bright parrot voice (when the phone's voice is used)
+    u.lang = 'ar-SA'; u.rate = 0.8; u.pitch = 1.3; // a bright parrot voice
+    u.noRecording = true; // Koko's AI answers are new every time, so all of Koko is spoken by the phone's voice
     window.speechSynthesis.speak(u);
   } catch (e) {}
 }
@@ -280,7 +281,7 @@ function cAnswer(text, alts) {
   cLog('kid', text);
   C.history.push({ who: 'kid', text: text });
   C.turns++;
-  if (S.chatAI && aiBase()) cAI(alts || [text]); else cScript(alts || [text]);
+  if (S.kokoAI !== false && aiBase()) cAI(alts || [text]); else cScript(alts || [text]);
 }
 // without AI: understand the answer (any of the recognizer's versions), reply to it, ask the next question
 function cScript(alts) {

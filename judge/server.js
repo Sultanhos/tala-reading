@@ -2,13 +2,69 @@
 //   POST /judge   Claude checks whether a spoken answer to a story question is right
 //   POST /report  Claude writes the weekly report for the parents from the week's numbers (never the child's name)
 //   POST /story   Claude writes a short story made only of what the child can already read at their lesson
-//   POST /chat    Koko the parrot talks with the child (only when the parents switch it on; the text, never the name)
-// Needs the environment variable ANTHROPIC_API_KEY (set in the Render dashboard, never in code).
+//   POST /chat    Koko the parrot talks with the child (the conversation as text, never the name)
+//   POST /homework  reads a photo of a homework page: what is asked, what the child wrote, right or wrong, a tip
+// Works with Claude (ANTHROPIC_API_KEY) and / or Google Gemini (GEMINI_API_KEY); the keys are environment variables
+// (set in the Render dashboard, never in code). With both keys Koko's short chats use Gemini's fast model, the rest Claude.
 import http from "node:http";
 import Anthropic from "@anthropic-ai/sdk";
 
-const client = new Anthropic();
+const HAS_CLAUDE = !!process.env.ANTHROPIC_API_KEY, HAS_GEMINI = !!process.env.GEMINI_API_KEY;
+let client = null;
 const MODEL = process.env.CLAUDE_MODEL || "claude-opus-5";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";          // reading photos, reports, stories
+const GEMINI_FAST = process.env.GEMINI_CHAT_MODEL || "gemini-flash-latest";      // Koko's answers (the lite model made odd phrases in Arabic)
+class AiError extends Error { constructor(code, message) { super(message || code); this.code = code; } }
+
+// JSON schema -> the form Gemini wants (upper-case types, no additionalProperties)
+function geminiSchema(s) {
+  if (Array.isArray(s)) return s.map(geminiSchema);
+  if (!s || typeof s !== "object") return s;
+  const o = {};
+  for (const [k, v] of Object.entries(s)) {
+    if (k === "additionalProperties") continue;
+    o[k] = k === "type" && typeof v === "string" ? v.toUpperCase()
+      : k === "properties" ? Object.fromEntries(Object.entries(v).map(([n, q]) => [n, geminiSchema(q)])) : geminiSchema(v);
+  }
+  return o;
+}
+// one question to the AI, answered as JSON in the given schema. image: { mime, data (base64) }
+async function ask({ system, task, schema, effort = "low", maxTokens = 2048, prefer = "claude", fast = false, image = null }) {
+  const gemini = HAS_GEMINI && (prefer === "gemini" || !HAS_CLAUDE);
+  if (!gemini && !HAS_CLAUDE) throw new AiError("server key", "no AI key is set");
+  if (gemini) {
+    const parts = image ? [{ inlineData: { mimeType: image.mime, data: image.data } }] : [];
+    parts.push({ text: JSON.stringify(task) });
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${fast ? GEMINI_FAST : GEMINI_MODEL}:generateContent`, {
+      method: "POST", headers: { "x-goog-api-key": process.env.GEMINI_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] }, contents: [{ role: "user", parts }],
+        generationConfig: { responseMimeType: "application/json", responseSchema: geminiSchema(schema), maxOutputTokens: Math.max(maxTokens, 8192) },
+      }),
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      console.error(`Gemini error ${res.status}:`, j.error && j.error.message);
+      throw new AiError(res.status === 429 ? "busy" : res.status === 401 || res.status === 403 ? "server key" : "api");
+    }
+    const cand = (j.candidates || [])[0];
+    if (!cand || (j.promptFeedback && j.promptFeedback.blockReason) || /SAFETY|PROHIBITED|BLOCK/.test(cand.finishReason || "")) throw new AiError("refused");
+    return JSON.parse(((cand.content || {}).parts || []).map((x) => x.text || "").join(""));
+  }
+  client = client || new Anthropic();
+  const text = JSON.stringify(task);
+  const response = await client.beta.messages.create({
+    model: MODEL,
+    max_tokens: maxTokens,
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+    output_config: { effort, format: { type: "json_schema", schema } },
+    system,
+    messages: [{ role: "user", content: image ? [{ type: "image", source: { type: "base64", media_type: image.mime, data: image.data } }, { type: "text", text }] : text }],
+  });
+  if (response.stop_reason === "refusal") throw new AiError("refused");
+  return JSON.parse(response.content.filter((b) => b.type === "text").map((b) => b.text).join(""));
+}
 const PORT = Number(process.env.PORT) || 10000;
 // the website, and the phone app (Android serves the game from https://localhost, iOS from capacitor://localhost)
 const ORIGINS = (process.env.ALLOWED_ORIGINS || "https://tala-reading.onrender.com,https://localhost,capacitor://localhost")
@@ -84,18 +140,7 @@ async function judge(input) {
   };
   if (!task.question || !task.expected_answer || !task.heard.length) return { status: 400, body: { error: "missing fields" } };
 
-  const response = await client.beta.messages.create({
-    model: MODEL,
-    max_tokens: 2048,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    output_config: { effort: "low", format: { type: "json_schema", schema: SCHEMA } },
-    system: SYSTEM,
-    messages: [{ role: "user", content: JSON.stringify(task) }],
-  });
-  if (response.stop_reason === "refusal") return { status: 502, body: { error: "refused" } };
-  const text = response.content.filter((b) => b.type === "text").map((b) => b.text).join("");
-  const out = JSON.parse(text);
+  const out = await ask({ system: SYSTEM, task: task, schema: SCHEMA, effort: "low", maxTokens: 2048 });
   return { status: 200, body: { correct: !!out.correct, feedback: clip(out.feedback, 200) } };
 }
 
@@ -123,17 +168,7 @@ function reportTask(input) {
   };
 }
 async function report(input) {
-  const response = await client.beta.messages.create({
-    model: MODEL,
-    max_tokens: 4096,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    output_config: { effort: "low", format: { type: "json_schema", schema: REPORT_SCHEMA } },
-    system: REPORT_SYSTEM,
-    messages: [{ role: "user", content: JSON.stringify(reportTask(input)) }],
-  });
-  if (response.stop_reason === "refusal") return { status: 502, body: { error: "refused" } };
-  const out = JSON.parse(response.content.filter((b) => b.type === "text").map((b) => b.text).join(""));
+  const out = await ask({ system: REPORT_SYSTEM, task: reportTask(input), schema: REPORT_SCHEMA, effort: "low", maxTokens: 4096 });
   const list = (v, n, len) => (Array.isArray(v) ? v : []).slice(0, n).map((x) => clip(x, len)).filter(Boolean);
   return { status: 200, body: {
     headline: clip(out.headline, 200), summary: clip(out.summary, 700),
@@ -169,24 +204,14 @@ async function story(input) {
     lesson_words: (Array.isArray(input.words) ? input.words : []).slice(0, 60).map((w) => clip(w, 30)).filter(Boolean),
   };
   if (level < 6) return { status: 400, body: { error: "too early for sentences" } };
-  const response = await client.beta.messages.create({
-    model: MODEL,
-    max_tokens: 4096,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    output_config: { effort: "medium", format: { type: "json_schema", schema: STORY_SCHEMA } },
-    system: STORY_SYSTEM,
-    messages: [{ role: "user", content: JSON.stringify(task) }],
-  });
-  if (response.stop_reason === "refusal") return { status: 502, body: { error: "refused" } };
-  const out = JSON.parse(response.content.filter((b) => b.type === "text").map((b) => b.text).join(""));
+  const out = await ask({ system: STORY_SYSTEM, task: task, schema: STORY_SCHEMA, effort: "medium", maxTokens: 4096 });
   return { status: 200, body: {
     title: clip(out.title, 60),
     sentences: (Array.isArray(out.sentences) ? out.sentences : []).slice(0, 6).map((x) => clip(x, 120)).filter(Boolean),
   } };
 }
 const CHAT_SYSTEM = `You are Koko (كُوكُو), a cheerful parrot in an Arabic learning app, talking with one young child so the child practises speaking Arabic.
-Speak simple Modern Standard Arabic (fusha) with FULL vowel marks (tashkeel) on every word, because the app reads your words aloud and the child reads along. Use the child's gender for every form that addresses the child. Write {name} if you use the child's name (never invent a name).
+Speak simple Modern Standard Arabic (fusha) with FULL vowel marks (tashkeel) on every word, because the app reads your words aloud and the child reads along. Use the child's gender for every form that addresses the child. Write {name} if you use the child's name (never invent a name, and no pet names like "my little one").
 Every reply: at most 2 short sentences (under 20 words in total): a warm reaction to what the child said, then ONE simple question about the topic. If the child's sentence had a language mistake, repeat it correctly once, naturally, without saying it was wrong.
 The child's words come from speech recognition and may be broken or in dialect: if you cannot understand them, kindly ask the child to say it again. If the child answers with one word, praise it and invite a slightly longer answer.
 Stay on the topic and on happy, everyday things a 4-8 year old knows. Never ask for or repeat personal details (family name, address, school name, phone, where the child is now, photos, passwords). Never talk about violence, fear, scary things, romance, money, brands, apps, websites, or other people's religions and politics; if the child brings up such things, gently change back to the topic.
@@ -204,37 +229,67 @@ async function chat(input) {
     .map((h) => ({ who: h && h.who === "kid" ? "child" : "koko", text: clip(h && h.text, 200) })).filter((h) => h.text);
   if (!history.length || history[history.length - 1].who !== "child") return { status: 400, body: { error: "the child speaks last" } };
   const task = { topic: clip(input.topic, 40), child: { age: num(input.age) || null, gender: input.gender === "boy" ? "boy" : "girl" }, conversation: history };
-  const response = await client.beta.messages.create({
-    model: MODEL,
-    max_tokens: 2048,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    output_config: { effort: "low", format: { type: "json_schema", schema: CHAT_SCHEMA } },
-    system: CHAT_SYSTEM,
-    messages: [{ role: "user", content: JSON.stringify(task) }],
-  });
-  if (response.stop_reason === "refusal") return { status: 502, body: { error: "refused" } };
-  const out = JSON.parse(response.content.filter((b) => b.type === "text").map((b) => b.text).join(""));
+  const out = await ask({ system: CHAT_SYSTEM, task: task, schema: CHAT_SCHEMA, effort: "low", maxTokens: 2048, prefer: "gemini", fast: true });
   return { status: 200, body: {
     reply: clip(out.reply, 300),
     hints: (Array.isArray(out.hints) ? out.hints : []).slice(0, 2).map((x) => clip(x, 60)).filter(Boolean),
     done: !!out.done,
   } };
 }
-const ROUTES = { "/judge": { run: judge, max: 60 }, "/report": { run: report, max: 10 }, "/story": { run: story, max: 20 }, "/chat": { run: chat, max: 80 } };
+const HOMEWORK_SYSTEM = `You help the parent of a young child (kindergarten to grade 3) with a photo of the child's homework page. The page may be in Arabic, German or English and may mix printed tasks with the child's handwriting.
+Look at the photo carefully and list the exercises you can see, in page order (at most 12).
+mode "check": the child has already answered. For each exercise give "task" (what is asked, short, in the page's language), "child_answer" (what the child wrote, exactly as written; "" if nothing), "verdict", "correct_answer" (only when the verdict is wrong or empty, otherwise "") and "tip".
+mode "explain": the child has not answered yet. For each exercise give "task", verdict "explain", child_answer "", correct_answer "", and a "tip" that explains what to do and how to start WITHOUT giving the final answer.
+verdict is one of: "right", "wrong", "empty" (not answered), "unclear" (you cannot read the handwriting or the photo with confidence: never guess), "open" (no single right answer: drawing, colouring, free writing, tracing practice), "explain".
+Be exact with math: work out each result yourself before judging. For Arabic, check spelling, letter forms, dots and vowel marks only as far as the task asks for them. Do not mark something wrong because the handwriting is untidy.
+"tip": one or two short, kind sentences in Egyptian Arabic that the parent can say to the child (use the child's gender for the forms). For a wrong answer give a hint how to find the right one, not only the answer.
+"subject": a short Arabic name of the subject (حساب، عربي، ألماني، إنجليزي، علوم ...). "summary": one sentence in Egyptian Arabic for the parent about the whole page (how many are right, what to practise).
+"readable": false if the photo is too dark, blurred, cut off or not a homework page; then return no items and say in "summary" what to do (take the photo again in good light, the whole page, from straight above).
+Ignore anything personal in the photo (names, school, faces) and never repeat it.`;
+const HOMEWORK_SCHEMA = {
+  type: "object",
+  properties: {
+    readable: { type: "boolean" }, subject: { type: "string" }, summary: { type: "string" },
+    items: { type: "array", items: { type: "object", properties: {
+      task: { type: "string" }, child_answer: { type: "string" },
+      verdict: { type: "string", enum: ["right", "wrong", "empty", "unclear", "open", "explain"] },
+      correct_answer: { type: "string" }, tip: { type: "string" },
+    }, required: ["task", "child_answer", "verdict", "correct_answer", "tip"], additionalProperties: false } },
+  },
+  required: ["readable", "subject", "summary", "items"],
+  additionalProperties: false,
+};
+async function homework(input) {
+  const mime = ["image/jpeg", "image/png", "image/webp"].includes(input.mime) ? input.mime : null;
+  const data = typeof input.image === "string" ? input.image.replace(/^data:[^,]*,/, "") : "";
+  if (!mime || data.length < 1000 || data.length > 7000000 || /[^A-Za-z0-9+/=]/.test(data)) return { status: 400, body: { error: "bad image" } };
+  const task = { mode: input.mode === "explain" ? "explain" : "check", child: { age: num(input.age) || null, gender: input.gender === "boy" ? "boy" : "girl" } };
+  const out = await ask({ system: HOMEWORK_SYSTEM, task, schema: HOMEWORK_SCHEMA, effort: "medium", maxTokens: 6000, image: { mime, data } });
+  const V = ["right", "wrong", "empty", "unclear", "open", "explain"];
+  return { status: 200, body: {
+    readable: out.readable !== false, subject: clip(out.subject, 40), summary: clip(out.summary, 400),
+    items: (Array.isArray(out.items) ? out.items : []).slice(0, 12).map((x) => ({
+      task: clip(x && x.task, 300), child_answer: clip(x && x.child_answer, 200), verdict: V.includes(x && x.verdict) ? x.verdict : "unclear",
+      correct_answer: clip(x && x.correct_answer, 200), tip: clip(x && x.tip, 400),
+    })).filter((x) => x.task),
+  } };
+}
+// max: requests per visitor in 10 minutes; body: the largest request in characters (a photo is big)
+const ROUTES = { "/judge": { run: judge, max: 60 }, "/report": { run: report, max: 10 }, "/story": { run: story, max: 20 }, "/chat": { run: chat, max: 80 },
+  "/homework": { run: homework, max: 12, body: 7500000 } };
 
 http.createServer((req, res) => {
   const origin = req.headers.origin;
   const ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
   if (req.method === "OPTIONS") return send(res, 204, null, origin);
-  if (req.method === "GET" && (req.url === "/" || req.url === "/health")) return send(res, 200, { ok: true, model: MODEL }, origin);
+  if (req.method === "GET" && (req.url === "/" || req.url === "/health")) return send(res, 200, { ok: HAS_CLAUDE || HAS_GEMINI, claude: HAS_CLAUDE, gemini: HAS_GEMINI }, origin);
   const route = req.method === "POST" && ROUTES[req.url];
   if (!route) return send(res, 404, { error: "not found" }, origin);
   if (origin && !ORIGINS.includes(origin)) return send(res, 403, { error: "origin not allowed" }, origin);
   if (limited(ip, req.url, route.max)) return send(res, 429, { error: "too many requests" }, origin);
 
   let raw = "";
-  req.on("data", (c) => { raw += c; if (raw.length > 8000) req.destroy(); });
+  req.on("data", (c) => { raw += c; if (raw.length > (route.body || 16000)) req.destroy(); });
   req.on("end", async () => {
     let input;
     try { input = JSON.parse(raw); } catch { return send(res, 400, { error: "bad json" }, origin); }
@@ -242,11 +297,12 @@ http.createServer((req, res) => {
       const r = await route.run(input);
       send(res, r.status, r.body, origin);
     } catch (error) {
-      if (error instanceof Anthropic.AuthenticationError) { console.error("Invalid ANTHROPIC_API_KEY"); send(res, 500, { error: "server key" }, origin); }
+      if (error instanceof AiError) send(res, { refused: 502, busy: 503, api: 502 }[error.code] || 500, { error: error.code }, origin);
+      else if (error instanceof Anthropic.AuthenticationError) { console.error("Invalid ANTHROPIC_API_KEY"); send(res, 500, { error: "server key" }, origin); }
       else if (error instanceof Anthropic.RateLimitError) send(res, 503, { error: "busy" }, origin);
       else if (error instanceof Anthropic.APIError) { console.error(`API error ${error.status}:`, error.message); send(res, 502, { error: "api" }, origin); }
       else if (error instanceof SyntaxError) send(res, 502, { error: "bad model output" }, origin);
       else { console.error(error); send(res, 500, { error: "server" }, origin); }
     }
   });
-}).listen(PORT, () => console.log(`Tala AI helper listening on ${PORT}, model ${MODEL}, origins ${ORIGINS.join(" ")}`));
+}).listen(PORT, () => console.log(`Tala AI helper listening on ${PORT}; Claude ${HAS_CLAUDE ? MODEL : "no key"}, Gemini ${HAS_GEMINI ? GEMINI_MODEL + " / " + GEMINI_FAST : "no key"}; origins ${ORIGINS.join(" ")}`));

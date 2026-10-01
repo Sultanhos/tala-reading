@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Fredoka:wght@500;700&family=Noto+Naskh+Arabic:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=202610020005">
+<link rel="stylesheet" href="css/app.css?v=202610020019">
 </head>
 <body>
 
@@ -414,6 +414,25 @@
   </div>
 </div>
 
+<!-- homework helper -->
+<div class="overlay" id="hwOv" hidden>
+  <div class="sheet parent dash" role="dialog" aria-modal="true" aria-labelledby="hwTitle" dir="rtl" lang="ar">
+    <h2 id="hwTitle">📷 مساعد الواجب</h2>
+    <div class="btnRow" id="hwModes">
+      <button class="small on" id="hwCheck">✔ صحّح الإجابات</button>
+      <button class="small" id="hwExplain">💡 اشرح المطلوب</button>
+    </div>
+    <p class="hint" style="text-align:center">صوّروا صفحة الواجب كلها، من فوق، في نور كويس.</p>
+    <div class="btnRow"><label class="go mini hwPick">📷 صورة الواجب<input type="file" id="hwFile" accept="image/*" capture="environment" hidden></label></div>
+    <img id="hwPreview" class="hwPreview" alt="صورة الواجب" hidden>
+    <div class="btnRow"><button class="go" id="hwGo" disabled>ابدأ</button></div>
+    <p class="note" id="hwNote"></p>
+    <div id="hwResult"></div>
+    <p class="hint">الصورة بتتبعت لخادم الذكاء الاصطناعي عشان يقراها بس، ومش بتتحفظ. لو فيها اسم الطفل أو المدرسة، غطّوه قبل التصوير لو حابين.</p>
+    <div style="text-align:center"><button class="go" id="hwClose">تم</button></div>
+  </div>
+</div>
+
 <!-- parent report -->
 <div class="overlay" id="dashOv" hidden>
   <div class="sheet parent dash" role="dialog" aria-modal="true" aria-labelledby="dashTitle" dir="rtl" lang="ar">
@@ -429,7 +448,7 @@
 <div class="overlay" id="parentPanel" hidden>
   <div class="sheet parent" role="dialog" aria-modal="true" aria-labelledby="ppTitle" dir="rtl" lang="ar">
     <h2 id="ppTitle">إعدادات ولي الأمر</h2>
-    <div class="btnRow"><button class="go" id="ppDash">📊 تقرير التقدم</button></div>
+    <div class="btnRow"><button class="go" id="ppDash">📊 تقرير التقدم</button><button class="go" id="ppHomework" style="background:var(--mint);color:var(--line)">📷 مساعد الواجب</button></div>
     <div class="row"><b>الأطفال</b><button class="small" id="ppKidAdd">➕ طفل جديد</button></div>
     <div class="kidRows" id="ppKids"></div>
     <p class="hint" id="ppFor"></p>
@@ -463,7 +482,7 @@
       </select></div>
     <div class="row"><label for="wStrictSel">كتابة: قد إيه لازم يكون الخط مظبوط</label>
       <select id="wStrictSel"><option value="0">عادي</option><option value="1">مرن</option><option value="2">مرن جدًا</option></select></div>
-    <div class="row"><label for="chatAiCb">كوكو 🦜: يرد بالذكاء الاصطناعي (الكلام اللي الطفل بيقوله بيتبعت كنص لخادم الذكاء الاصطناعي، من غير الاسم)</label><input type="checkbox" id="chatAiCb"></div>
+    <div class="row"><label for="chatAiCb">كوكو 🦜: يرد بالذكاء الاصطناعي (كلام الطفل بيتبعت كنص لخادم الذكاء الاصطناعي من غير الاسم؛ لو اتقفل كوكو بيسأل أسئلة ثابتة)</label><input type="checkbox" id="chatAiCb"></div>
     <div class="row"><label for="wOrderSel">كتابة: ترتيب الكتابة (الحرف قبل النقط، ومن اليمين للشمال)</label>
       <select id="wOrderSel"><option value="hint">نصيحة بس</option><option value="strict">لازم عشان النجمة</option><option value="off">مش مهم</option></select></div>
     <hr class="divider">
@@ -498,27 +517,28 @@
   </div>
 </div>
 
-<script src="stories.js?v=202610020005"></script>
-<script src="js/native.js?v=202610020005"></script>
-<script src="js/voice-manifest.js?v=202610020005"></script>
-<script src="js/voice.js?v=202610020005"></script>
-<script src="js/profiles.js?v=202610020005"></script>
-<script src="js/app-state.js?v=202610020005"></script>
-<script src="js/progress.js?v=202610020005"></script>
-<script src="js/reading.js?v=202610020005"></script>
-<script src="js/speech-text.js?v=202610020005"></script>
-<script src="js/speech.js?v=202610020005"></script>
-<script src="js/writing.js?v=202610020005"></script>
-<script src="js/math.js?v=202610020005"></script>
-<script src="js/story-player.js?v=202610020005"></script>
-<script src="js/speech-warmup.js?v=202610020005"></script>
-<script src="js/profiles-ui.js?v=202610020005"></script>
-<script src="js/dashboard.js?v=202610020005"></script>
-<script src="js/ai-report.js?v=202610020005"></script>
-<script src="js/read-story.js?v=202610020005"></script>
-<script src="js/quran-juz-amma.js?v=202610020005"></script>
-<script src="js/quran.js?v=202610020005"></script>
-<script src="js/chat.js?v=202610020005"></script>
-<script src="js/main.js?v=202610020005"></script>
+<script src="stories.js?v=202610020019"></script>
+<script src="js/native.js?v=202610020019"></script>
+<script src="js/voice-manifest.js?v=202610020019"></script>
+<script src="js/voice.js?v=202610020019"></script>
+<script src="js/profiles.js?v=202610020019"></script>
+<script src="js/app-state.js?v=202610020019"></script>
+<script src="js/progress.js?v=202610020019"></script>
+<script src="js/reading.js?v=202610020019"></script>
+<script src="js/speech-text.js?v=202610020019"></script>
+<script src="js/speech.js?v=202610020019"></script>
+<script src="js/writing.js?v=202610020019"></script>
+<script src="js/math.js?v=202610020019"></script>
+<script src="js/story-player.js?v=202610020019"></script>
+<script src="js/speech-warmup.js?v=202610020019"></script>
+<script src="js/profiles-ui.js?v=202610020019"></script>
+<script src="js/dashboard.js?v=202610020019"></script>
+<script src="js/ai-report.js?v=202610020019"></script>
+<script src="js/read-story.js?v=202610020019"></script>
+<script src="js/quran-juz-amma.js?v=202610020019"></script>
+<script src="js/quran.js?v=202610020019"></script>
+<script src="js/chat.js?v=202610020019"></script>
+<script src="js/homework.js?v=202610020019"></script>
+<script src="js/main.js?v=202610020019"></script>
 </body>
 </html>

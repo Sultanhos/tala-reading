@@ -64,7 +64,6 @@ function voiceTexts() {
   A.qbank.forEach(function (lv) { lv.forEach(function (q) { add(q.q); }); });
   add(A.warmTts);
   RS_LOCAL.forEach(function (st) { add(st.t); st.s.forEach(add); });                         // stories to read
-  cAllLines().forEach(add);                                                                 // Koko
   return Object.keys(out);
 }
 
@@ -84,7 +83,7 @@ function voiceExport() {
     var arabic = !u.lang || /^ar/i.test(u.lang);
     if (!arabic) { rawSpeak(u); return; }
     stopAudio();
-    var urls = voiceParts(u.text).map(voiceFile);
+    var urls = u.noRecording ? [] : voiceParts(u.text).map(voiceFile);
     if (urls.length && urls.every(Boolean)) { // all pieces recorded: play them one after another
       var tok = VOICE.token, k = 0;
       if (!VOICE.player) VOICE.player = new Audio();
