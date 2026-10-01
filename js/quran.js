@@ -58,7 +58,7 @@ function qSteps() {
 }
 function qShow() {
   var s = Q.surah;
-  Q.fails = 0; Q.locked = false; Q.got = {};
+  Q.fails = 0; Q.locked = false; Q.got = {}; Q.miss = {};
   qSteps();
   var p = $('qPips'); p.innerHTML = '';
   s.ayat.forEach(function (a, i) { p.appendChild(mEl('div', 'pip' + (i < Q.i ? ' on' : ''), i < Q.i ? '⭐' : (i === Q.i ? '•' : ''))); });
@@ -75,8 +75,9 @@ function qAyah(reveal) {
   var box = $('qAyah'), words = Q.surah.ayat[Q.i].split(/\s+/);
   box.textContent = '';
   words.forEach(function (w, k) {
-    var hide = !reveal && !Q.got[k] && (Q.step === 3 ? k > 0 : Q.step === 2 ? (k + Q.shift) % 2 === 1 : false);
-    var sp = mEl('span', 'qW' + (Q.got[k] ? ' ok' : '') + (hide ? ' hid' : ''), w);
+    var miss = Q.miss && Q.miss[k];
+    var hide = !reveal && !Q.got[k] && !miss && (Q.step === 3 ? k > 0 : Q.step === 2 ? (k + Q.shift) % 2 === 1 : false);
+    var sp = mEl('span', 'qW' + (Q.got[k] ? ' ok' : '') + (miss ? ' miss' : '') + (hide ? ' hid' : ''), w);
     box.appendChild(sp);
     box.appendChild(document.createTextNode(' '));
   });
@@ -123,15 +124,32 @@ function qStopRec() {
   Q.listening = false; $('qMic').classList.remove('on'); $('qPlay').classList.remove('listening');
 }
 function qStop() { qStopAudio(); qStopRec(); }
+// The Quran is recited exactly: EVERY word of the ayah must be heard, in order, in this one recitation.
+// Each transcript of the recognizer is checked on its own; the best one counts. Short words must match closely.
+function qWordOk(h, k) {
+  var t = k.length <= 3 ? 0.5 : k.length <= 5 ? 1 : 1.5;
+  return wlev(h, k) <= t;
+}
 function qMatch(alts) {
-  var want = Q.surah.ayat[Q.i].split(/\s+/), heard = [], n = 0;
-  alts.forEach(function (a) { String(a).split(/\s+/).forEach(function (h) { var k = norm(h); if (k) heard.push(k); }); });
-  want.forEach(function (w, i) {
-    var k = norm(w), t = Math.max(0.5, (k.length <= 3 ? 1 : k.length <= 5 ? 1.5 : 2) + ((S.lenient == null ? 1 : S.lenient) - 1) * 0.5);
-    if (heard.some(function (h) { return wlev(h, k) <= t || (k.indexOf('ال') === 0 && wlev(h, k.slice(2)) <= t); })) Q.got[i] = true;
+  var want = Q.surah.ayat[Q.i].split(/\s+/).map(function (w) { return norm(w); }), best = null;
+  alts.forEach(function (a) {
+    var heard = String(a).split(/\s+/).map(function (h) { return norm(h); }).filter(Boolean), got = {}, p = 0, n = 0;
+    for (var i = 0; i < want.length; i++) {
+      if (!want[i]) { got[i] = true; n++; continue; } // a pause sign (ۖ ۚ) or the sajda sign ۩ is not a word
+      for (var j = p; j < Math.min(heard.length, p + 3); j++) { // she may repeat a word or add a sound: look a little ahead
+        if (qWordOk(heard[j], want[i])) { got[i] = true; n++; p = j + 1; break; }
+        // the recognizer sometimes writes two words as one, or one word as two
+        // (only when all the letters of both words are really there: a short word must not slip through this way)
+        if (i + 1 < want.length && want[i + 1] && heard[j].length >= want[i].length + want[i + 1].length && wlev(heard[j], want[i] + want[i + 1]) <= 0.5) { got[i] = got[i + 1] = true; n += 2; i++; p = j + 1; break; }
+        if (j + 1 < heard.length && heard[j].length + heard[j + 1].length <= want[i].length && wlev(heard[j] + heard[j + 1], want[i]) <= 0.5) { got[i] = true; n++; p = j + 2; break; }
+      }
+    }
+    if (!best || n > best.n) best = { got: got, n: n };
   });
-  want.forEach(function (w, i) { if (Q.got[i]) n++; });
-  return n / want.length;
+  Q.got = best ? best.got : {};
+  Q.miss = {};
+  want.forEach(function (w, i) { if (!Q.got[i]) Q.miss[i] = true; });
+  return (best ? best.n : 0) / want.length;
 }
 function qListen() {
   if (!Q.surah || Q.locked || Q.step === 0) return;
@@ -141,7 +159,7 @@ function qListen() {
   var rec = new SR(), got = false;
   rec.lang = 'ar-SA'; rec.interimResults = false; rec.maxAlternatives = 5; rec.continuous = false;
   Q.rec = rec;
-  rec.onstart = function () { Q.listening = true; $('qMic').classList.add('on'); $('qPlay').classList.add('listening'); qSay('أَسْمَعُكِ... 👂'); };
+  rec.onstart = function () { Q.listening = true; $('qMic').classList.add('on'); $('qPlay').classList.add('listening'); qSay('أَسْمَعُكِ... 👂'); Q.got = {}; Q.miss = {}; qAyah(); };
   rec.onresult = function (e) {
     got = true;
     var alts = [];
@@ -149,7 +167,7 @@ function qListen() {
     $('qNote').textContent = 'سمعت: ' + (alts[0] || '—');
     var share = qMatch(alts);
     qAyah();
-    if (share >= 0.75) qGood(); else qTry();
+    if (share >= 1) qGood(); else qTry();
   };
   rec.onerror = function (e) {
     got = true;
@@ -161,12 +179,15 @@ function qListen() {
 }
 function qTry() {
   Q.fails++; soundTry(); track('quran', String(Q.surah.n), false);
-  if (Q.fails >= 2) { qSay('اِسْتَمِعِي مَرَّةً أُخْرَى 🔊'); $('qHear').classList.add('callout'); $('qOk').hidden = false; if (Q.step >= 2) { Q.shift++; qAyah(); } }
-  else qSay('حَاوِلِي مَرَّةً أُخْرَى 💪');
+  var nMiss = Object.keys(Q.miss || {}).length, all = Q.surah.ayat[Q.i].split(/\s+/).length;
+  var what = nMiss >= all ? 'حَاوِلِي مَرَّةً أُخْرَى 💪' : nMiss === 1 ? 'كَلِمَةٌ نَاقِصَةٌ! اُنْظُرِي الكَلِمَةَ الحَمْرَاءَ وَأَعِيدِي الآيَةَ 💪' : 'كَلِمَاتٌ نَاقِصَةٌ! اُنْظُرِي الكَلِمَاتِ الحَمْرَاءَ وَأَعِيدِي الآيَةَ 💪';
+  if (Q.fails >= 2) { qSay(what + ' 🔊'); $('qHear').classList.add('callout'); $('qOk').hidden = false; }
+  else qSay(what);
 }
 function qGood() {
   if (Q.locked || !Q.surah) return;
   Q.locked = true; track('quran', String(Q.surah.n), true);
+  Q.miss = {};
   qAyah(true);
   $('qAyah').querySelectorAll('.qW').forEach(function (w) { w.classList.add('ok'); });
   if (Q.i + 1 < Q.surah.ayat.length) {

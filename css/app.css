@@ -278,6 +278,7 @@ body {
 .qAyah { font-family: 'Amiri Quran', 'Amiri', 'Noto Naskh Arabic', serif; font-size: clamp(26px, 7.5vw, 36px); line-height: 2.2; text-align: center; color: var(--card-ink); direction: rtl; }
 .qW { transition: color .3s; }
 .qW.ok { color: #1fae6f; }
+.qW.miss { color: var(--coral); text-decoration: underline wavy var(--coral); text-underline-offset: 8px; }
 .qW.hid { color: transparent; background: #ece6ff; border-radius: 8px; }
 .qEnd { font-size: .8em; color: var(--grape); }
 /* ---------- 🦜 Koko ---------- */

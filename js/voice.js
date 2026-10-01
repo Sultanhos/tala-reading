@@ -64,11 +64,7 @@ function voiceTexts() {
   A.qbank.forEach(function (lv) { lv.forEach(function (q) { add(q.q); }); });
   add(A.warmTts);
   RS_LOCAL.forEach(function (st) { add(st.t); st.s.forEach(add); });                         // stories to read
-  C_TOPICS.forEach(function (tp) { add('هَيَّا نَتَكَلَّمُ ' + tp.a + '!'); tp.q.forEach(function (q) { add(q[0]); q[1].forEach(add); }); });
-  C_REACT.forEach(add);                                                                     // Koko
-  ['مَرْحَبًا يَا {name}! أَنَا كُوكُو 🦜 هَيَّا نَتَكَلَّمُ! اِخْتَارِي مَوْضُوعًا.', 'اِخْتَارِي مَوْضُوعًا أَوَّلًا 👆',
-   'لَمْ أَسْمَعْكِ جَيِّدًا 🦜 قُولِيهَا مَرَّةً أُخْرَى', 'اِسْتَمْتَعْتُ بِالكَلَامِ مَعَكِ يَا {name}! اِخْتَارِي مَوْضُوعًا آخَرَ 🦜',
-   'اِخْتَارِي مَوْضُوعًا جَدِيدًا 👆'].forEach(add);
+  cAllLines().forEach(add);                                                                 // Koko
   return Object.keys(out);
 }
 

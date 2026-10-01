@@ -154,7 +154,7 @@ function rsMatch(alts) {
     if (w.indexOf('{name}') > -1) { RS.got[i] = true; return; }
     var k = rsKey(w);
     if (k.indexOf('ال') === 0 && k.length > 3) k = k.slice(2);
-    var t = Math.max(0.5, (k.length <= 3 ? 1 : k.length <= 5 ? 1.5 : 2) + (tol - 1) * 0.5);
+    var t = Math.max(0.5, (k.length <= 3 ? 0.5 : k.length <= 5 ? 1 : 1.5) + (tol - 1) * 0.5); // short words must match closely
     if (heard.some(function (h) { return wlev(h, k) <= t; })) RS.got[i] = true;
   });
   want.forEach(function (w, i) { if (RS.got[i]) n++; });
@@ -176,7 +176,7 @@ function rsListen() {
     $('rsNote').textContent = 'سمعت: ' + (alts[0] || '—');
     var share = rsMatch(alts);
     rsLine();
-    if (share >= 0.7) rsGood(); else rsTry();
+    if (share >= 1) rsGood(); else rsTry(); // every word of the sentence; words already read stay green
   };
   rec.onerror = function (e) {
     got = true;
