@@ -4,8 +4,8 @@
 'use strict';
 
 var HW = { mode: 'check', image: null, busy: false };
-var HW_MARK = { right: ['✔', 'صح', 'ok'], wrong: ['✘', 'غلط', 'bad'], empty: ['○', 'من غير إجابة', 'bad'], unclear: ['❓', 'مش واضح', 'unk'],
-  open: ['✎', 'من غير إجابة واحدة', 'unk'], explain: ['💡', 'المطلوب', 'unk'] };
+var HW_MARK = { right: ['✔', 'صحيح', 'ok'], wrong: ['✘', 'خطأ', 'bad'], empty: ['○', 'بلا إجابة', 'bad'], unclear: ['❓', 'غير واضح', 'unk'],
+  open: ['✎', 'سؤال مفتوح', 'unk'], explain: ['💡', 'المطلوب', 'unk'] };
 
 function hwDir(t) { return /[؀-ۿ]/.test(t) ? 'rtl' : 'ltr'; } // sums and Latin text read left to right
 function hwOpen() {
@@ -34,15 +34,15 @@ function hwLoad(file) {
     $('hwPreview').src = data; $('hwPreview').hidden = false;
     $('hwGo').disabled = false; $('hwResult').textContent = ''; $('hwNote').textContent = '';
   };
-  img.onerror = function () { URL.revokeObjectURL(url); $('hwNote').textContent = 'مقدرتش أفتح الصورة. جربوا صورة تانية.'; };
+  img.onerror = function () { URL.revokeObjectURL(url); $('hwNote').textContent = 'تعذّر فتح الصورة. جرّبوا صورة أخرى.'; };
   img.src = url;
 }
 function hwSend() {
   if (HW.busy || !HW.image) return;
   var base = aiBase(), k = pCur();
-  if (!base) { $('hwNote').textContent = 'خادم الذكاء الاصطناعي مش متظبط.'; return; }
+  if (!base) { $('hwNote').textContent = 'خادم الذكاء الاصطناعي غير مضبوط.'; return; }
   HW.busy = true; $('hwGo').disabled = true; $('hwResult').textContent = '';
-  $('hwNote').textContent = 'بنقرا الصفحة… ⏳ (ممكن ياخد نص دقيقة)';
+  $('hwNote').textContent = 'جارٍ قراءة الصفحة… ⏳ (قد يستغرق ذلك نصف دقيقة)';
   var ctl = window.AbortController ? new AbortController() : null, timer = setTimeout(function () { if (ctl) ctl.abort(); }, 90000);
   fetch(base + '/homework', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl ? ctl.signal : undefined,
     body: JSON.stringify({ image: HW.image, mime: 'image/jpeg', mode: HW.mode, age: k.age, gender: k.gender === 'boy' ? 'boy' : 'girl' }) })
@@ -51,8 +51,8 @@ function hwSend() {
     .catch(function (e) {
       clearTimeout(timer); HW.busy = false; $('hwGo').disabled = false;
       var m = String(e && e.message || '');
-      $('hwNote').textContent = /too many/.test(m) ? 'محاولات كتير. استنوا شوية وجربوا تاني.' : /bad image/.test(m) ? 'الصورة مش مناسبة. جربوا صورة تانية.'
-        : 'مساعد الواجب محتاج خادم الذكاء الاصطناعي والإنترنت، ومش متاح دلوقتي.';
+      $('hwNote').textContent = /too many/.test(m) ? 'محاولات كثيرة. انتظروا قليلًا ثم حاولوا مرة أخرى.' : /bad image/.test(m) ? 'الصورة غير مناسبة. جرّبوا صورة أخرى.'
+        : 'مساعد الواجب يحتاج إلى خادم الذكاء الاصطناعي والإنترنت، وهو غير متاح الآن.';
     });
 }
 function hwShow(r) {
@@ -71,11 +71,11 @@ function hwShow(r) {
     head.appendChild(task);
     it.appendChild(head);
     if (x.child_answer) { var a = mEl('div', 'hwLine'); a.appendChild(mEl('b', '', 'المكتوب: ')); var av = mEl('span', '', x.child_answer); av.dir = hwDir(x.child_answer); a.appendChild(av); it.appendChild(a); }
-    if (x.correct_answer) { var c = mEl('div', 'hwLine hwRight'); c.appendChild(mEl('b', '', 'الصح: ')); var cv = mEl('span', '', x.correct_answer); cv.dir = hwDir(x.correct_answer); c.appendChild(cv); it.appendChild(c); }
+    if (x.correct_answer) { var c = mEl('div', 'hwLine hwRight'); c.appendChild(mEl('b', '', 'الصحيح: ')); var cv = mEl('span', '', x.correct_answer); cv.dir = hwDir(x.correct_answer); c.appendChild(cv); it.appendChild(c); }
     if (x.tip) it.appendChild(mEl('div', 'hwTip', '💬 ' + x.tip));
     box.appendChild(it);
   });
-  box.appendChild(mEl('p', 'hint', 'ده مساعد مش مدرّس: راجعوا النتيجة بنفسكم، خصوصًا لو الخط مش واضح. علامة ❓ معناها إنه مقدرش يقرا الإجابة.'));
+  box.appendChild(mEl('p', 'hint', 'هذا مساعد وليس معلّمًا: راجعوا النتيجة بأنفسكم، خصوصًا إن كان الخط غير واضح. علامة ❓ تعني أنه لم يستطع قراءة الإجابة.'));
 }
 $('ppHomework').onclick = hwOpen;
 $('hwClose').onclick = function () { $('hwOv').hidden = true; HW.image = null; $('hwPreview').removeAttribute('src'); };

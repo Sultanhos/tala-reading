@@ -647,9 +647,9 @@ function wSuccess(order) { // order: a stroke-order tip to give with the praise
 function wLevelUp(fin, wrap) {
   luMode = 'write';
   soundStar(); confetti(40);
-  $('luTitle').textContent = gx('برافو! خلصتي مستوى الكتابة ' + mNumAr(fin));
+  $('luTitle').textContent = gx('أَحْسَنْتِ! أَنْهَيْتِ مُسْتَوَى الكِتَابَةِ ' + mNumAr(fin));
   $('luLonger').hidden = !wrap;
-  $('luLonger').textContent = gx('بقيتي تكتبي كل الحروف! هنبدأ تاني من أول مستوى.');
+  $('luLonger').textContent = gx('صِرْتِ تَكْتُبِينَ كُلَّ الحُرُوفِ! سَنَبْدَأُ مِنْ جَدِيدٍ مِنَ المُسْتَوَى الأَوَّلِ.');
   $('luGo').textContent = 'المستوى ' + mNumAr(S.wLevel) + ' ◀';
   $('levelUp').hidden = false;
   var pill = $('starsPill');

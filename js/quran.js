@@ -94,7 +94,7 @@ function qPlayUrls(urls, done) {
     if (tok !== Q.token) return;
     if (k >= urls.length) { if (done) done(); return; }
     a.onended = next;
-    a.onerror = function () { if (tok !== Q.token) return; $('qNote').textContent = 'التلاوة محتاجة اتصال بالإنترنت.'; };
+    a.onerror = function () { if (tok !== Q.token) return; $('qNote').textContent = 'التلاوة تحتاج إلى اتصال بالإنترنت.'; };
     a.src = urls[k++];
     var p = a.play(); if (p && p.catch) p.catch(function () {});
   }

@@ -226,10 +226,10 @@ function stAsk(first) {
   $('stOk').hidden = true; $('stNo').hidden = true;
   $('stMic').disabled = false;
   stPips();
-  popBubble($('stBubble'), first ? 'خلصت الحكاية! يلا نشوف إنتي فاكرة إيه 🤔' : 'اسمعي السؤال 👂');
+  popBubble($('stBubble'), first ? 'اِنْتَهَتِ الحِكَايَةُ! هَيَّا نَرَى مَاذَا تَتَذَكَّرِينَ 🤔' : 'اِسْتَمِعِي إِلَى السُّؤَالِ 👂');
   function ask() {
     stSay(s.id + ':q' + ST.qi, q.q, function () {
-      popBubble($('stBubble'), 'دوسي على 🎤 وجاوبي');
+      popBubble($('stBubble'), 'اِضْغَطِي 🎤 وَأَجِيبِي');
       if (!SR) { $('stOk').hidden = false; $('stNo').hidden = false; $('stNote').textContent = 'This browser cannot listen: she answers aloud and you tap ✔ or ✘.'; }
     });
   }
@@ -243,13 +243,13 @@ function stMicStop() {
 $('stMic').onclick = function () {
   if (ST.busy || !ST.s) return;
   stUnlock();
-  if (!SR) { popBubble($('stBubble'), 'قولي الإجابة لماما أو بابا 👂'); $('stOk').hidden = false; $('stNo').hidden = false; return; }
+  if (!SR) { popBubble($('stBubble'), 'قُولِي الإِجَابَةَ لِمَامَا أَوْ بَابَا 👂'); $('stOk').hidden = false; $('stNo').hidden = false; return; }
   if (ST.listening) { try { ST.rec.stop(); } catch (e) {} return; }
   stHush();
   var r = new SR(), got = false;
   ST.rec = r; ST.aborted = false;
   r.lang = 'ar-EG'; r.interimResults = false; r.maxAlternatives = 5; r.continuous = false;
-  r.onstart = function () { ST.listening = true; $('stMic').classList.add('on'); popBubble($('stBubble'), 'بسمعك... 👂'); };
+  r.onstart = function () { ST.listening = true; $('stMic').classList.add('on'); popBubble($('stBubble'), 'أَسْمَعُكِ... 👂'); };
   r.onresult = function (e) {
     got = true;
     var alts = [];
@@ -259,17 +259,17 @@ $('stMic').onclick = function () {
   r.onerror = function (e) {
     if (ST.aborted) return;
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-      popBubble($('stBubble'), 'الميكروفون مقفول 🔇');
+      popBubble($('stBubble'), 'المِيكْرُوفُونُ مُغْلَقٌ 🔇');
       $('stNote').textContent = 'The microphone is blocked. Allow it for this site, or let her answer aloud and tap ✔ or ✘.';
       $('stOk').hidden = false; $('stNo').hidden = false;
     } else if (e.error === 'network') {
       $('stNote').textContent = 'Listening needs an internet connection.';
-      popBubble($('stBubble'), 'جربي تاني 🎤');
-    } else if (e.error !== 'aborted') popBubble($('stBubble'), 'ما سمعتش حاجة 🎤 جربي تاني');
+      popBubble($('stBubble'), 'حَاوِلِي مَرَّةً أُخْرَى 🎤');
+    } else if (e.error !== 'aborted') popBubble($('stBubble'), 'لَمْ أَسْمَعْ شَيْئًا 🎤 حَاوِلِي مَرَّةً أُخْرَى');
   };
   r.onend = function () {
     ST.listening = false; $('stMic').classList.remove('on');
-    if (!got && !ST.aborted && !ST.busy && $('stBubble').textContent.indexOf('👂') > -1) popBubble($('stBubble'), 'ما سمعتش حاجة 🎤 جربي تاني');
+    if (!got && !ST.aborted && !ST.busy && $('stBubble').textContent.indexOf('👂') > -1) popBubble($('stBubble'), 'لَمْ أَسْمَعْ شَيْئًا 🎤 حَاوِلِي مَرَّةً أُخْرَى');
   };
   try { r.start(); } catch (e) {}
 };
@@ -300,8 +300,8 @@ function stJudge(alts) {
   if (!ST.s) return;
   var s = ST.s, qi = ST.qi, q = s.q[qi];
   ST.busy = true; $('stMic').disabled = true;
-  $('stNote').textContent = 'سمعتك بتقولي: «' + alts[0] + '»';
-  var b = $('stBubble'); b.textContent = 'بفكر... '; b.appendChild(mEl('span', 'stThink', '🤔'));
+  $('stNote').textContent = 'سمعتُ: «' + alts[0] + '»';
+  var b = $('stBubble'); b.textContent = 'أُفَكِّرُ... '; b.appendChild(mEl('span', 'stThink', '🤔'));
   stRemote(q, alts).catch(function () { return stLocal(q, alts); }).then(function (r) {
     if (ST.s !== s || ST.qi !== qi) return;
     ST.busy = false;

@@ -4,7 +4,7 @@
 var KF = { kid: null, gender: 'girl', avatar: AVATARS[0], opts: {} };
 var gateUntil = 0, gateAnswer = 0, gateNext = null;
 
-function kidAge(n) { return mNumAr(n) + (n <= 10 ? ' سنين' : ' سنة'); }
+function kidAge(n) { return mNumAr(n) + (n <= 10 ? ' سنوات' : ' سنة'); }
 function kidSwitch(id) {
   try { sessionStorage.setItem('tala-picked', '1'); } catch (e) {}
   if (id === P.cur) { $('kidsOv').hidden = true; return; }
@@ -50,7 +50,7 @@ function kfMark() {
 function kidForm(kid, opts) {
   KF.kid = kid; KF.opts = opts || {};
   var setup = !!KF.opts.setup;
-  $('kfTitle').textContent = setup ? 'أهلًا! مين هيلعب؟' : kid ? 'تعديل بيانات ' + kid.name : 'طفل جديد';
+  $('kfTitle').textContent = setup ? 'أهلًا! من سيلعب؟' : kid ? 'تعديل بيانات ' + kid.name : 'طفل جديد';
   $('kfHello').hidden = !setup;
   $('kfName').value = kid ? kid.name : '';
   $('kfAge').value = String(kid ? kid.age : 6);
@@ -108,7 +108,7 @@ function kidsPanelRefresh() {
     box.appendChild(r);
   });
   var c = pCur();
-  $('ppFor').textContent = P.list.length > 1 ? 'الإعدادات اللي تحت خاصة بـ ' + c.avatar + ' ' + c.name + '. عشان تغيّروا الطفل اضغطوا على صورته فوق.' : '';
+  $('ppFor').textContent = P.list.length > 1 ? 'الإعدادات أدناه خاصة بـ ' + c.avatar + ' ' + c.name + '. لتغيير الطفل اضغطوا على صورته في الأعلى.' : '';
 }
 $('ppKidAdd').onclick = function () { kidForm(null, { fromPanel: true }); };
 
@@ -135,14 +135,14 @@ $('gateGo').onclick = function () {
   } else {
     var fnKeep = gateNext;
     parentGate(fnKeep);
-    $('gateErr').textContent = 'مش صح، جربوا تاني.';
+    $('gateErr').textContent = 'غير صحيح، حاولوا مرة أخرى.';
   }
 };
 $('gateIn').onkeydown = function (e) { if (e.key === 'Enter') $('gateGo').click(); };
 $('gateCancel').onclick = function () { $('gateOv').hidden = true; gateNext = null; };
 
 /* ----- start ----- */
-function kidsHud() { var c = pCur(); $('kidBtn').textContent = c.avatar; $('kidBtn').setAttribute('aria-label', 'مين بيلعب؟ دلوقتي: ' + c.name); }
+function kidsHud() { var c = pCur(); $('kidBtn').textContent = c.avatar; $('kidBtn').setAttribute('aria-label', 'من يلعب؟ الآن: ' + c.name); }
 function kidsStart() {
   kidsHud(); gxPage();
   var picked = false;

@@ -271,7 +271,7 @@ function cListen() {
   };
   rec.onerror = function (e) {
     got = true;
-    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') $('cNote').textContent = 'الميكروفون مقفول. اسمحوا بالميكروفون للعبة.';
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') $('cNote').textContent = 'الميكروفون مغلق. اسمحوا للعبة باستخدام الميكروفون.';
     else if (e.error !== 'aborted') cKoko(C_LINES.again, C.hints);
   };
   rec.onend = function () { cStop(); if (!got) $('cNote').textContent = gx('اِضْغَطِي 🎤 وَتَكَلَّمِي'); };

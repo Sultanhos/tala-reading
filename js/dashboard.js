@@ -45,7 +45,7 @@ function dashLevel(d, area) {
   if (area === 'write') return 'المستوى ' + mNumAr(Math.min(WLEVELS.length, Math.max(1, d.wLevel | 0 || 1)));
   if (area === 'math') return MLEVELS[Math.min(MLEVELS.length, Math.max(1, d.mLevel | 0 || 1)) - 1].t();
   if (area === 'quran') { var q = Object.keys(d.quran || {}).filter(function (n) { return d.quran[n].step >= 4; }).length; return q ? 'حفظ ' + mNumAr(q) + ' سورة' : ''; }
-  if (area === 'speak') return d.lisp && d.lisp.rounds ? 'أحسن نتيجة: ' + mNumAr(d.lisp.best) + ' من ٥٠' : '';
+  if (area === 'speak') return d.lisp && d.lisp.rounds ? 'أفضل نتيجة: ' + mNumAr(d.lisp.best) + ' من ٥٠' : '';
   return '';
 }
 
@@ -74,22 +74,22 @@ function dashRender() {
   var week = dashDays(7), wk = dashSum(d.log, week), prev = dashSum(d.log, dashDays(7, 7));
   var anything = Object.keys(d.log || {}).length > 0;
   if (!anything) {
-    body.appendChild(mEl('p', 'dEmpty', 'التقرير هيبتدي يتملي لما ' + k.name + (girl ? ' تلعب' : ' يلعب') + '. كل دقيقة وكل إجابة بتتسجل هنا.'));
+    body.appendChild(mEl('p', 'dEmpty', 'سيبدأ التقرير بالامتلاء حين ' + (girl ? 'تلعب ' : 'يلعب ') + k.name + '. تُسجَّل هنا كل دقيقة وكل إجابة.'));
     return;
   }
 
   // this week at a glance
   var diff = Math.round((wk.sec - prev.sec) / 60), tries = wk.ok + wk.bad;
   var tiles = mEl('div', 'dTiles');
-  tiles.appendChild(dashTile(dashMin(wk.sec), 'دقيقة الأسبوع ده',
-    prev.sec ? (diff >= 0 ? '▲ ' + mNumAr(diff) + ' عن الأسبوع اللي فات' : '▼ ' + mNumAr(-diff) + ' عن الأسبوع اللي فات') : ''));
-  tiles.appendChild(dashTile(mNumAr(wk.stars), 'نجوم الأسبوع ده', 'كل النجوم: ' + mNumAr(d.stars | 0)));
+  tiles.appendChild(dashTile(dashMin(wk.sec), 'دقيقة هذا الأسبوع',
+    prev.sec ? (diff >= 0 ? '▲ ' + mNumAr(diff) + ' عن الأسبوع الماضي' : '▼ ' + mNumAr(-diff) + ' عن الأسبوع الماضي') : ''));
+  tiles.appendChild(dashTile(mNumAr(wk.stars), 'نجوم هذا الأسبوع', 'كل النجوم: ' + mNumAr(d.stars | 0)));
   tiles.appendChild(dashTile(mNumAr(wk.played) + ' / ٧', 'أيام ' + (girl ? 'لعبت' : 'لعب') + ' فيها'));
-  tiles.appendChild(dashTile(tries ? mNumAr(Math.round(wk.ok / tries * 100)) + '٪' : '–', 'إجابات صح', tries ? mNumAr(wk.ok) + ' صح من ' + mNumAr(tries) : ''));
+  tiles.appendChild(dashTile(tries ? mNumAr(Math.round(wk.ok / tries * 100)) + '٪' : '–', 'إجابات صحيحة', tries ? mNumAr(wk.ok) + ' صحيحة من ' + mNumAr(tries) : ''));
   body.appendChild(tiles);
 
   // minutes per day, coloured by area
-  body.appendChild(mEl('h3', '', 'الدقايق كل يوم'));
+  body.appendChild(mEl('h3', '', 'الدقائق في كل يوم'));
   var chart = mEl('div', 'dChart'), maxSec = 600, fmt;
   try { fmt = new Intl.DateTimeFormat('ar-EG', { weekday: 'short' }); } catch (e) { fmt = null; }
   week.forEach(function (day) { var x = dashSum(d.log, [day]); maxSec = Math.max(maxSec, x.sec); });
@@ -105,7 +105,7 @@ function dashRender() {
       bar.appendChild(seg);
     });
     col.appendChild(bar);
-    col.appendChild(mEl('span', 'dDay', i === 6 ? 'النهارده' : fmt ? fmt.format(day) : dayKey(day).slice(5)));
+    col.appendChild(mEl('span', 'dDay', i === 6 ? 'اليوم' : fmt ? fmt.format(day) : dayKey(day).slice(5)));
     chart.appendChild(col);
   });
   body.appendChild(chart);
@@ -120,7 +120,7 @@ function dashRender() {
   body.appendChild(legend);
 
   // each area: level now, minutes, right / wrong this week
-  body.appendChild(mEl('h3', '', 'كل جزء'));
+  body.appendChild(mEl('h3', '', 'كل قسم'));
   ['read', 'write', 'math', 'speak', 'quran', 'chat'].forEach(function (a) {
     var v = wk.area[a] || [0, 0, 0, 0], row = mEl('div', 'dArea');
     row.appendChild(mEl('span', 'av', AREA_INFO[a][0]));
@@ -133,7 +133,7 @@ function dashRender() {
     if (v[0] || v[1] || v[2]) [['⏱', dashMin(v[0]) + ' د'], ['✔', mNumAr(v[1])], ['✘', mNumAr(v[2])]].forEach(function (n) {
       var s = mEl('span', '', n[0] + ' ' + n[1]); s.dir = 'rtl'; nums.appendChild(s);
     });
-    else nums.textContent = 'مفيش الأسبوع ده';
+    else nums.textContent = 'لا شيء هذا الأسبوع';
     row.appendChild(nums);
     body.appendChild(row);
   });
@@ -141,7 +141,7 @@ function dashRender() {
   aiSection(body, k, d); // ✨ weekly report (js/ai-report.js)
 
   // what is still hard
-  body.appendChild(mEl('h3', '', (girl ? 'محتاجة' : 'محتاج') + ' تمرين أكتر في'));
+  body.appendChild(mEl('h3', '', (girl ? 'تحتاج' : 'يحتاج') + ' إلى تمرين أكثر في'));
   var anyWeak = false;
   [['read', 'كلمات'], ['write', 'حروف'], ['math', 'حساب']].forEach(function (p) {
     var list = dashWeak(d, p[0]);
@@ -160,8 +160,8 @@ function dashRender() {
     box.appendChild(chips);
     body.appendChild(box);
   });
-  if (!anyWeak) body.appendChild(mEl('p', 'dEmpty', 'لسه مفيش حاجة صعبة عليه' + (girl ? 'ا' : '') + ' 👍'));
-  else body.appendChild(mEl('p', 'hint', 'دي الحاجات اللي غلط فيها أكتر من مرة. جرّبوا تتمرنوا عليها سوا بصوت عالي، أو ارجعوا للدرس بتاعها من الإعدادات.'));
+  if (!anyWeak) body.appendChild(mEl('p', 'dEmpty', 'لا شيء صعب عليه' + (girl ? 'ا' : '') + ' حتى الآن 👍'));
+  else body.appendChild(mEl('p', 'hint', 'هذه هي الأشياء التي أخطأ فيها الطفل أكثر من مرة. تمرّنوا عليها معًا بصوت عالٍ، أو عودوا إلى درسها من الإعدادات.'));
 }
 function dashOpen() { dashKid = pCur(); save(); dashRender(); $('dashOv').hidden = false; $('dashOv').scrollTop = 0; }
 $('ppDash').onclick = dashOpen;

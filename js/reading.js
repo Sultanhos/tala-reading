@@ -134,11 +134,11 @@ function startListening() {
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
       micUnavailable = true; showOk();
       say('المَيْكْرُوفُون مُغْلَق 🔇');
-      $('note').textContent = 'الميكروفون مقفول. افتحوا اللعبة من عنوانها مباشرة (مش من داخل تطبيق تاني)، واسمحوا بالميكروفون، وعلى الآيفون فعّلوا: الإعدادات > عام > لوحة المفاتيح > تفعيل الإملاء. أو استخدموا زر ✔ ولي الأمر.';
+      $('note').textContent = 'الميكروفون مغلق. افتحوا اللعبة من عنوانها مباشرة (لا من داخل تطبيق آخر)، واسمحوا بالميكروفون، وعلى الآيفون فعّلوا: الإعدادات > عام > لوحة المفاتيح > تفعيل الإملاء. أو استخدموا زر ✔ ولي الأمر.';
     } else if (e.error === 'no-speech') {
       say('لَمْ أَسْمَعْ شَيْئاً 🎤 حَاوِلِي مَرَّةً أُخْرَى');
     } else if (e.error === 'network') {
-      $('note').textContent = 'التعرف على الصوت يحتاج اتصال بالإنترنت.';
+      $('note').textContent = 'التعرف على الصوت يحتاج إلى اتصال بالإنترنت.';
       say('حَاوِلِي مَرَّةً أُخْرَى');
     } else if (e.error !== 'aborted') {
       say('حَاوِلِي مَرَّةً أُخْرَى');
@@ -167,9 +167,9 @@ var luMode = 'read';
 function showLevelUp(finished) {
   luMode = 'read';
   soundStar(); confetti(40);
-  $('luTitle').textContent = gx('برافو! خلصتي ' + lessonName(finished));
+  $('luTitle').textContent = gx('أَحْسَنْتِ! أَنْهَيْتِ ' + lessonName(finished));
   $('luLonger').hidden = !wrapped;
-  $('luLonger').textContent = gx('خلصتي الكتاب كله! هنبدأ تاني من أول درس.');
+  $('luLonger').textContent = gx('أَنْهَيْتِ الكِتَابَ كُلَّهُ! سَنَبْدَأُ مِنْ جَدِيدٍ مِنَ الدَّرْسِ الأَوَّلِ.');
   $('luGo').textContent = lessonName(S.level) + ' ◀';
   $('levelUp').hidden = false;
   var pill = $('starsPill');
@@ -187,7 +187,7 @@ function armed(btn, label, action) {
   var on = false, t;
   btn.onclick = function () {
     if (!on) {
-      on = true; btn.textContent = 'اضغط تاني للتأكيد'; btn.classList.add('armed');
+      on = true; btn.textContent = 'اضغطوا مرة أخرى للتأكيد'; btn.classList.add('armed');
       t = setTimeout(function () { on = false; btn.textContent = label; btn.classList.remove('armed'); }, 3000);
     } else {
       clearTimeout(t); on = false; btn.textContent = label; btn.classList.remove('armed'); action();
@@ -231,7 +231,7 @@ $('starMinus').onclick = function () { setStars(S.stars - 1); };
 $('starPlus').onclick = function () { setStars(S.stars + 1); };
 $('starIn').onchange = function () { setStars(parseInt(this.value, 10) || 0); };
 armed($('resetStars'), 'تصفير النجوم', function () { S.stars = 0; save(); renderHud(); refreshPanel(); });
-armed($('resetLevel'), 'الرجوع لأول درس', function () { S.level = 1; S.doneList = []; save(); buildQueue(); nextWord(); refreshPanel(); });
+armed($('resetLevel'), 'العودة إلى أول درس', function () { S.level = 1; S.doneList = []; save(); buildQueue(); nextWord(); refreshPanel(); });
 $('lvlSel').onchange = function () { S.level = parseInt(this.value, 10); S.doneList = []; save(); buildQueue(); nextWord(); refreshPanel(); };
 $('soundCb').onchange = function () { S.sound = this.checked; save(); };
 $('strictSel').onchange = function () { S.lenient = parseInt(this.value, 10); save(); };

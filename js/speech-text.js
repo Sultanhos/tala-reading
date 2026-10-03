@@ -37,7 +37,7 @@ var SPK = {
     ],
     fb: ['قَرِيب! أَسْنَانُكِ مَعًا، وَلِسَانُكِ خَلْفَ الأَسْنَانِ 🐍', 'جَيِّد! مَرَّةً أُخْرَى بِلِسَانِ الثُّعْبَانِ 🐍', 'أَحْسَنْتِ! 👏', 'رَائِع، السِّينُ وَاضِحَةٌ جِدًّا! 🌟'],
     tipKid: 'الأَسْنَانُ مَعًا، وَاللِّسَانُ خَلْفَ الأَسْنَانِ: سسسس 🐍',
-    tipParent: 'الأسنان شبه مقفولة، وطرف اللسان ورا الأسنان (مش بينها). السين = صفير رفيع ومستمر؛ الزاي نفس الصفير بس بصوت؛ الصاد أتقل شوية.',
+    tipParent: 'الأسنان شبه مغلقة، وطرف اللسان خلف الأسنان (لا بينها). السين = صفير رفيع ومستمر؛ الزاي الصفير نفسه لكن مع صوت؛ الصاد أثقل قليلًا.',
     sayAfter: function (w) { return 'اِسْتَمِعِي وَقُولِي: ' + w + ' 🎤'; },
     listenFor: function (w) { return 'أَسْمَعُكِ... قُولِي: ' + w + ' 👂'; },
     listening: 'أَسْمَعُكِ... 👂',
@@ -115,7 +115,7 @@ var SPK = {
     ],
     fb: ['Fast! Zähne zusammen, Zunge hinter die Zähne 🐍', 'Gut! Noch einmal mit der Schlangen-Zunge 🐍', 'Sehr gut! 👏', 'Super, ganz klar gesprochen! 🌟'],
     tipKid: 'Zähne fast zusammen, Zunge hinter die Zähne: ssss 🐍  ·  bei Z: tssss 🦓',
-    tipParent: 'الأسنان شبه مقفولة، وطرف اللسان يفضل ورا الأسنان (مش بينها). S = صفير رفيع ومستمر. Z = «ت» سريعة وبعدها الصفير.',
+    tipParent: 'الأسنان شبه مغلقة، وطرف اللسان يبقى خلف الأسنان (لا بينها). S = صفير رفيع ومستمر. Z = «ت» سريعة وبعدها الصفير.',
     sayAfter: function (w) { return 'Hör zu und sag nach: ' + w + ' 🎤'; },
     listenFor: function (w) { return 'Ich höre zu... sag: ' + w + ' 👂'; },
     listening: 'Ich höre zu... 👂',
@@ -162,7 +162,7 @@ function spApply() {
     $(p[0]).textContent = gx(L[p[1]]);
   });
   $('tNext').textContent = L.dir === 'rtl' ? '⬅️' : '➡️';
-  $('warmTipParent').textContent = 'تمرين البداية: «' + L.warmWord + '» صح ٣ مرات، وبعدها يتفتح التدريب واللعبة.';
+  $('warmTipParent').textContent = 'تمرين البداية: «' + L.warmWord + '» صحيحًا ٣ مرات، ثم يُفتح التدريب واللعبة.';
 }
 function spSetLang(v) {
   S.speakLang = v === 'de' ? 'de' : 'ar'; save();

@@ -197,9 +197,9 @@ function mSuccess() {
 function mLevelUp(fin, wrap) {
   luMode = 'math';
   soundStar(); confetti(40);
-  $('luTitle').textContent = gx('برافو! خلصتي مستوى الحساب ' + mNumAr(fin));
+  $('luTitle').textContent = gx('أَحْسَنْتِ! أَنْهَيْتِ مُسْتَوَى الحِسَابِ ' + mNumAr(fin));
   $('luLonger').hidden = !wrap;
-  $('luLonger').textContent = gx('خلصتي كل مستويات الحساب! هنبدأ تاني من أول مستوى.');
+  $('luLonger').textContent = gx('أَنْهَيْتِ كُلَّ مُسْتَوَيَاتِ الحِسَابِ! سَنَبْدَأُ مِنْ جَدِيدٍ مِنَ المُسْتَوَى الأَوَّلِ.');
   $('luGo').textContent = 'المستوى ' + mNumAr(S.mLevel) + ' ◀';
   $('levelUp').hidden = false;
   var pill = $('starsPill');

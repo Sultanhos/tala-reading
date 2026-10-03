@@ -73,7 +73,7 @@ const ORIGINS = (process.env.ALLOWED_ORIGINS || "https://tala-reading.onrender.c
 const SYSTEM = `You check answers from a 6-year-old girl to questions about an Islamic children's story she just heard in Egyptian Arabic.
 Her answer was spoken and turned into text by speech recognition, so it can contain recognition mistakes or missing words. "heard" lists alternative transcripts of the same answer; treat them as possible versions of what she said.
 Judge the meaning, not the wording: the answer is correct if any transcript clearly contains the key idea of the expected answer. Synonyms, Egyptian or standard Arabic words, very short answers and answers with extra words all count. It is wrong if she names something else, says she doesn't know, or the text has nothing to do with the question.
-"feedback" is one short, warm sentence in Egyptian Arabic for a small girl (at most 12 words), with feminine forms, and may use her name. If correct, praise her. If wrong, encourage her kindly to try again and do not say the answer. Never mention speech recognition or transcripts.`;
+"feedback" is one short, warm sentence in simple Modern Standard Arabic (fusha, never dialect) for a small girl (at most 12 words), with feminine forms, and may use her name. If correct, praise her. If wrong, encourage her kindly to try again and do not say the answer. Never mention speech recognition or transcripts.`;
 
 const SCHEMA = {
   type: "object",
@@ -86,7 +86,7 @@ const SCHEMA = {
 };
 
 const REPORT_SYSTEM = `You write a short weekly progress report for the parents of one young child who uses an Arabic learning app: reading vowelled words (قراءة), writing letters (كتابة), first-grade math (حساب) and S-sound pronunciation practice (نطق).
-Write in warm, simple Egyptian Arabic, the way a kind teacher talks to parents. Use the child's gender for every form. Never write a name: always write {name} where the child's name belongs; the app fills it in.
+Write in warm, simple Modern Standard Arabic (fusha), the way a kind teacher writes to parents; never use dialect words (no مش، عشان، دلوقتي، لسه، كويس and the like). Use the child's gender for every form. Never write a name: always write {name} where the child's name belongs; the app fills it in.
 Use only the numbers you are given. Do not invent results, do not compare with other children, and do not diagnose anything (no "delay", "disorder", "problem"). Pronunciation numbers come from an app, not a specialist; if they are low, you may gently say a speech therapist can check it if the parents are worried, nothing more.
 "hard" lists items the child got wrong several times. Build the home activities on these exact items (the words, letters or math skills), each one concrete, playful, 5-10 minutes, without a screen, and doable in any Arab home.
 If the week has little or no practice, say so kindly and suggest a short daily routine instead of judging.
@@ -242,8 +242,8 @@ mode "check": the child has already answered. For each exercise give "task" (wha
 mode "explain": the child has not answered yet. For each exercise give "task", verdict "explain", child_answer "", correct_answer "", and a "tip" that explains what to do and how to start WITHOUT giving the final answer.
 verdict is one of: "right", "wrong", "empty" (not answered), "unclear" (you cannot read the handwriting or the photo with confidence: never guess), "open" (no single right answer: drawing, colouring, free writing, tracing practice), "explain".
 Be exact with math: work out each result yourself before judging. For Arabic, check spelling, letter forms, dots and vowel marks only as far as the task asks for them. Do not mark something wrong because the handwriting is untidy.
-"tip": one or two short, kind sentences in Egyptian Arabic that the parent can say to the child (use the child's gender for the forms). For a wrong answer give a hint how to find the right one, not only the answer.
-"subject": a short Arabic name of the subject (حساب، عربي، ألماني، إنجليزي، علوم ...). "summary": one sentence in Egyptian Arabic for the parent about the whole page (how many are right, what to practise).
+"tip": one or two short, kind sentences in simple Modern Standard Arabic (fusha, never dialect) that the parent can say to the child (use the child's gender for the forms). For a wrong answer give a hint how to find the right one, not only the answer.
+"subject": a short Arabic name of the subject (حساب، عربي، ألماني، إنجليزي، علوم ...). "summary": one sentence in Modern Standard Arabic (fusha, never dialect) for the parent about the whole page (how many are right, what to practise).
 "readable": false if the photo is too dark, blurred, cut off or not a homework page; then return no items and say in "summary" what to do (take the photo again in good light, the whole page, from straight above).
 Ignore anything personal in the photo (names, school, faces) and never repeat it.`;
 const HOMEWORK_SCHEMA = {

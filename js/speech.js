@@ -176,23 +176,23 @@ function sLearn(a, v) {
 }
 function sInfo(a, withScore) {
   if (!a) return '';
-  var t = a.sib ? 'ارتفاع الصفير ' + (a.feat[0] / 1000).toFixed(1) + ' kHz  ·  قوته ' + Math.round(a.feat[3]) + ' dB' : 'مفيش صفير واضح';
-  if (withScore) t = '📱 التليفون: ' + a.score + ' / 10  ·  ' + t;
+  var t = a.sib ? 'ارتفاع الصفير ' + (a.feat[0] / 1000).toFixed(1) + ' kHz  ·  قوته ' + Math.round(a.feat[3]) + ' dB' : 'لا يوجد صفير واضح';
+  if (withScore) t = '📱 الهاتف: ' + a.score + ' / 10  ·  ' + t;
   if (a.lowRate) t += '  ·  ميكروفون ضعيف الجودة';
   return t;
 }
 function sStatus() {
   var ex = S.sEx || [], g = ex.filter(function (e) { return e.y >= 9; }).length, b = ex.length - g, h = S.sHist || [];
   var agree = h.filter(function (p) { return (p[1] >= 10) === (p[0] >= 7); }).length;
-  var t = 'كاشف حرف S اتعلم من ' + g + ' تقييم 😀 و' + b + ' تقييم 😕.';
-  if (h.length) t += ' اتفق معكم في ' + agree + ' من آخر ' + h.length + ' تقييم.';
-  if (g < 5 || b < 5) t += ' قيّموا ٥ على الأقل من كل نوع في وضع «الأهل» قبل الاعتماد على وضع «التليفون».';
+  var t = 'كاشف حرف S تعلّم من ' + g + ' تقييم 😀 و' + b + ' تقييم 😕.';
+  if (h.length) t += ' وافقكم في ' + agree + ' من آخر ' + h.length + ' تقييم.';
+  if (g < 5 || b < 5) t += ' قيّموا ٥ على الأقل من كل نوع في وضع «الأهل» قبل الاعتماد على وضع «الهاتف».';
   return t;
 }
 function deErr(code, say, note) {
   if (code === 'not-allowed' || code === 'service-not-allowed') {
     say(sp('micOff'));
-    note('الميكروفون مقفول. افتحوا اللعبة من عنوانها مباشرة واسمحوا بالميكروفون.');
+    note('الميكروفون مغلق. افتحوا اللعبة من عنوانها مباشرة واسمحوا بالميكروفون.');
   } else if (code === 'unsupported') {
     say(sp('micNone'));
     note('هذا المتصفح لا يستطيع التسجيل من الميكروفون. استخدموا كروم أو إيدج أو سفاري.');
@@ -389,7 +389,7 @@ function holdable(btn, ms, cb) {
 }
 function makeRate(box, cb) {
   var wrap = box.querySelector('.rateBtns');
-  [['😀', 'واضح', 10], ['🙂', 'قريب', 7], ['😕', 'لسه', 3]].forEach(function (o) {
+  [['😀', 'واضح', 10], ['🙂', 'قريب', 7], ['😕', 'ليس بعد', 3]].forEach(function (o) {
     var b = document.createElement('button');
     b.type = 'button'; b.className = 'rateBtn';
     b.innerHTML = '<span class="fill"></span><span class="em">' + o[0] + '</span><span class="lb">' + o[1] + '</span>';
