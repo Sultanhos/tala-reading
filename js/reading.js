@@ -40,6 +40,7 @@ function nextWord() {
   if (qi >= queue.length) buildQueue();
   cur = queue[qi++];
   locked = false; fails = 0;
+  vwReset();
   var letters = norm(cur[0]).length;
   $('word').textContent = cur[0];
   $('word').style.setProperty('--fs', Math.max(44, 140 - (letters - 3) * 14 - Math.max(0, letters - 6) * 6));
@@ -128,10 +129,11 @@ function startListening() {
     var alts = [];
     for (var i = 0; i < e.results.length; i++) for (var j = 0; j < e.results[i].length; j++) alts.push(e.results[i][j].transcript);
     $('note').textContent = 'سمعت: ' + (alts[0] || '—');
-    if (matches(alts)) success(); else tryAgain();
+    if (!matches(alts)) { vwCaptureDrop(); tryAgain(); }
+    else if (!vwJudge(cur[0])) success(); // the word is right; with the vowel check on, the vowels are judged next (js/vowels.js)
   };
   rec.onerror = function (e) {
-    hadError = true;
+    hadError = true; vwCaptureDrop();
     if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
       micUnavailable = true; showOk();
       say('المَيْكْرُوفُون مُغْلَق 🔇');
@@ -147,9 +149,11 @@ function startListening() {
   };
   rec.onend = function () {
     setListening(false);
+    if (!VW.busy) vwCaptureDrop();
     if (!gotResult && !hadError && !locked) say('لَمْ أَسْمَعْ شَيْئاً 🎤 حَاوِلِي مَرَّةً أُخْرَى');
   };
-  try { rec.start(); } catch (e) { setListening(false); }
+  vwCaptureStart(); // records next to the recognizer when the vowel check is on
+  try { rec.start(); } catch (e) { setListening(false); vwCaptureDrop(); }
 }
 
 function hearWord() {
@@ -206,6 +210,7 @@ function refreshPanel() {
   $('rateSel').value = S.rateMode || 'parent';
   $('speakLangSel').value = S.speakLang === 'de' ? 'de' : 'ar';
   $('chatAiCb').checked = S.kokoAI !== false;
+  $('vowelCb').checked = S.vowelCheck === true; $('vowelCb').disabled = !vwSupported(); vwInfo();
   $('sDetInfo').textContent = sStatus();
   $('strictSel').value = String(S.lenient == null ? 1 : S.lenient);
   $('wLvlSel').value = String(S.wLevel);

@@ -548,3 +548,4 @@ body {
 .ppWhy { border: 3px solid var(--line); border-radius: 20px; background: #fff3c4; padding: 10px 14px; }
 .ppWhy summary { cursor: pointer; font-family: 'Noto Naskh Arabic', 'Fredoka', system-ui, sans-serif; font-weight: 700; font-size: 16px; }
 .ppWhy .hint { margin-top: 8px; color: var(--card-ink); }
+.vwBad { color: var(--coral); } /* the letter whose vowel was misread */

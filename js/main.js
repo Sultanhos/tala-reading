@@ -50,6 +50,7 @@ function showView(v) {
   if (home) homeRender();
   window.scrollTo(0, 0);
   if (v === 'speak') { if (S.warmOn !== false) warmStart(); else setMode(curMode); }
+  if (v === 'read' && vwOn()) vwLoad(); // the vowel check gets ready while the child reads the first word
   if (v === 'write') wEnter();
   if (v === 'math') mEnter();
   if (v === 'story') stEnter();

@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Baloo+Bhaijaan+2:wght@600;700;800&family=Fredoka:wght@500;700&family=Noto+Naskh+Arabic:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=202610032148">
+<link rel="stylesheet" href="css/app.css?v=202610032203">
 </head>
 <body>
 
@@ -532,7 +532,11 @@
           <select id="strictSel"><option value="0">عادي</option><option value="1">مرن</option><option value="2">مرن جدًا</option></select></div>
         <div class="row"><label for="okCb">إظهار زر «✔ ولي الأمر» دائمًا</label><input type="checkbox" id="okCb"></div>
       </div>
-      <details class="ppWhy"><summary>💡 كيف يعمل تصحيح القراءة؟</summary><p class="hint">يتأكد التعرّف على الصوت من أن الكلمة الصحيحة قيلت، لكنه لا يسمع التشكيل بدقة. استمعوا مع الطفل واستخدموا زر ✔ إن لم توافقوا. يعمل أفضل على كروم أو إيدج أو سفاري مع السماح بالميكروفون.</p></details>
+      <div class="ppCard">
+        <div class="row"><label for="vowelCb">تدقيق الحركات (التشكيل) على الجهاز<small>بعد قراءة الكلمة يستمع التطبيق إلى حركاتها، ويطلب إعادة القراءة إن قُرئت حركة خطأ (مرتين على الأكثر). يُنزَّل نموذج حجمه نحو ١٦٥ ميجابايت مرة واحدة، وصوت الطفل لا يغادر الجهاز.</small></label><input type="checkbox" id="vowelCb"></div>
+        <p class="hint" id="vowelInfo"></p>
+      </div>
+      <details class="ppWhy"><summary>💡 كيف يعمل تصحيح القراءة؟</summary><p class="hint">يتأكد التعرّف على الصوت من أن الكلمة الصحيحة قيلت، لكنه لا يسمع التشكيل. لتدقيق التشكيل فعّلوا «تدقيق الحركات» أعلاه. استمعوا مع الطفل واستخدموا زر ✔ إن لم توافقوا. يعمل أفضل على كروم أو إيدج أو سفاري مع السماح بالميكروفون.</p></details>
     </section>
 
     <section class="ppGroup" data-g="write" hidden>
@@ -609,29 +613,30 @@
   </div>
 </div>
 
-<script src="stories.js?v=202610032148"></script>
-<script src="js/native.js?v=202610032148"></script>
-<script src="js/voice-manifest.js?v=202610032148"></script>
-<script src="js/voice.js?v=202610032148"></script>
-<script src="js/profiles.js?v=202610032148"></script>
-<script src="js/app-state.js?v=202610032148"></script>
-<script src="js/progress.js?v=202610032148"></script>
-<script src="js/reading.js?v=202610032148"></script>
-<script src="js/speech-text.js?v=202610032148"></script>
-<script src="js/speech.js?v=202610032148"></script>
-<script src="js/writing.js?v=202610032148"></script>
-<script src="js/math.js?v=202610032148"></script>
-<script src="js/story-player.js?v=202610032148"></script>
-<script src="js/speech-warmup.js?v=202610032148"></script>
-<script src="js/profiles-ui.js?v=202610032148"></script>
-<script src="js/dashboard.js?v=202610032148"></script>
-<script src="js/ai-report.js?v=202610032148"></script>
-<script src="js/read-story.js?v=202610032148"></script>
-<script src="js/quran-juz-amma.js?v=202610032148"></script>
-<script src="js/quran.js?v=202610032148"></script>
-<script src="js/chat.js?v=202610032148"></script>
-<script src="js/homework.js?v=202610032148"></script>
-<script src="js/home.js?v=202610032148"></script>
-<script src="js/main.js?v=202610032148"></script>
+<script src="stories.js?v=202610032203"></script>
+<script src="js/native.js?v=202610032203"></script>
+<script src="js/voice-manifest.js?v=202610032203"></script>
+<script src="js/voice.js?v=202610032203"></script>
+<script src="js/profiles.js?v=202610032203"></script>
+<script src="js/app-state.js?v=202610032203"></script>
+<script src="js/progress.js?v=202610032203"></script>
+<script src="js/reading.js?v=202610032203"></script>
+<script src="js/vowels.js?v=202610032203"></script>
+<script src="js/speech-text.js?v=202610032203"></script>
+<script src="js/speech.js?v=202610032203"></script>
+<script src="js/writing.js?v=202610032203"></script>
+<script src="js/math.js?v=202610032203"></script>
+<script src="js/story-player.js?v=202610032203"></script>
+<script src="js/speech-warmup.js?v=202610032203"></script>
+<script src="js/profiles-ui.js?v=202610032203"></script>
+<script src="js/dashboard.js?v=202610032203"></script>
+<script src="js/ai-report.js?v=202610032203"></script>
+<script src="js/read-story.js?v=202610032203"></script>
+<script src="js/quran-juz-amma.js?v=202610032203"></script>
+<script src="js/quran.js?v=202610032203"></script>
+<script src="js/chat.js?v=202610032203"></script>
+<script src="js/homework.js?v=202610032203"></script>
+<script src="js/home.js?v=202610032203"></script>
+<script src="js/main.js?v=202610032203"></script>
 </body>
 </html>
