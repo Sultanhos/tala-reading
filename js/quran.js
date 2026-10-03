@@ -1,5 +1,5 @@
 // 🕌 Juz 'Amma memorization: listen to Sheikh al-Husary (the teaching recitation), read along, recite with words
-// hidden, then from memory; each recitation is checked with the speech recognizer.
+// hidden, then from memory; each recitation is checked with the speech recognizer. The four steps can be chosen freely.
 // Text: Tanzil (js/quran-juz-amma.js, unchanged). Audio: everyayah.com, Husary Muallim.
 'use strict';
 
@@ -51,7 +51,6 @@ function qSteps() {
   box.textContent = '';
   Q_STEPS.forEach(function (st, k) {
     var b = mEl('button', 'qStep' + (k === Q.step ? ' on' : '') + (k < done ? ' done' : ''), st[0] + ' ' + st[1]);
-    b.disabled = k > done; // a step opens when the one before is finished
     b.onclick = function () { qStop(); Q.step = k; Q.i = 0; qShow(); if (k === 0) qPlay(true); };
     box.appendChild(b);
   });
