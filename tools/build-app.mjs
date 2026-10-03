@@ -20,7 +20,7 @@ if (process.argv.includes("--bump")) {
 const www = path.join(root, "www");
 fs.rmSync(www, { recursive: true, force: true });
 fs.mkdirSync(www);
-for (const item of ["index.html", "stories.js", "css", "js", "audio", "icons", "manifest.webmanifest"]) {
+for (const item of ["index.html", "stories.js", "css", "js", "audio", "icons", "manifest.json"]) {
   if (!fs.existsSync(path.join(root, item))) continue;
   fs.cpSync(path.join(root, item), path.join(www, item), { recursive: true });
 }
