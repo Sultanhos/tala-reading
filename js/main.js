@@ -27,6 +27,11 @@ function setMode(m) {
 function showView(v) {
   stopAll();
   view = v;
+  var home = v === 'home';
+  $('viewHome').hidden = !home;
+  $('homeBtn').hidden = home; $('topKid').hidden = !home; $('levelBadge').hidden = home; $('parentBtn').hidden = !home;
+  document.body.classList.toggle('atHome', home);
+  if (!home && S.lastView !== v) { S.lastView = v; save(); } // the "go on" card on the home screen
   $('viewRead').hidden = v !== 'read';
   $('viewWrite').hidden = v !== 'write';
   $('viewMath').hidden = v !== 'math';
@@ -42,6 +47,8 @@ function showView(v) {
   $('tabQuran').classList.toggle('on', v === 'quran');
   $('tabChat').classList.toggle('on', v === 'chat');
   renderHud();
+  if (home) homeRender();
+  window.scrollTo(0, 0);
   if (v === 'speak') { if (S.warmOn !== false) warmStart(); else setMode(curMode); }
   if (v === 'write') wEnter();
   if (v === 'math') mEnter();
@@ -62,4 +69,5 @@ $('modeGame').onclick = function () { setMode('game'); };
 spApply();
 buildQueue();
 nextWord();
+showView('home');
 kidsStart();

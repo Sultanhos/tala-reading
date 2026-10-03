@@ -16,8 +16,9 @@ function say(text) {
   var b = $('bubble'); b.textContent = gx(text);
   b.classList.remove('pop'); void b.offsetWidth; b.classList.add('pop');
 }
+var HUD_PIC = { read: '📖', write: '✍️', math: '🔢', speak: '🐍', quran: '🕌', chat: '🦜', story: '📚' }; // the same pictures as on the home screen
 function renderHud() {
-  $('levelBadge').textContent = view === 'speak' ? 'نطق' : view === 'write' ? 'كتابة ' + mNumAr(S.wLevel) : view === 'math' ? 'حساب ' + mNumAr(S.mLevel) : view === 'story' ? 'حكايات' : view === 'quran' ? 'جزء عم' : view === 'chat' ? 'كوكو 🦜' : lessonName(S.level);
+  $('levelBadge').textContent = (HUD_PIC[view] || '📖') + ' ' + (view === 'speak' ? 'نطق' : view === 'write' ? 'كتابة ' + mNumAr(S.wLevel) : view === 'math' ? 'حساب ' + mNumAr(S.mLevel) : view === 'story' ? 'حكايات' : view === 'quran' ? 'جزء عم' : view === 'chat' ? 'كوكو' : lessonName(S.level));
   $('starCount').textContent = S.stars;
   var p = $('pips'); p.innerHTML = '';
   for (var i = 0; i < wordsFor(S.level).length; i++) {

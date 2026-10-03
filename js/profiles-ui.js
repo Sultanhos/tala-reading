@@ -108,7 +108,7 @@ function kidsPanelRefresh() {
     box.appendChild(r);
   });
   var c = pCur();
-  $('ppFor').textContent = P.list.length > 1 ? 'الإعدادات أدناه خاصة بـ ' + c.avatar + ' ' + c.name + '. لتغيير الطفل اضغطوا على صورته في الأعلى.' : '';
+  $('ppFor').textContent = 'إعدادات ' + c.avatar + ' ' + c.name;
 }
 $('ppKidAdd').onclick = function () { kidForm(null, { fromPanel: true }); };
 
@@ -142,7 +142,7 @@ $('gateIn').onkeydown = function (e) { if (e.key === 'Enter') $('gateGo').click(
 $('gateCancel').onclick = function () { $('gateOv').hidden = true; gateNext = null; };
 
 /* ----- start ----- */
-function kidsHud() { var c = pCur(); $('kidBtn').textContent = c.avatar; $('kidBtn').setAttribute('aria-label', 'من يلعب؟ الآن: ' + c.name); }
+function kidsHud() { var c = pCur(); $('kidBtn').textContent = c.avatar; $('kidName').textContent = c.name; $('kidBtn').setAttribute('aria-label', 'من يلعب؟ الآن: ' + c.name); }
 function kidsStart() {
   kidsHud(); gxPage();
   var picked = false;

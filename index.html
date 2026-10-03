@@ -6,8 +6,8 @@
 <title>Arabic Reading Stars</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Fredoka:wght@500;700&family=Noto+Naskh+Arabic:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=202610031436">
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Baloo+Bhaijaan+2:wght@600;700;800&family=Fredoka:wght@500;700&family=Noto+Naskh+Arabic:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css?v=202610032043">
 </head>
 <body>
 
@@ -31,14 +31,43 @@
 </div>
 
 <main class="app">
-  <header class="top">
-    <button class="gear kid" id="kidBtn" aria-label="من يلعب؟">🐰</button>
-    <div class="pill level" id="levelBadge" dir="rtl" lang="ar">الدرس 3A</div>
-    <div class="pill starsPill" id="starsPill" aria-live="polite">⭐ <span id="starCount">0</span></div>
-    <button class="gear" id="parentBtn" aria-label="Parent settings">⚙️</button>
+  <header class="top" dir="rtl">
+    <button class="gear homeBtn" id="homeBtn" aria-label="الصفحة الرئيسية" hidden>🏠</button>
+    <span class="topKid" id="topKid">
+      <button class="gear kid" id="kidBtn" aria-label="من يلعب؟">🐰</button>
+      <span class="pill kidName" id="kidName" lang="ar"></span>
+    </span>
+    <div class="pill level" id="levelBadge" dir="rtl" lang="ar" hidden>الدرس 3A</div>
+    <span class="topEnd">
+      <div class="pill starsPill" id="starsPill" dir="ltr" aria-live="polite">⭐ <span id="starCount">0</span></div>
+      <button class="gear" id="parentBtn" aria-label="منطقة الأهل">⚙️</button>
+    </span>
   </header>
 
-  <nav class="tabs six" id="tabs">
+  <!-- home: one big picture button per activity (children who cannot read yet find them by the picture) -->
+  <div class="view home" id="viewHome" dir="rtl" lang="ar">
+    <div class="hSky" aria-hidden="true"></div>
+    <button class="hCont" id="hCont">
+      <span class="hPic" id="hContPic">📖</span>
+      <span class="hContTxt">
+        <span class="hContT" id="hContT"></span>
+        <span class="hBar" id="hBar"><span id="hBarIn"></span></span>
+        <span class="hContS" id="hContS"></span>
+      </span>
+      <span class="hPlay" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28"><path d="M17 4 4 12l13 8V4z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span>
+    </button>
+    <div class="hGrid" id="hGrid">
+      <button class="hTile tRead" data-v="read"><span class="hPic">📖</span><span class="hTxt"><b>قراءة</b><small id="hSubRead"></small></span></button>
+      <button class="hTile tWrite" data-v="write"><span class="hPic">✍️</span><span class="hTxt"><b>كتابة</b><small id="hSubWrite"></small></span></button>
+      <button class="hTile tMath" data-v="math"><span class="hPic">🔢</span><span class="hTxt"><b>حساب</b><small id="hSubMath"></small></span></button>
+      <button class="hTile tSpeak" data-v="speak"><span class="hPic">🐍</span><span class="hTxt"><b>نطق</b><small id="hSubSpeak"></small></span></button>
+      <button class="hTile tQuran" data-v="quran"><span class="hPic">🕌</span><span class="hTxt"><b>قرآن</b><small id="hSubQuran"></small></span></button>
+      <button class="hTile tChat" data-v="chat"><span class="hPic">🦜</span><span class="hTxt"><b>كوكو</b><small id="hSubChat"></small></span></button>
+      <button class="hTile tStory" data-v="story" id="hTileStory" hidden><span class="hPic">📚</span><span class="hTxt"><b>حكايات</b><small></small></span></button>
+    </div>
+  </div>
+
+  <nav class="tabs six" id="tabs" hidden>
     <button class="tab on" id="tabRead"><span class="ti">📖</span>قراءة</button>
     <button class="tab" id="tabWrite"><span class="ti">✍️</span>كتابة</button>
     <button class="tab" id="tabMath"><span class="ti">🔢</span>حساب</button>
@@ -48,7 +77,7 @@
     <button class="tab" id="tabStory" hidden><span class="ti">📚</span>حكايات</button>
   </nav>
 
-  <div class="view" id="viewRead">
+  <div class="view" id="viewRead" hidden>
   <div class="modes" id="readModes" hidden dir="rtl">
     <button class="mode on" id="rmWords">🔤 كَلِمَات</button>
     <button class="mode" id="rmStory">📖 قِصَّة</button>
@@ -444,101 +473,165 @@
   </div>
 </div>
 
-<!-- parent panel -->
+<!-- parent area -->
 <div class="overlay" id="parentPanel" hidden>
-  <div class="sheet parent" role="dialog" aria-modal="true" aria-labelledby="ppTitle" dir="rtl" lang="ar">
-    <h2 id="ppTitle">إعدادات ولي الأمر</h2>
-    <div class="btnRow"><button class="go" id="ppDash">📊 تقرير التقدم</button><button class="go" id="ppHomework" style="background:var(--mint);color:var(--line)">📷 مساعد الواجب</button></div>
-    <div class="row"><b>الأطفال</b><button class="small" id="ppKidAdd">➕ طفل جديد</button></div>
-    <div class="kidRows" id="ppKids"></div>
-    <p class="hint" id="ppFor"></p>
-    <hr class="divider">
-    <div class="row"><label for="starIn">النجوم المجموعة</label>
-      <span style="display:flex;gap:6px;align-items:center">
-        <button class="small" id="starPlus" aria-label="زيادة نجمة">+</button>
-        <input type="number" id="starIn" min="0" max="9999" inputmode="numeric" style="width:70px;text-align:center" dir="ltr">
-        <button class="small" id="starMinus" aria-label="إنقاص نجمة">−</button>
-      </span></div>
-    <div class="row"><span>ابدأ العد من الصفر</span>
-      <button class="small" id="resetStars">تصفير النجوم</button></div>
-    <div class="row"><span>الدرس الحالي: <b id="ppLevel">1</b></span>
-      <button class="small" id="resetLevel">العودة إلى أول درس</button></div>
-    <hr class="divider">
-    <div class="row"><label for="lvlSel">قراءة: الانتقال إلى درس</label>
-      <select id="lvlSel"></select></div>
-    <div class="row"><label for="soundCb">الأصوات</label><input type="checkbox" id="soundCb"></div>
-    <div class="row"><label for="strictSel">قراءة: درجة الدقة المطلوبة في القراءة</label>
-      <select id="strictSel"><option value="0">عادي</option><option value="1">مرن</option><option value="2">مرن جدًا</option></select></div>
-    <div class="row"><label for="okCb">إظهار زر «✔ ولي الأمر» دائمًا</label><input type="checkbox" id="okCb"></div>
-    <hr class="divider">
-    <div class="row"><label for="wLvlSel">كتابة: المستوى</label>
-      <select id="wLvlSel"></select></div>
-    <div class="row"><label for="wHelpSel">كتابة: المساعدة</label>
-      <select id="wHelpSel">
-        <option value="auto">تتبّع الحرف، ثم كتابته دون مساعدة</option>
-        <option value="trace">تتبّع الحرف دائمًا</option>
-        <option value="copy">نقل (الحرف ظاهر)</option>
-        <option value="memory">من الذاكرة (سماع الحرف فقط)</option>
-      </select></div>
-    <div class="row"><label for="wStrictSel">كتابة: درجة الدقة المطلوبة في الخط</label>
-      <select id="wStrictSel"><option value="0">عادي</option><option value="1">مرن</option><option value="2">مرن جدًا</option></select></div>
-    <div class="row"><label for="chatAiCb">كوكو 🦜: يردّ بالذكاء الاصطناعي (يُرسل كلام الطفل نصًّا إلى خادم الذكاء الاصطناعي دون الاسم؛ وعند الإيقاف يسأل كوكو أسئلة ثابتة)</label><input type="checkbox" id="chatAiCb"></div>
-    <div class="row"><label for="wOrderSel">كتابة: ترتيب الكتابة (الحرف قبل النقاط، ومن اليمين إلى اليسار)</label>
-      <select id="wOrderSel"><option value="hint">نصيحة فقط</option><option value="strict">شرط للحصول على النجمة</option><option value="off">غير مهم</option></select></div>
-    <hr class="divider">
-    <div class="row"><label for="mLvlSel">حساب: المستوى</label>
-      <select id="mLvlSel" dir="auto"></select></div>
-    <div class="row"><label for="mDigitSel">شكل الأرقام</label>
-      <select id="mDigitSel"><option value="ar">١ ٢ ٣ (عربي)</option><option value="en">1 2 3</option></select></div>
-    <hr class="divider">
-    <div class="row"><label for="warmCb">نطق: تمرين البداية (سِي – سَا – سُو) صحيحًا ٣ مرات</label><input type="checkbox" id="warmCb"></div>
-    <div class="row"><label for="speakLangSel">نطق: لغة التمرين</label>
-      <select id="speakLangSel"><option value="ar">عربي (س ز ص)</option><option value="de">ألماني (S / Z)</option></select></div>
-    <div class="row"><label for="rateSel">نطق: من يقيّم صوت السين</label>
-      <select id="rateSel"><option value="parent">الأهل (😀🙂😕) – والهاتف يتعلّم</option><option value="phone">الهاتف (كاشف السين)</option></select></div>
-    <div class="row"><span id="sDetInfo" style="font-size:14px;line-height:1.6"></span>
-      <button class="small" id="sDetReset">مسح ما تعلمه الكاشف</button></div>
-    <div class="row"><label for="triesSel">نطق: عدد المحاولات لكل سؤال في اللعبة</label>
-      <select id="triesSel"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
-    <div id="ppStories" hidden>
-      <hr class="divider">
-    <div class="row"><label for="stJudgeIn">حكايات: عنوان خادم تصحيح الإجابات بالذكاء الاصطناعي</label></div>
-    <div class="row"><input type="text" id="stJudgeIn" dir="ltr" style="width:100%" placeholder="https://tala-judge.onrender.com" autocomplete="off" spellcheck="false"></div>
-    <div class="row"><span id="stJudgeStatus" style="font-size:14px"></span><button class="small" id="stJudgeTest">اختبار</button></div>
-    <div class="row"><span id="stVoiceInfo" style="font-size:14px"></span><button class="small" id="recOpen">🎙 تسجيل الحكايات</button></div>
-    <p class="hint">حكايات: قصص حقيقية من القرآن والأحاديث الصحيحة باللهجة المصرية، وبعد كل حكاية ٥ أسئلة يُجاب عنها بالصوت، ولكل إجابة صحيحة نجمة.</p>
+  <div class="sheet parent pp" role="dialog" aria-modal="true" aria-labelledby="ppTitle" dir="rtl" lang="ar">
+    <div class="ppHead">
+      <button class="gear ppNav" id="ppBack" aria-label="رجوع" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+      <span class="ppPic" id="ppPic" hidden></span>
+      <h2 id="ppTitle">منطقة الأهل</h2>
+      <button class="gear ppNav" id="ppClose" aria-label="إغلاق"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
     </div>
-    <hr class="divider">
-    <p class="hint">قراءة: يتأكد التعرّف على الصوت من أن الكلمة الصحيحة قيلت، لكنه لا يسمع التشكيل بدقة. استمعوا مع الطفل واستخدموا زر ✔ إن لم توافقوا. يعمل أفضل على كروم أو إيدج أو سفاري مع السماح بالميكروفون.</p>
-    <p class="hint">كتابة: يتم التصحيح على الجهاز نفسه. يطابق خطوط الطفل مع شكل الحرف، ويتأكد من وجود كل أجزاء الحرف، ومن أن النقاط كاملة وفي مكانها (تُقبل الشَّرطة أو علامة ^ بدل نقطتين أو ثلاث)، ومن عدم وجود خطوط زائدة. وإن كان المكتوب أشبه بحرف آخر تذكر البومة ذلك الحرف. ترتيب الكتابة يُراجَع بحسب الإعداد أعلاه. وإن رأيتم أن الكتابة صحيحة فاستخدموا زر ✔ بعد محاولتين.</p>
-    <p class="hint">حساب: يتبع منهج الصف الأول الابتدائي: العدّ حتى ١٠، العدد الناقص، الأكبر والأصغر، الجمع حتى ٥ و١٠، الطرح في حدود ١٠، العدّ والأعداد حتى ٢٠، الجمع والطرح حتى ٢٠، ومسائل بالصور. ١٠ إجابات صحيحة تُنهي المستوى وتمنح نجمة. تقرأ البومة كل سؤال، وبعد الإجابة الخاطئة تظهر صور للعدّ.</p>
-    <p class="hint">نطق (تدريب على السين: س وز وص بالعربية، أو S وZ بالألمانية؛ تختارون اللغة لكل طفل في الأعلى): يسجّل الهاتف الكلمة ويقيس صوت الصفير نفسه: ارتفاعه وحدّته وقوته مقارنة بباقي الكلام. السين الواضحة صفير قوي وحادّ وعالٍ؛ وحين يكون اللسان بين الأسنان (اللثغة) تصبح ضعيفة ومنبسطة، وحين يخرج الهواء من الجانبين تصبح أخفض. كل تقييم منكم بـ 😀 أو 😕 يحفظه الهاتف مثالًا لنطق الطفل الصحيح أو الخاطئ، فيتحسّن مع الوقت. قيّموا أولًا دون النظر إلى تقدير الهاتف، ثم يظهر «📱 الهاتف: x / 10» لتروا هل يوافقكم أم لا. وحين يوافقكم في أغلب الأحيان يمكنكم اختيار «الهاتف». في كل مرة يُفتح «نطق» يجب أن يقول الطفل «سِي – سَا – سُو» صحيحًا ٣ مرات قبل التدريب واللعبة. استخدموا غرفة هادئة، والهاتف على بُعد كفّ من الفم. هذا ليس تشخيصًا؛ أخصائي التخاطب هو من يقيّم اللثغة.</p>
-    <div style="text-align:center"><button class="go" id="ppClose">تم</button></div>
+
+    <div id="ppMain">
+      <div class="kidRows" id="ppKids"></div>
+      <div class="btnRow"><button class="small" id="ppKidAdd">➕ طفل جديد</button></div>
+      <div class="ppTools">
+        <button class="ppTool tRead" id="ppDash"><span class="ppToolPic">📊</span><b>تقرير التقدّم</b><small>الوقت والنجوم والصعوبات</small></button>
+        <button class="ppTool tSpeak" id="ppHomework"><span class="ppToolPic">📷</span><b>مساعد الواجب</b><small>تصحيح صورة الواجب</small></button>
+      </div>
+      <h3 class="ppFor" id="ppFor"></h3>
+      <div class="ppMenu" id="ppMenu">
+        <button data-g="general"><span class="ppI">⚙️</span><span class="ppT"><b>عام</b><small id="ppSumGeneral"></small></span></button>
+        <button data-g="read"><span class="ppI">📖</span><span class="ppT"><b>القراءة</b><small id="ppSumRead"></small></span></button>
+        <button data-g="write"><span class="ppI">✍️</span><span class="ppT"><b>الكتابة</b><small id="ppSumWrite"></small></span></button>
+        <button data-g="math"><span class="ppI">🔢</span><span class="ppT"><b>الحساب</b><small id="ppSumMath"></small></span></button>
+        <button data-g="speak"><span class="ppI">🐍</span><span class="ppT"><b>النطق</b><small id="ppSumSpeak"></small></span></button>
+        <button data-g="koko"><span class="ppI">🦜</span><span class="ppT"><b>كوكو والذكاء الاصطناعي</b><small id="ppSumKoko"></small></span></button>
+        <button data-g="info"><span class="ppI">💡</span><span class="ppT"><b>كيف يعمل التطبيق؟</b><small>التصحيح والخصوصية</small></span></button>
+      </div>
+    </div>
+
+    <section class="ppGroup" data-g="general" hidden>
+      <div class="ppCard">
+        <div class="row"><label for="starIn">النجوم المجموعة</label>
+          <span style="display:flex;gap:6px;align-items:center">
+            <button class="small" id="starPlus" aria-label="زيادة نجمة">+</button>
+            <input type="number" id="starIn" min="0" max="9999" inputmode="numeric" style="width:70px;text-align:center" dir="ltr">
+            <button class="small" id="starMinus" aria-label="إنقاص نجمة">−</button>
+          </span></div>
+        <div class="row"><span>ابدأ العد من الصفر</span>
+          <button class="small" id="resetStars">تصفير النجوم</button></div>
+      </div>
+      <div class="ppCard">
+        <div class="row"><label for="soundCb">الأصوات</label><input type="checkbox" id="soundCb"></div>
+        <div class="row"><label for="mDigitSel">شكل الأرقام</label>
+          <select id="mDigitSel"><option value="ar">١ ٢ ٣ (عربي)</option><option value="en">1 2 3</option></select></div>
+      </div>
+    </section>
+
+    <section class="ppGroup" data-g="read" hidden>
+      <div class="ppCard">
+        <div class="row"><span>الدرس الحالي: <b id="ppLevel">1</b></span>
+          <button class="small" id="resetLevel">العودة إلى أول درس</button></div>
+        <div class="row stack"><label for="lvlSel">الانتقال إلى درس</label>
+          <select id="lvlSel"></select></div>
+      </div>
+      <div class="ppCard">
+        <div class="row"><label for="strictSel">درجة الدقة المطلوبة في القراءة</label>
+          <select id="strictSel"><option value="0">عادي</option><option value="1">مرن</option><option value="2">مرن جدًا</option></select></div>
+        <div class="row"><label for="okCb">إظهار زر «✔ ولي الأمر» دائمًا</label><input type="checkbox" id="okCb"></div>
+      </div>
+      <details class="ppWhy"><summary>💡 كيف يعمل تصحيح القراءة؟</summary><p class="hint">يتأكد التعرّف على الصوت من أن الكلمة الصحيحة قيلت، لكنه لا يسمع التشكيل بدقة. استمعوا مع الطفل واستخدموا زر ✔ إن لم توافقوا. يعمل أفضل على كروم أو إيدج أو سفاري مع السماح بالميكروفون.</p></details>
+    </section>
+
+    <section class="ppGroup" data-g="write" hidden>
+      <div class="ppCard">
+        <div class="row stack"><label for="wLvlSel">المستوى</label>
+          <select id="wLvlSel"></select></div>
+        <div class="row stack"><label for="wHelpSel">طريقة المساعدة</label>
+          <select id="wHelpSel">
+            <option value="auto">تتبّع الحرف، ثم كتابته دون مساعدة</option>
+            <option value="trace">تتبّع الحرف دائمًا</option>
+            <option value="copy">نقل (الحرف ظاهر)</option>
+            <option value="memory">من الذاكرة (سماع الحرف فقط)</option>
+          </select></div>
+      </div>
+      <div class="ppCard">
+        <div class="row"><label for="wStrictSel">درجة الدقة المطلوبة في الخط</label>
+          <select id="wStrictSel"><option value="0">عادي</option><option value="1">مرن</option><option value="2">مرن جدًا</option></select></div>
+        <div class="row stack"><label for="wOrderSel">ترتيب الكتابة<small>الحرف قبل النقاط، ومن اليمين إلى اليسار</small></label>
+          <select id="wOrderSel"><option value="hint">نصيحة فقط</option><option value="strict">شرط للحصول على النجمة</option><option value="off">غير مهم</option></select></div>
+      </div>
+      <details class="ppWhy"><summary>💡 كيف يعمل تصحيح الكتابة؟</summary><p class="hint">يتم التصحيح على الجهاز نفسه. يطابق خطوط الطفل مع شكل الحرف، ويتأكد من وجود كل أجزاء الحرف، ومن أن النقاط كاملة وفي مكانها (تُقبل الشَّرطة أو علامة ^ بدل نقطتين أو ثلاث)، ومن عدم وجود خطوط زائدة. وإن كان المكتوب أشبه بحرف آخر تذكر البومة ذلك الحرف. ترتيب الكتابة يُراجَع بحسب الإعداد أعلاه. وإن رأيتم أن الكتابة صحيحة فاستخدموا زر ✔ بعد محاولتين.</p></details>
+    </section>
+
+    <section class="ppGroup" data-g="math" hidden>
+      <div class="ppCard">
+        <div class="row stack"><label for="mLvlSel">المستوى</label>
+          <select id="mLvlSel" dir="auto"></select></div>
+      </div>
+      <details class="ppWhy" open><summary>💡 ماذا يتعلّم الطفل في الحساب؟</summary><p class="hint">يتبع منهج الصف الأول الابتدائي: العدّ حتى ١٠، العدد الناقص، الأكبر والأصغر، الجمع حتى ٥ و١٠، الطرح في حدود ١٠، العدّ والأعداد حتى ٢٠، الجمع والطرح حتى ٢٠، ومسائل بالصور. ١٠ إجابات صحيحة تُنهي المستوى وتمنح نجمة. تقرأ البومة كل سؤال، وبعد الإجابة الخاطئة تظهر صور للعدّ.</p></details>
+    </section>
+
+    <section class="ppGroup" data-g="speak" hidden>
+      <div class="ppCard">
+        <div class="row stack"><label for="speakLangSel">لغة التمرين</label>
+          <select id="speakLangSel"><option value="ar">عربي (س ز ص)</option><option value="de">ألماني (S / Z)</option></select></div>
+        <div class="row"><label for="warmCb">تمرين البداية (سِي – سَا – سُو) صحيحًا ٣ مرات</label><input type="checkbox" id="warmCb"></div>
+        <div class="row"><label for="triesSel">عدد المحاولات لكل سؤال في اللعبة</label>
+          <select id="triesSel"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+      </div>
+      <div class="ppCard">
+        <div class="row stack"><label for="rateSel">من يقيّم صوت السين</label>
+          <select id="rateSel"><option value="parent">الأهل (😀🙂😕) – والهاتف يتعلّم</option><option value="phone">الهاتف (كاشف السين)</option></select></div>
+        <div class="row stack"><span id="sDetInfo" style="font-size:14px;line-height:1.6"></span>
+          <button class="small" id="sDetReset">مسح ما تعلمه الكاشف</button></div>
+      </div>
+      <details class="ppWhy"><summary>💡 كيف يعمل تدريب النطق؟</summary><p class="hint">نطق (تدريب على السين: س وز وص بالعربية، أو S وZ بالألمانية؛ تختارون اللغة لكل طفل في الأعلى): يسجّل الهاتف الكلمة ويقيس صوت الصفير نفسه: ارتفاعه وحدّته وقوته مقارنة بباقي الكلام. السين الواضحة صفير قوي وحادّ وعالٍ؛ وحين يكون اللسان بين الأسنان (اللثغة) تصبح ضعيفة ومنبسطة، وحين يخرج الهواء من الجانبين تصبح أخفض. كل تقييم منكم بـ 😀 أو 😕 يحفظه الهاتف مثالًا لنطق الطفل الصحيح أو الخاطئ، فيتحسّن مع الوقت. قيّموا أولًا دون النظر إلى تقدير الهاتف، ثم يظهر «📱 الهاتف: x / 10» لتروا هل يوافقكم أم لا. وحين يوافقكم في أغلب الأحيان يمكنكم اختيار «الهاتف». في كل مرة يُفتح «نطق» يجب أن يقول الطفل «سِي – سَا – سُو» صحيحًا ٣ مرات قبل التدريب واللعبة. استخدموا غرفة هادئة، والهاتف على بُعد كفّ من الفم. هذا ليس تشخيصًا؛ أخصائي التخاطب هو من يقيّم اللثغة.</p></details>
+    </section>
+
+    <section class="ppGroup" data-g="koko" hidden>
+      <div class="ppCard">
+        <div class="row"><label for="chatAiCb">كوكو 🦜 يردّ بالذكاء الاصطناعي<small>يُرسل كلام الطفل نصًّا إلى خادم الذكاء الاصطناعي دون الاسم. وعند الإيقاف يسأل كوكو أسئلة ثابتة.</small></label><input type="checkbox" id="chatAiCb"></div>
+      </div>
+      <div class="ppCard">
+        <div class="row"><label for="stJudgeIn">عنوان خادم الذكاء الاصطناعي<small>يُستخدم لكوكو وتقرير الأسبوع والقصص ومساعد الواجب.</small></label></div>
+        <div class="row"><input type="text" id="stJudgeIn" dir="ltr" style="width:100%" placeholder="https://tala-judge.onrender.com" autocomplete="off" spellcheck="false"></div>
+        <div class="row"><span id="stJudgeStatus" style="font-size:14px"></span><button class="small" id="stJudgeTest">اختبار</button></div>
+      </div>
+      <div id="ppStories" hidden>
+        <div class="ppCard">
+          <div class="row"><span id="stVoiceInfo" style="font-size:14px"></span><button class="small" id="recOpen">🎙 تسجيل الحكايات</button></div>
+          <p class="hint">حكايات: قصص حقيقية من القرآن والأحاديث الصحيحة باللهجة المصرية، وبعد كل حكاية ٥ أسئلة يُجاب عنها بالصوت، ولكل إجابة صحيحة نجمة.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="ppGroup" data-g="info" hidden>
+      <div class="ppCard">
+        <p class="hint"><b>التقدّم:</b> كل نجوم الطفل ومستوياته محفوظة على هذا الجهاز فقط.</p>
+        <p class="hint"><b>الصوت:</b> التعرّف على الصوت يتم عبر خدمة المتصفح (كروم أو إيدج أو سفاري) ويحتاج إلى الإنترنت والسماح بالميكروفون.</p>
+        <p class="hint"><b>الذكاء الاصطناعي:</b> كوكو وتقرير الأسبوع والقصص الجديدة ومساعد الواجب ترسل ما يلزم فقط إلى خادم الذكاء الاصطناعي، دون اسم الطفل. صورة الواجب تُقرأ ولا تُحفظ.</p>
+        <p class="hint"><b>التصحيح:</b> شرح طريقة التصحيح موجود في صفحة كل مادة (القراءة، الكتابة، الحساب، النطق).</p>
+      </div>
+    </section>
   </div>
 </div>
 
-<script src="stories.js?v=202610031436"></script>
-<script src="js/native.js?v=202610031436"></script>
-<script src="js/voice-manifest.js?v=202610031436"></script>
-<script src="js/voice.js?v=202610031436"></script>
-<script src="js/profiles.js?v=202610031436"></script>
-<script src="js/app-state.js?v=202610031436"></script>
-<script src="js/progress.js?v=202610031436"></script>
-<script src="js/reading.js?v=202610031436"></script>
-<script src="js/speech-text.js?v=202610031436"></script>
-<script src="js/speech.js?v=202610031436"></script>
-<script src="js/writing.js?v=202610031436"></script>
-<script src="js/math.js?v=202610031436"></script>
-<script src="js/story-player.js?v=202610031436"></script>
-<script src="js/speech-warmup.js?v=202610031436"></script>
-<script src="js/profiles-ui.js?v=202610031436"></script>
-<script src="js/dashboard.js?v=202610031436"></script>
-<script src="js/ai-report.js?v=202610031436"></script>
-<script src="js/read-story.js?v=202610031436"></script>
-<script src="js/quran-juz-amma.js?v=202610031436"></script>
-<script src="js/quran.js?v=202610031436"></script>
-<script src="js/chat.js?v=202610031436"></script>
-<script src="js/homework.js?v=202610031436"></script>
-<script src="js/main.js?v=202610031436"></script>
+<script src="stories.js?v=202610032043"></script>
+<script src="js/native.js?v=202610032043"></script>
+<script src="js/voice-manifest.js?v=202610032043"></script>
+<script src="js/voice.js?v=202610032043"></script>
+<script src="js/profiles.js?v=202610032043"></script>
+<script src="js/app-state.js?v=202610032043"></script>
+<script src="js/progress.js?v=202610032043"></script>
+<script src="js/reading.js?v=202610032043"></script>
+<script src="js/speech-text.js?v=202610032043"></script>
+<script src="js/speech.js?v=202610032043"></script>
+<script src="js/writing.js?v=202610032043"></script>
+<script src="js/math.js?v=202610032043"></script>
+<script src="js/story-player.js?v=202610032043"></script>
+<script src="js/speech-warmup.js?v=202610032043"></script>
+<script src="js/profiles-ui.js?v=202610032043"></script>
+<script src="js/dashboard.js?v=202610032043"></script>
+<script src="js/ai-report.js?v=202610032043"></script>
+<script src="js/read-story.js?v=202610032043"></script>
+<script src="js/quran-juz-amma.js?v=202610032043"></script>
+<script src="js/quran.js?v=202610032043"></script>
+<script src="js/chat.js?v=202610032043"></script>
+<script src="js/homework.js?v=202610032043"></script>
+<script src="js/home.js?v=202610032043"></script>
+<script src="js/main.js?v=202610032043"></script>
 </body>
 </html>
