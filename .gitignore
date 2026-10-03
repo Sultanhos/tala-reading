@@ -1,8 +1,6 @@
 # local working files (not published)
 recordings/
-# audio/: local story recordings are not published; the app voice (audio/voice/) is
-audio/*
-!audio/voice/
+# audio/: the app voice (audio/voice/) and the story parts (audio/<story>/, audio/manifest.json) are published
 Story texts for ChatGPT/
 node_modules/
 *.tmp.wav

@@ -20,7 +20,7 @@ function homeInfo(v) {
 }
 function homeRender() {
   HOME_VIEWS.forEach(function (v) { $('hSub' + v.charAt(0).toUpperCase() + v.slice(1)).textContent = homeInfo(v)[0]; });
-  var last = HOME_VIEWS.indexOf(S.lastView) > -1 ? S.lastView : 'read', info = homeInfo(last);
+  var last = HOME_VIEWS.indexOf(S.lastView) > -1 || (S.lastView === 'story' && !$('hTileStory').hidden) ? S.lastView : 'read', info = homeInfo(last);
   $('hCont').setAttribute('data-v', last);
   $('hContPic').textContent = HOME[last][0];
   $('hContT').textContent = gx('تَابِعِي ' + HOME[last][1]);

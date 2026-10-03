@@ -51,8 +51,8 @@ You are a kind teacher talking to a 6-year-old girl during a quiz: warm, cheerfu
 Read the text exactly as written, word for word; say nothing else.`;
 
 // how the Gemini voice should sound (the style that was chosen in AI Studio)
-const G_STYLE = "Natural Egyptian (Cairo) Arabic accent, like a warm Egyptian mother telling a true story to her 6-year-old daughter. Calm, clear, a little slow, gentle and lively.";
-const G_STYLE_OWL = "Natural Egyptian (Cairo) Arabic accent, like a kind, cheerful Egyptian teacher talking to a 6-year-old girl during a quiz. Warm, encouraging, clear, not too fast.";
+const G_STYLE = "Modern Standard Arabic (fusha), a warm, kind young woman telling a true story to a small child. Calm, clear, a little slow, gentle and lively, with natural pauses between the sentences. Pronounce every vowel mark (tashkeel) exactly as written, including the last one. Say only the text.";
+const G_STYLE_OWL = G_STYLE;
 
 // ffmpeg turns Gemini's raw audio into MP3
 function findFfmpeg() {
@@ -123,14 +123,12 @@ const ui = ctx.window.TALA_UI || {};
 
 // everything the storyteller and the owl say
 const items = [];
-for (const [k, t] of Object.entries(ui)) items.push({ key: k, file: `audio/ui/${k.slice(3)}.mp3`, text: t, story: "", owl: true });
+// Only the story parts are made here, one whole part per file. The quiz (questions, answers, the owl's sentences) is short:
+// it is recorded with the app voice by tools/make-voice.mjs, several lines per request (Google allows few requests a day).
 for (const s of stories) {
   s.p.forEach((p, i) => { if (!Array.isArray(p[1])) items.push({ key: `${s.id}:p${i}`, file: `audio/${s.id}/p${i}.mp3`, text: p[1], story: s.id }); });
-  s.q.forEach((q, i) => {
-    items.push({ key: `${s.id}:q${i}`, file: `audio/${s.id}/q${i}.mp3`, text: q.q, story: s.id, owl: true });
-    items.push({ key: `${s.id}:a${i}`, file: `audio/${s.id}/a${i}.mp3`, text: "الإجابة: " + q.a + ".", story: s.id, owl: true });
-  });
 }
+void ui;
 
 function clean(t) {
   return String(t)
@@ -191,9 +189,10 @@ if (!flag("--dry-run") && todo.length) {
     console.error({ gemini: "Set GEMINI_API_KEY first", openai: "Set OPENAI_API_KEY first", azure: "Set AZURE_SPEECH_KEY and AZURE_SPEECH_REGION first" }[ENGINE] + " (see the top of this file).");
     process.exit(1);
   }
-  let n = 0;
+  let n = 0, dayLimit = false;
   const doubtful = [];
   for (const it of todo) {
+    if (dayLimit) break;
     if (ENGINE === "voicestudio") {
       const out = path.join(root, it.file);
       fs.mkdirSync(path.dirname(out), { recursive: true });
@@ -207,6 +206,10 @@ if (!flag("--dry-run") && todo.length) {
     for (;;) {
       let res;
       try { res = await request(it); } catch (e) { if (tries++ < 4) { await sleep(5000); continue; } throw e; }
+      if (res.status === 429 && ENGINE === "gemini") {
+        const msg = await res.clone().text();
+        if (/per_day|PerDay/i.test(msg)) { dayLimit = true; break; } // Google's daily limit: stop here, run again later
+      }
       if ((res.status === 429 || res.status >= 500) && tries++ < 6) { await sleep(ENGINE === "azure" ? 15000 : 8000); continue; }
       if (!res.ok) {
         console.error(`\nFailed on ${it.key}: ${res.status} ${res.statusText}\n${(await res.text()).slice(0, 500)}`);
@@ -227,14 +230,19 @@ No audio for ${it.key}: ${JSON.stringify(j).slice(0, 400)}`);
           process.exit(1);
         }
         const rate = Number((/rate=(\d+)/.exec(audio.inlineData.mimeType || "") || [])[1]) || 24000;
-        pcmToMp3(Buffer.from(audio.inlineData.data, "base64"), rate, out);
+        const buf = Buffer.from(audio.inlineData.data, "base64"), wav = buf.slice(0, 4).toString("latin1") === "RIFF";
+        // newer voices send a WAV file (read as raw samples its header would be a click and a hiss)
+        const seconds = (buf.length - (wav ? 44 : 0)) / 2 / rate, most = clean(it.text).length * 0.2 + 8;
+        if (seconds > most && tries++ < 3) { await sleep(1500); continue; } // the voice ran on far too long: make it again
+        if (wav) wavToMp3(buf, out); else pcmToMp3(buf, rate, out);
       } else fs.writeFileSync(out, Buffer.from(await res.arrayBuffer()));
       break;
     }
+    if (dayLimit) break;
     process.stdout.write(`\r${++n}/${todo.length}  ${it.key}          `);
     await sleep(ENGINE === "azure" ? 3200 : ENGINE === "gemini" ? 1000 : 300); // Azure's free tier allows about 20 requests a minute
   }
-  console.log("\nDone.");
+  console.log(dayLimit ? `\nGoogle's daily limit is reached after ${n} files. Run the same command again later: it goes on where it stopped.` : "\nDone.");
   if (doubtful.length) console.log("Please listen to these (the recognizer was not sure):\n  " + doubtful.join("\n  "));
 }
 

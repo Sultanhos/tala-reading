@@ -66,6 +66,10 @@ function voiceTexts() {
   A.qbank.forEach(function (lv) { lv.forEach(function (q) { add(q.q); }); });
   add(A.warmTts);
   RS_LOCAL.forEach(function (st) { add(st.t); st.s.forEach(add); });                         // stories to read
+  (window.TALA_STORIES || []).forEach(function (st) {                                        // حكايات: the quiz (the story parts are whole files in audio/<story>/)
+    st.q.forEach(function (q) { add(stClean(q.q)); add(stClean('الإِجَابَةُ: ' + q.a)); });
+  });
+  Object.keys(window.TALA_UI || {}).forEach(function (k) { add(stClean(window.TALA_UI[k])); });
   return Object.keys(out);
 }
 

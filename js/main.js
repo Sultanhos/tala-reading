@@ -70,4 +70,5 @@ spApply();
 buildQueue();
 nextWord();
 showView('home');
+stLoadFiles(); // shows the stories tile when their recordings are there
 kidsStart();

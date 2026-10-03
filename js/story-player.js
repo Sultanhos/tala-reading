@@ -1,7 +1,7 @@
 // حكايات: story player and voice quiz (tab hidden for now).
 'use strict';
 
-/* ================= حكايات: true stories told in Egyptian Arabic, then questions answered by voice ================= */
+/* ================= حكايات: true stories told in simple standard Arabic, then questions answered by voice ================= */
 var STORIES = window.TALA_STORIES || [];
 var ST_DEFAULT_JUDGE = 'https://tala-judge.onrender.com';
 var ST_SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
@@ -13,10 +13,18 @@ var SURAH = { 11: 'هود', 17: 'الإسراء', 21: 'الأنبياء', 27: '�
 // fixed sentences the owl says in the quiz (also made once as audio files)
 var ST_UI = window.TALA_UI || {};
 function stIsQuran(part) { return Array.isArray(part[1]); }
+// a story is offered when every part of it has its recording (no story is told by the phone's own voice)
+function stReady(s) { return s.p.every(function (p, i) { return stIsQuran(p) || !!ST.files[s.id + ':p' + i]; }); }
+function stTile() {
+  var n = STORIES.filter(stReady).length;
+  $('hTileStory').hidden = !n;
+  $('hSubStory').textContent = n ? mNumAr(n) + ' قصص' : '';
+  if (view === 'home') homeRender(); // the go-on card may point to the stories
+}
 function stLoadFiles() {
   if (!window.fetch) return;
   fetch('audio/manifest.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (m) {
-    if (m && m.files) { ST.files = m.files; ST.fileVoice = m.voice || ''; if (!$('stList').hidden) $('stVoice').textContent = stVoiceText(); }
+    if (m && m.files) { ST.files = m.files; ST.fileVoice = m.voice || ''; stTile(); if (view === 'story' && !$('stList').hidden) stList(); }
   }, function () {});
 }
 // play a list of audio addresses one after another
@@ -42,7 +50,7 @@ function stVoicePick() {
     if (l.indexOf('ar-eg') === 0) { if (!eg) eg = v; if (!egBest && /salma|natural|online/i.test(v.name)) egBest = v; }
     if (!ar && l.indexOf('ar') === 0) ar = v;
   });
-  return egBest || eg || ar;
+  return (typeof voiceBest === 'function' && voiceBest()) || egBest || eg || ar; // the stories are in standard Arabic now
 }
 function stVoiceText() {
   var n = Object.keys(ST.files).length;
@@ -147,12 +155,12 @@ function stList() {
   stShowCard('list');
   var g = $('stGrid'); g.innerHTML = '';
   if (!STORIES.length) g.appendChild(mEl('p', 'note', 'The stories could not be loaded (stories.js is missing).'));
-  STORIES.forEach(function (s) {
+  STORIES.filter(stReady).forEach(function (s) {
     var b = mEl('button', 'stCard'), best = (S.stBest || {})[s.id];
     b.type = 'button';
     b.appendChild(mEl('span', 'em', s.e));
     b.appendChild(mEl('span', 'tt', s.t));
-    b.appendChild(mEl('span', 'sc', best != null ? '⭐ ' + best + ' / ' + s.q.length : '✨ جديدة'));
+    b.appendChild(mEl('span', 'sc', best != null ? '⭐ ' + mNumAr(best) + ' / ' + mNumAr(s.q.length) : '✨ جَدِيدَة'));
     b.onclick = function () { stUnlock(); stOpen(s); };
     g.appendChild(b);
   });
@@ -318,7 +326,7 @@ function stRight(fb) {
   var key = 'ui:right' + (1 + Math.floor(Math.random() * 4));
   popBubble($('stBubble'), (fb || ST_UI[key]) + ' 🌟');
   // spoken: the saved praise if there is one (natural voice), otherwise Claude's own words
-  stSay(key, ST.files[key] || !fb ? ST_UI[key] : fb, function () { var tok = ST.token; ST.after = setTimeout(function () { if (tok === ST.token) stNextQ(); }, 700); });
+  stSay(key, ST_UI[key], function () { var tok = ST.token; ST.after = setTimeout(function () { if (tok === ST.token) stNextQ(); }, 700); }); // spoken: the recorded praise; shown: the AI's own words
 }
 function stWrong(fb) {
   var q = ST.s.q[ST.qi];
@@ -328,11 +336,11 @@ function stWrong(fb) {
     var key = 'ui:try' + ST.tries;
     popBubble($('stBubble'), (fb || ST_UI[key]) + ' 💪');
     $('stMic').disabled = false;
-    stSay(key, ST.files[key] || !fb ? ST_UI[key] : fb);
+    stSay(key, ST_UI[key]);
   } else {
     ST.res[ST.qi] = 2; stPips();
     $('stMic').disabled = true;
-    var t2 = 'الإجابة: ' + q.a;
+    var t2 = 'الإِجَابَةُ: ' + q.a;
     popBubble($('stBubble'), t2 + ' 💡');
     stSay(ST.s.id + ':a' + ST.qi, t2, function () { var tok = ST.token; ST.after = setTimeout(function () { if (tok === ST.token) stNextQ(); }, 1500); });
   }
