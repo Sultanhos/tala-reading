@@ -187,11 +187,10 @@ function cAllLines() {
 /* ----- speaking and showing ----- */
 // Koko's lines are new every time, so they cannot be recorded in advance: the AI server turns each one into speech
 // (the same voice as the recorded lines). Without the server, or when it has no voice left today, the phone's voice speaks.
-var C_VOICE = { audio: null, token: 0, off: 0, made: {} };
+var C_VOICE = { token: 0, off: 0, made: {} };
 function cQuiet() {
   C_VOICE.token++;
-  if (C_VOICE.audio) { try { C_VOICE.audio.onerror = null; C_VOICE.audio.pause(); } catch (e) {} }
-  if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+  if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} } // also stops the shared player (js/voice.js)
 }
 function cDeviceSpeak(line) {
   if (!window.speechSynthesis) return;
@@ -211,8 +210,9 @@ function cSpeak(t) {
     .replace(/^[\s،]+/, '').replace(/\s+/g, ' ').trim();
   function play(src) {
     if (token !== C_VOICE.token) return;
-    var a = C_VOICE.audio || (C_VOICE.audio = new Audio());
+    var a = voicePlayer(); // the shared player: on iPhones it may start without a tap once a tap has woken it
     var fall = function () { if (token === C_VOICE.token) cDeviceSpeak(line); };
+    VOICE.token++; a.onended = null; a.playbackRate = 1;
     a.onerror = fall;
     a.src = src;
     var p = a.play(); if (p && p.catch) p.catch(fall);

@@ -79,21 +79,54 @@ function voiceExport() {
     .then(function (r) { return r.text(); });
 }
 
+// the one audio player for every recorded line (iPhones allow sound without a tap only on a player a tap has woken)
+function voicePlayer() {
+  if (!VOICE.player) { VOICE.player = new Audio(); VOICE.player.preload = 'auto'; }
+  return VOICE.player;
+}
+// a twentieth of a second of silence, made here so it is a real, playable sound
+function voiceSilence() {
+  if (VOICE.silence) return VOICE.silence;
+  var n = 400, b = new DataView(new ArrayBuffer(44 + n * 2)), w = function (o, s) { for (var i = 0; i < s.length; i++) b.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); b.setUint32(4, 36 + n * 2, true); w(8, 'WAVEfmt '); b.setUint32(16, 16, true); b.setUint16(20, 1, true); b.setUint16(22, 1, true);
+  b.setUint32(24, 8000, true); b.setUint32(28, 16000, true); b.setUint16(32, 2, true); b.setUint16(34, 16, true); w(36, 'data'); b.setUint32(40, n * 2, true);
+  VOICE.silence = URL.createObjectURL(new Blob([b.buffer], { type: 'audio/wav' }));
+  return VOICE.silence;
+}
+// On iPhones a sound may only start from a tap. The first tap anywhere wakes the player with a moment of silence,
+// so that later lines (a new sum read out, Koko's answer) can start by themselves.
+function voiceUnlock() {
+  if (VOICE.unlocked) return;
+  var a = voicePlayer();
+  if (!a.paused) { VOICE.unlocked = true; return; } // a recorded line is already playing: the player is awake
+  try {
+    a.src = voiceSilence();
+    var p = a.play();
+    VOICE.unlocked = true;
+    if (p && p.catch) p.catch(function (e) { if (!e || e.name !== 'AbortError') VOICE.unlocked = false; }); // a real line took over: still awake
+  } catch (e) {}
+}
+['pointerdown', 'touchend', 'click', 'keydown'].forEach(function (ev) { document.addEventListener(ev, voiceUnlock, true); });
+
 (function () {
   var syn = window.speechSynthesis;
   if (!syn || !syn.speak) return;
-  var rawSpeak = syn.speak.bind(syn), rawCancel = syn.cancel.bind(syn);
+  // Browsers keep speak() and cancel() on a shared prototype. They are changed there, because Safari can hand out a fresh
+  // speechSynthesis object later, and a change made on the object itself would be gone (then the phone's voice speaks).
+  var proto = Object.getPrototypeOf(syn), host = proto && proto !== Object.prototype && typeof proto.speak === 'function' ? proto : syn;
+  var nativeSpeak = host.speak, nativeCancel = host.cancel;
+  var rawSpeak = function (u) { return nativeSpeak.call(window.speechSynthesis, u); }, rawCancel = function () { return nativeCancel.call(window.speechSynthesis); };
+  VOICE.syn = syn; // and the object itself is held on to
   function stopAudio() { VOICE.token++; if (VOICE.player) { try { VOICE.player.onended = VOICE.player.onerror = null; VOICE.player.pause(); } catch (e) {} } }
-  syn.cancel = function () { stopAudio(); rawCancel(); };
-  syn.speak = function (u) {
+  host.cancel = function () { stopAudio(); rawCancel(); };
+  host.speak = function (u) {
     var arabic = !u.lang || /^ar/i.test(u.lang);
     if (!arabic) { rawSpeak(u); return; }
     stopAudio();
     var urls = u.noRecording ? [] : voiceParts(u.text).map(voiceFile);
     if (urls.length && urls.every(Boolean)) { // all pieces recorded: play them one after another
       var tok = VOICE.token, k = 0;
-      if (!VOICE.player) VOICE.player = new Audio();
-      var a = VOICE.player;
+      var a = voicePlayer();
       a.playbackRate = u.rate && u.rate < 0.8 ? 0.9 : 1; // "slowly" in the old voice: a little slower
       var next = function () {
         if (tok !== VOICE.token) return;
