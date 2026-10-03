@@ -185,15 +185,49 @@ function cAllLines() {
 }
 
 /* ----- speaking and showing ----- */
-function cSpeak(t) {
+// Koko's lines are new every time, so they cannot be recorded in advance: the AI server turns each one into speech
+// (the same voice as the recorded lines). Without the server, or when it has no voice left today, the phone's voice speaks.
+var C_VOICE = { audio: null, token: 0, off: 0, made: {} };
+function cQuiet() {
+  C_VOICE.token++;
+  if (C_VOICE.audio) { try { C_VOICE.audio.onerror = null; C_VOICE.audio.pause(); } catch (e) {} }
+  if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
+}
+function cDeviceSpeak(line) {
   if (!window.speechSynthesis) return;
   try {
-    window.speechSynthesis.cancel();
-    var u = new SpeechSynthesisUtterance(gx(t).replace(/[\u{1F300}-\u{1FAFF}☀-➿️‍]/gu, '').split('{name}').join(S.name));
+    var u = new SpeechSynthesisUtterance(line.split('{name}').join(S.name));
     u.lang = 'ar-SA'; u.rate = 0.8; u.pitch = 1.3; // a bright parrot voice
-    u.noRecording = true; // Koko's AI answers are new every time, so all of Koko is spoken by the phone's voice
+    u.noRecording = true;
     window.speechSynthesis.speak(u);
   } catch (e) {}
+}
+function cSpeak(t) {
+  cQuiet();
+  var line = gx(t).replace(/[\u{1F300}-\u{1FAFF}☀-➿️‍]/gu, ''), token = C_VOICE.token, base = aiBase();
+  if (S.kokoAI === false || !base || !window.fetch || Date.now() < C_VOICE.off) { cDeviceSpeak(line); return; }
+  // the child's name never leaves the device: the server's voice says the line without it
+  var text = line.split('يَا {name}').join('').split('{name}').join('').replace(/\s+([،؟!.])/g, '$1').replace(/([،؟!.])[،\s]*،/g, '$1')
+    .replace(/^[\s،]+/, '').replace(/\s+/g, ' ').trim();
+  function play(src) {
+    if (token !== C_VOICE.token) return;
+    var a = C_VOICE.audio || (C_VOICE.audio = new Audio());
+    var fall = function () { if (token === C_VOICE.token) cDeviceSpeak(line); };
+    a.onerror = fall;
+    a.src = src;
+    var p = a.play(); if (p && p.catch) p.catch(fall);
+  }
+  if (!text) { cDeviceSpeak(line); return; }
+  if (C_VOICE.made[text]) { play(C_VOICE.made[text]); return; }
+  var ctl = window.AbortController ? new AbortController() : null, timer = setTimeout(function () { if (ctl) ctl.abort(); }, 9000);
+  fetch(base + '/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl ? ctl.signal : undefined, body: JSON.stringify({ text: text }) })
+    .then(function (r) { return r.json().then(function (j) { if (!r.ok || !j.audio) throw new Error(j.error || ('status ' + r.status)); return j; }); })
+    .then(function (j) { clearTimeout(timer); var src = 'data:' + (j.mime || 'audio/wav') + ';base64,' + j.audio; C_VOICE.made[text] = src; play(src); })
+    .catch(function (e) {
+      clearTimeout(timer);
+      if (/limit|no voice|too many|not found|status 404/.test(String(e && e.message))) C_VOICE.off = Date.now() + 10 * 60 * 1000; // ask again later
+      if (token === C_VOICE.token) cDeviceSpeak(line);
+    });
 }
 function cFill(t) { return gx(t).split('{name}').join(S.name); }
 function cLog(who, text) {
@@ -257,7 +291,7 @@ function cListen() {
   if (!C.topic) { cKoko(C_LINES.pick, []); return; }
   if (!SR) { $('cNote').textContent = 'التعرف على الصوت غير متاح في هذا المتصفح.'; return; }
   if (C.listening) { try { C.rec.stop(); } catch (e) {} return; }
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  cQuiet(); // Koko stops talking when the child starts
   var rec = new SR(), got = false;
   rec.lang = 'ar-SA'; rec.interimResults = false; rec.maxAlternatives = 3; rec.continuous = false;
   C.rec = rec;

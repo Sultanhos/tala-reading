@@ -4,6 +4,7 @@
 //   POST /story   Claude writes a short story made only of what the child can already read at their lesson
 //   POST /chat    Koko the parrot talks with the child (the conversation as text, never the name)
 //   POST /homework  reads a photo of a homework page: what is asked, what the child wrote, right or wrong, a tip
+//   POST /speak   one short line of Koko's as speech (Google's voice, the same as the recorded lines; needs GEMINI_API_KEY)
 // Works with Claude (ANTHROPIC_API_KEY) and / or Google Gemini (GEMINI_API_KEY); the keys are environment variables
 // (set in the Render dashboard, never in code). With both keys Koko's short chats use Gemini's fast model, the rest Claude.
 import http from "node:http";
@@ -274,9 +275,51 @@ async function homework(input) {
     })).filter((x) => x.task),
   } };
 }
+// ---- Koko's voice: one short Arabic line -> speech. The game sends the line without the child's name. ----
+const TTS_MODEL = process.env.GEMINI_TTS_MODEL || "gemini-3.8-flash-tts", TTS_VOICE = process.env.GEMINI_TTS_VOICE || "Fola";
+const TTS_STYLE = "Modern Standard Arabic (fusha), a warm, cheerful young woman talking with a small child. Clear and a little slow. Pronounce every vowel mark (tashkeel) exactly as written. Say only the text.";
+const spoken = new Map(); // line -> its audio: what Koko says often is made only once
+let voiceRestUntil = 0;   // after Google's daily limit there is no use asking again for a while
+// raw 16-bit samples -> a WAV file (newer voices already send a WAV file)
+function wavFile(pcm, rate) {
+  const h = Buffer.alloc(44);
+  h.write("RIFF", 0); h.writeUInt32LE(36 + pcm.length, 4); h.write("WAVEfmt ", 8); h.writeUInt32LE(16, 16); h.writeUInt16LE(1, 20); h.writeUInt16LE(1, 22);
+  h.writeUInt32LE(rate, 24); h.writeUInt32LE(rate * 2, 28); h.writeUInt16LE(2, 32); h.writeUInt16LE(16, 34); h.write("data", 36); h.writeUInt32LE(pcm.length, 40);
+  return Buffer.concat([h, pcm]);
+}
+async function speak(input) {
+  const text = clip(input.text, 240).replace(/\s+/g, " ").trim();
+  if (!text || !/[\u0621-\u064A]/.test(text)) return { status: 400, body: { error: "bad text" } };
+  if (!HAS_GEMINI) return { status: 503, body: { error: "no voice" } };
+  if (spoken.has(text)) return { status: 200, body: spoken.get(text) };
+  if (Date.now() < voiceRestUntil) return { status: 503, body: { error: "voice limit" } };
+  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent`, {
+    method: "POST", headers: { "x-goog-api-key": process.env.GEMINI_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: `### DIRECTOR'S NOTES\nStyle: ${TTS_STYLE}\n\n## Transcript:\n${text}` }] }],
+      generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: TTS_VOICE } } } },
+    }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = String(j.error && j.error.message || "");
+    console.error(`Gemini voice error ${res.status}:`, msg.slice(0, 200));
+    if (res.status === 429 && /per_day|PerDay/i.test(msg)) voiceRestUntil = Date.now() + 30 * 60 * 1000;
+    return { status: 503, body: { error: res.status === 429 ? "voice limit" : "voice" } };
+  }
+  const part = ((((j.candidates || [])[0] || {}).content || {}).parts || []).find((x) => x.inlineData);
+  if (!part) return { status: 502, body: { error: "voice" } };
+  let audio = part.inlineData.data;
+  if (Buffer.from(audio.slice(0, 8), "base64").toString("latin1").slice(0, 4) !== "RIFF")
+    audio = wavFile(Buffer.from(audio, "base64"), Number((/rate=(\d+)/.exec(part.inlineData.mimeType || "") || [])[1]) || 24000).toString("base64");
+  const body = { audio, mime: "audio/wav" };
+  spoken.set(text, body);
+  if (spoken.size > 150) spoken.delete(spoken.keys().next().value);
+  return { status: 200, body };
+}
 // max: requests per visitor in 10 minutes; body: the largest request in characters (a photo is big)
 const ROUTES = { "/judge": { run: judge, max: 60 }, "/report": { run: report, max: 10 }, "/story": { run: story, max: 20 }, "/chat": { run: chat, max: 80 },
-  "/homework": { run: homework, max: 12, body: 7500000 } };
+  "/homework": { run: homework, max: 12, body: 7500000 }, "/speak": { run: speak, max: 120 } };
 
 http.createServer((req, res) => {
   const origin = req.headers.origin;

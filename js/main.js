@@ -9,7 +9,7 @@ function stopAll() {
   wStopDemo();
   rsStop();
   qStop();
-  cStop();
+  cStop(); cQuiet();
   if (ST.playing) ST.playing = false;
   stHush(); stMicStop();
   if (window.speechSynthesis) { try { window.speechSynthesis.cancel(); } catch (e) {} }
