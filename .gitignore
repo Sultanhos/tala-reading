@@ -9,3 +9,4 @@ node_modules/
 .claude/
 tools/tashkeel-test/clips/
 www/
+tools/voice-check.json

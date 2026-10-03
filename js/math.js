@@ -40,6 +40,14 @@ function mNear(ans, lo, hi) {
   return shuffle(c);
 }
 
+// picture stories talk to the child («مَعَكِ…»): her name cannot be recorded in advance, these pieces can
+function mStorySay(t, a, b) {
+  var x = NUMW[a], y = NUMW[b];
+  return t === 0 ? 'مَعَكِ ' + x + '، وَأَعْطَتْكِ مَامَا ' + y + '. كَمْ مَعَكِ الآنَ؟'
+    : t === 1 ? 'مَعَكِ ' + x + '، أَكَلْتِ ' + y + '. كَمْ بَقِيَ مَعَكِ؟'
+    : t === 2 ? 'عَلَى الشَّجَرَةِ ' + x + '، وَجَاءَ ' + y + '. كَمْ عَلَى الشَّجَرَةِ الآنَ؟'
+    : 'عَلَى الشَّجَرَةِ ' + x + '، طَارَ مِنْهَا ' + y + '. كَمْ بَقِيَ؟';
+}
 function mMake(L) {
   var q = { k: L.k, emo: MPIC[mRand(0, MPIC.length - 1)], max: L.max, pics: L.pics }, a, b, i;
   if (L.k === 'count') {
@@ -69,19 +77,16 @@ function mMake(L) {
     q.toks = [{ n: a, p: [a, b] }, { op: '−' }, { n: b }, { op: '=' }, { q: 1 }];
     q.ans = a - b; q.bubble = 'اِحْسُبِي 🤔'; q.say = NUMW[a] + '، نَاقِص، ' + NUMW[b] + '، يُسَاوِي كَمْ؟';
   } else { // picture stories
-    var t = mRand(0, 3), add = t % 2 === 0, food = t < 2, name = S.name || 'تالا';
+    var t = mRand(0, 3), add = t % 2 === 0, food = t < 2;
     q.emo = food ? ['🍎', '🍓', '🍬', '🍪', '🍌'][mRand(0, 4)] : ['🐦', '🐤', '🦋', '🐞'][mRand(0, 3)];
     if (add) { a = mRand(1, 8); b = mRand(1, 10 - a); q.ans = a + b; q.sp = [[a, 0], [b, 0]]; }
     else { a = mRand(3, 10); b = mRand(1, a - 1); q.ans = a - b; q.sp = [[a, b]]; }
     var A = mNum(a), B = mNum(b), E = q.emo;
-    if (t === 0) { q.story = 'مَعَ ' + name + ' ' + A + ' ' + E + '، وَأَعْطَتْهَا مَامَا ' + B + ' ' + E + '. كَمْ ' + E + ' مَعَهَا الآنَ؟';
-                   q.say = 'مَعَ ' + name + ' ' + NUMW[a] + '، وَأَعْطَتْهَا مَامَا ' + NUMW[b] + '. كَمْ مَعَهَا الآنَ؟'; }
-    if (t === 1) { q.story = 'مَعَ ' + name + ' ' + A + ' ' + E + '، أَكَلَتْ ' + B + '. كَمْ ' + E + ' بَقِيَ مَعَهَا؟';
-                   q.say = 'مَعَ ' + name + ' ' + NUMW[a] + '، أَكَلَتْ ' + NUMW[b] + '. كَمْ بَقِيَ مَعَهَا؟'; }
-    if (t === 2) { q.story = 'عَلَى الشَّجَرَةِ ' + A + ' ' + E + '، وَجَاءَ ' + B + ' ' + E + '. كَمْ ' + E + ' عَلَى الشَّجَرَةِ الآنَ؟';
-                   q.say = 'عَلَى الشَّجَرَةِ ' + NUMW[a] + '، وَجَاءَ ' + NUMW[b] + '. كَمْ عَلَى الشَّجَرَةِ الآنَ؟'; }
-    if (t === 3) { q.story = 'عَلَى الشَّجَرَةِ ' + A + ' ' + E + '، طَارَ مِنْهَا ' + B + '. كَمْ ' + E + ' بَقِيَ؟';
-                   q.say = 'عَلَى الشَّجَرَةِ ' + NUMW[a] + '، طَارَ مِنْهَا ' + NUMW[b] + '. كَمْ بَقِيَ؟'; }
+    q.story = t === 0 ? 'مَعَكِ ' + A + ' ' + E + '، وَأَعْطَتْكِ مَامَا ' + B + ' ' + E + '. كَمْ ' + E + ' مَعَكِ الآنَ؟'
+      : t === 1 ? 'مَعَكِ ' + A + ' ' + E + '، أَكَلْتِ ' + B + '. كَمْ ' + E + ' بَقِيَ مَعَكِ؟'
+      : t === 2 ? 'عَلَى الشَّجَرَةِ ' + A + ' ' + E + '، وَجَاءَ ' + B + ' ' + E + '. كَمْ ' + E + ' عَلَى الشَّجَرَةِ الآنَ؟'
+      : 'عَلَى الشَّجَرَةِ ' + A + ' ' + E + '، طَارَ مِنْهَا ' + B + '. كَمْ ' + E + ' بَقِيَ؟';
+    q.say = mStorySay(t, a, b);
     q.bubble = 'اِسْتَمِعِي وَاحْسُبِي 🤔';
   }
   q.say = gx(q.say); q.story = gx(q.story);

@@ -23,7 +23,8 @@ function voiceParts(t) {
 }
 function voiceFile(part) {
   if (part.indexOf('{name}') > -1) return null;
-  var f = VOICE.files[part] || VOICE.files[part.replace(/[!؟?.،,:]+$/, '')];
+  // «كَمْ؟،» inside a row of numbers: first with its own end mark, then without any
+  var f = VOICE.files[part] || VOICE.files[part.replace(/([!؟?.،,:])[!؟?.،,:]+$/, '$1')] || VOICE.files[part.replace(/[!؟?.،,:]+$/, '')];
   return f ? VOICE.base + f : null;
 }
 // the best Arabic voice the phone or computer has
@@ -59,6 +60,7 @@ function voiceTexts() {
   Object.keys(WWORD).forEach(function (w) { add(WWORD[w][0]); });
   NUMW.forEach(add);                                                                        // math
   ['زَائِد', 'نَاقِص', 'يُسَاوِي كَمْ؟', 'كَمْ؟', 'كَمْ عَدَدُهَا؟', 'أَيُّهُمَا أَكْبَرُ؟', 'أَيُّهُمَا أَصْغَرُ؟', 'أَمْ'].forEach(add);
+  for (var t = 0; t < 4; t++) for (var a = 1; a <= 10; a++) for (var b = 1; b <= 9; b++) add(mStorySay(t, a, b)); // picture stories
   var A = SPK.ar;                                                                           // pronunciation (Arabic)
   A.pool.forEach(function (w) { add(w[0]); });
   A.qbank.forEach(function (lv) { lv.forEach(function (q) { add(q.q); }); });

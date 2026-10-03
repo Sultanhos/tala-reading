@@ -2,6 +2,7 @@
 // and compared with its text; clips with noise at the end or a poor match are listed.
 //   node tools/check-voice.mjs            -> report
 //   node tools/check-voice.mjs --delete   -> also deletes the bad clips, so `node tools/make-voice.mjs` records them again
+// What Whisper heard is kept in tools/voice-check.json, so a run that was cut off goes on where it stopped.
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
@@ -42,9 +43,24 @@ function tailNoise(file) {
 }
 const h = await fetch(`${VS}/health`).then((r) => r.json()).catch(() => null);
 const whisper = !!(h && h.status === "ok");
-if (!whisper) console.log("VoiceStudio is not running: only the noise check is done, not the word check.");
+if (!whisper) console.log("VoiceStudio is not running: clips that were not heard before only get the noise check.");
+const SEEN = path.join(root, "tools", "voice-check.json");
+let seen = {};
+try { seen = JSON.parse(fs.readFileSync(SEEN, "utf8")); } catch {}
+async function hear(file) {
+  for (let k = 0; k < 3; k++) {
+    try {
+      const td = new FormData();
+      td.append("file", new Blob([fs.readFileSync(file)], { type: "audio/mpeg" }), "clip.mp3");
+      td.append("model", "whisper-1"); td.append("language", "ar"); td.append("response_format", "json");
+      const tr = await fetch(`${VS}/v1/audio/transcriptions`, { method: "POST", body: td, signal: AbortSignal.timeout(120000) });
+      if (tr.ok) return (await tr.json()).text || "";
+    } catch {}
+  }
+  return null; // no answer: not judged
+}
 const bad = [];
-let n = 0;
+let n = 0, unheard = 0;
 const entries = Object.entries(files);
 for (const [text, f] of entries) {
   const file = path.join(OUT, f);
@@ -52,19 +68,20 @@ for (const [text, f] of entries) {
   const t = tailNoise(file);
   let why = "";
   if (t.endDb > -45) why = `not silent at the end (${Math.round(t.endDb)} dB)`;
-  if (!why && whisper) {
-    const td = new FormData();
-    td.append("file", new Blob([fs.readFileSync(file)], { type: "audio/mpeg" }), "clip.mp3");
-    td.append("model", "whisper-1"); td.append("language", "ar"); td.append("response_format", "json");
-    const tr = await fetch(`${VS}/v1/audio/transcriptions`, { method: "POST", body: td });
-    const heard = tr.ok ? (await tr.json()).text || "" : "";
+  if (!why && (whisper || seen[f] !== undefined)) { // already heard clips need no Whisper
+    let heard = seen[f];
+    if (heard === undefined) {
+      heard = await hear(file);
+      if (heard === null) { unheard++; n++; continue; }
+      seen[f] = heard; fs.writeFileSync(SEEN, JSON.stringify(seen));
+    }
     const score = similarity(text, heard), letters = normAr(text).length;
     // single short words are hard for the recognizer: only flag them when nothing like the word was heard
     if (score < (letters <= 4 ? 0.34 : 0.6)) why = `heard «${heard.trim().slice(0, 60)}» (${Math.round(score * 100)}%)`;
   }
   if (why) bad.push([text, f, why]);
-  process.stdout.write(`\r${++n}/${entries.length}  doubtful: ${bad.length}   `);
+  if (++n % 10 === 0 || n === entries.length) console.log(`${n}/${entries.length}  doubtful: ${bad.length}`);
 }
-console.log(`\n${entries.length - bad.length} of ${entries.length} clips are fine.`);
+console.log(`${entries.length - bad.length - unheard} of ${entries.length} clips are fine.` + (unheard ? ` ${unheard} got no answer from Whisper: run again.` : ""));
 bad.forEach(([text, f, why]) => console.log(`  ${text}  [${f}]  ${why}`));
-if (process.argv.includes("--delete")) { bad.forEach(([, f]) => { try { fs.unlinkSync(path.join(OUT, f)); } catch {} }); console.log("deleted the doubtful clips; run make-voice.mjs to record them again"); }
+if (process.argv.includes("--delete")) { bad.forEach(([, f]) => { try { fs.unlinkSync(path.join(OUT, f)); } catch {} delete seen[f]; }); fs.writeFileSync(SEEN, JSON.stringify(seen)); console.log("deleted the doubtful clips; run make-voice.mjs to record them again"); }
